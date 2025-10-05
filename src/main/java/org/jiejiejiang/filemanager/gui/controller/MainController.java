@@ -1,9 +1,9 @@
 package org.jiejiejiang.filemanager.gui.controller;
 
-import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -13,18 +13,27 @@ import org.jiejiejiang.filemanager.core.FileSystem;
 import org.jiejiejiang.filemanager.exception.FileSystemException;
 import org.jiejiejiang.filemanager.util.LogUtil;
 
+import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
 import javafx.fxml.FXML;
+import javafx.geometry.Insets;
+import javafx.scene.Node;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
 import javafx.scene.control.TextInputDialog;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.GridPane;
+import javafx.scene.paint.Color;
 
 public class MainController {
 
@@ -232,6 +241,168 @@ public class MainController {
                 loadDirectory(currentDirectory.getDirEntry().getFullPath());
             }
         });
+        
+        // 6. 文件表格双击事件：双击文件修改大小，双击文件夹打开目录
+        fileTableView.setOnMouseClicked(event -> {
+            if (event.getClickCount() == 2) {
+                FileEntry selectedEntry = fileTableView.getSelectionModel().getSelectedItem();
+                if (selectedEntry != null) {
+                    if (selectedEntry.getType() == FileEntry.EntryType.FILE) {
+                        // 双击文件：显示修改大小对话框
+                        showModifyFileSizeDialog(selectedEntry);
+                    } else if (selectedEntry.getType() == FileEntry.EntryType.DIRECTORY) {
+                        // 双击文件夹：打开该文件夹
+                        String parentPath = currentDirectory.getDirEntry().getFullPath();
+                        String path = parentPath.endsWith("/") ? parentPath + selectedEntry.getName() : parentPath + "/" + selectedEntry.getName();
+                        loadDirectory(path);
+                    }
+                }
+            }
+        });
+    }
+    
+    /**
+     * 显示修改文件大小对话框
+     */
+    private void showModifyFileSizeDialog(FileEntry fileEntry) {
+        // 确保是文件
+        if (fileEntry.getType() != FileEntry.EntryType.FILE) {
+            showWarning("提示", "只能修改文件大小");
+            return;
+        }
+        
+        // 创建自定义对话框
+        Dialog<ButtonType> dialog = new Dialog<>();
+        dialog.setTitle("修改文件大小");
+        dialog.setHeaderText("修改文件：" + fileEntry.getName());
+        
+        // 设置按钮
+        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+        
+        // 创建内容面板
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+        grid.setPadding(new Insets(20, 150, 10, 10));
+        
+        // 添加大小输入框
+        TextField sizeField = new TextField(String.valueOf(fileEntry.getSize()));
+        
+        // 添加单位选择下拉框
+        ComboBox<String> unitComboBox = new ComboBox<>();
+        unitComboBox.getItems().addAll("B", "KB", "MB", "GB", "TB");
+        unitComboBox.setValue("B");
+        
+        // 添加说明标签
+        Label infoLabel = new Label("最大支持 1 TB 的文件大小");
+        infoLabel.setTextFill(Color.GRAY);
+        
+        // 添加错误提示标签
+        Label errorLabel = new Label("");
+        errorLabel.setTextFill(Color.RED);
+        
+        // 添加到网格面板
+        grid.add(new Label("文件大小："), 0, 0);
+        grid.add(sizeField, 1, 0);
+        grid.add(unitComboBox, 2, 0);
+        grid.add(infoLabel, 1, 1, 2, 1);
+        grid.add(errorLabel, 1, 2, 2, 1);
+        
+        dialog.getDialogPane().setContent(grid);
+        
+        // 验证输入并更新错误标签
+        Node okButton = dialog.getDialogPane().lookupButton(ButtonType.OK);
+        okButton.setDisable(true); // 初始禁用确定按钮
+        
+        // 添加输入验证
+        ChangeListener<String> validationListener = (observable, oldValue, newValue) -> {
+            try {
+                errorLabel.setText("");
+                
+                // 检查是否为有效数字
+                long size = Long.parseLong(newValue);
+                if (size < 0) {
+                    errorLabel.setText("文件大小不能为负数");
+                    okButton.setDisable(true);
+                    return;
+                }
+                
+                // 转换为字节并检查上限（1TB）
+                String unit = unitComboBox.getValue();
+                long bytes = convertToBytes(size, unit);
+                
+                // 1TB = 1024^4 字节 = 1099511627776 字节
+                if (bytes > 1099511627776L) {
+                    errorLabel.setText("文件大小超过上限（1TB）");
+                    okButton.setDisable(true);
+                    return;
+                }
+                
+                // 验证通过
+                okButton.setDisable(false);
+            } catch (NumberFormatException e) {
+                errorLabel.setText("请输入有效的数字");
+                okButton.setDisable(true);
+            }
+        };
+        
+        // 添加监听
+        sizeField.textProperty().addListener(validationListener);
+        unitComboBox.valueProperty().addListener((observable, oldValue, newValue) -> {
+            // 当单位改变时，重新验证
+            validationListener.changed(null, null, sizeField.getText());
+        });
+        
+        // 显示对话框并处理结果
+        dialog.showAndWait().ifPresent(result -> {
+            if (result == ButtonType.OK) {
+                try {
+                    long size = Long.parseLong(sizeField.getText());
+                    String unit = unitComboBox.getValue();
+                    long bytes = convertToBytes(size, unit);
+                    
+                    // 调用文件系统修改文件大小
+                    String parentPath = currentDirectory.getDirEntry().getFullPath();
+                    String fullPath = parentPath.endsWith("/") ? parentPath + fileEntry.getName() : parentPath + "/" + fileEntry.getName();
+                    fileSystem.resizeFile(fullPath, bytes);
+                    
+                    // 延迟一小段时间后再刷新UI，确保文件系统操作完全完成
+                    // 让FileSystem内部处理缓存更新，不在此处手动刷新
+                    Platform.runLater(() -> {
+                        // 重新加载目录，让TableView完全重建，避免属性绑定问题
+                        loadDirectory(currentDirectory.getDirEntry().getFullPath());
+                        // 显示成功提示
+                        Alert success = new Alert(Alert.AlertType.INFORMATION);
+                        success.setTitle("成功");
+                        success.setHeaderText(null);
+                        success.setContentText("文件大小修改成功！");
+                        success.showAndWait();
+                    });
+                    
+                } catch (NumberFormatException | FileSystemException e) {
+                    showError("修改文件大小失败", e.getMessage());
+                }
+            }
+        });
+    }
+    
+    /**
+     * 将指定大小和单位转换为字节数
+     */
+    private long convertToBytes(long size, String unit) {
+        switch (unit) {
+            case "KB":
+                return size * 1024;
+            case "MB":
+                return size * 1024 * 1024;
+            case "GB":
+                return size * 1024 * 1024 * 1024;
+            case "TB":
+                return size * 1024 * 1024 * 1024 * 1024;
+            case "B":
+            default:
+                return size;
+        }
     }
 
     // ============================== 核心业务逻辑 ==============================
@@ -250,10 +421,23 @@ public class MainController {
             // 更新UI状态
             currentPathLabel.setText("当前路径：" + path);
 
-            // 加载文件列表并显示
-            List<FileEntry> entries = currentDirectory.getEntries();
+            // 先刷新目录缓存，确保获取到最新数据
+            currentDirectory.refreshEntries();
+            
+            // 创建全新的列表，确保JavaFX能检测到列表引用变化
+            List<FileEntry> entries = new ArrayList<>(currentDirectory.getEntries());
+            
+            // 清空现有项并添加新项
             fileTableView.getItems().clear();
             fileTableView.getItems().addAll(entries);
+            
+            // 强制刷新TableView的UI显示
+            Platform.runLater(() -> {
+                fileTableView.refresh();
+                // 刷新UI的其他部分
+                fileTableView.requestFocus();
+                fileTableView.getSelectionModel().clearSelection();
+            });
 
             // 更新文件数量状态栏
             fileCountLabel.setText(String.format("文件数量：%d", entries.size()));
@@ -361,7 +545,7 @@ public class MainController {
      */
     private String getFullPath(TreeItem<String> item) {
         if (item == computerRootItem) {
-            return "";
+            return "/";
         }
         StringBuilder path = new StringBuilder(item.getValue());
         TreeItem<String> parent = item.getParent();
@@ -369,7 +553,12 @@ public class MainController {
             path.insert(0, parent.getValue() + "/");
             parent = parent.getParent();
         }
-        return path.toString().replace("//", "/");
+        // 确保路径以/开头
+        if (!path.toString().startsWith("/")) {
+            path.insert(0, "/");
+        }
+        // 移除多余的斜杠
+        return path.toString().replaceAll("//+", "/");
     }
 
     /**

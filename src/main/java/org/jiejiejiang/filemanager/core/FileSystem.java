@@ -338,6 +338,125 @@ public class FileSystem {
         }
     }
 
+    /**
+     * 修改文件大小
+     * @param fullPath 文件完整路径
+     * @param newSize 新的文件大小（字节）
+     * @throws FileSystemException 文件不存在、不是文件、大小无效、操作失败时抛出
+     */
+    public void resizeFile(String fullPath, long newSize) throws FileSystemException {
+        checkMounted();
+        validateFullPath(fullPath);
+
+        // 1. 检查文件是否存在且为文件
+        FileEntry file = getEntry(fullPath);
+        if (file == null) {
+            throw new FileSystemException("修改文件大小失败：文件不存在 → " + fullPath);
+        }
+        if (file.getType() != FileEntry.EntryType.FILE) {
+            throw new FileSystemException("修改文件大小失败：" + fullPath + " 不是文件");
+        }
+        if (file.isDeleted()) {
+            throw new FileSystemException("修改文件大小失败：文件已删除 → " + fullPath);
+        }
+        
+        // 2. 验证新大小是否有效
+        if (newSize < 0) {
+            throw new FileSystemException("修改文件大小失败：文件大小不能为负数");
+        }
+        
+        // 3. 如果新大小与原大小相同，直接返回
+        if (newSize == file.getSize()) {
+            return;
+        }
+        
+        try {
+            // 4. 计算新旧大小需要的块数
+            int currentBlocks = fat.getFileBlockCount(file.getStartBlockId());
+            int newBlocks = (int) Math.ceil((double) newSize / blockSize);
+            
+            // 5. 如果新大小需要更多的块，扩展块链
+            if (newBlocks > currentBlocks) {
+                int currentBlockId = file.getStartBlockId();
+                // 遍历到当前最后一块
+                while (fat.getNextBlock(currentBlockId) != FAT.END_OF_FILE) {
+                    currentBlockId = fat.getNextBlock(currentBlockId);
+                }
+                // 分配剩余需要的块
+                for (int i = 0; i < newBlocks - currentBlocks; i++) {
+                    currentBlockId = fat.allocateNextBlock(currentBlockId);
+                }
+            }
+            
+            // 6. 如果新大小需要更少的块，截断块链（但不释放块，避免性能问题）
+            // 注意：这里只是更新文件大小，不实际释放磁盘块，实际项目中可能需要考虑释放块
+            
+            // 7. 更新文件大小和修改时间
+            file.updateSize(newSize);
+            
+            // 8. 更新父目录的修改时间
+            FileEntry parentDir = getEntry(file.getParentPath());
+            updateDirModifyTime(parentDir);
+            
+            // 9. 同步更新父目录缓存中的文件大小
+            if (parentDir != null) {
+                Directory parentDirectory = getDirectory(file.getParentPath());
+                if (parentDirectory != null) {
+                    // 关键修复：更新父目录缓存中的FileEntry对象
+                    List<FileEntry> entriesCache = parentDirectory.getEntries();
+                    // 创建一个新的List，避免在遍历时修改原List
+                    List<FileEntry> updatedEntries = new ArrayList<>(entriesCache);
+                    // 查找并替换缓存中的FileEntry对象
+                    for (int i = 0; i < updatedEntries.size(); i++) {
+                        FileEntry cachedEntry = updatedEntries.get(i);
+                        if (cachedEntry.getName().equals(file.getName()) && cachedEntry.getType() == FileEntry.EntryType.FILE) {
+                            // 创建一个新的FileEntry对象，确保使用最新的大小
+                            FileEntry updatedEntry = new FileEntry(
+                                file.getName(),
+                                file.getType(),
+                                file.getParentPath(),
+                                file.getStartBlockId()
+                            );
+                            // 设置正确的大小
+                            updatedEntry.setSize(file.getSize());
+                            // 如果原文件已删除，也要更新这个状态
+                            if (file.isDeleted()) {
+                                updatedEntry.markAsDeleted();
+                            }
+                            // 替换缓存中的对象
+                            updatedEntries.set(i, updatedEntry);
+                            break;
+                        }
+                    }
+                    
+                    // 使用反射更新parentDirectory的entriesCache字段
+                    try {
+                        var field = Directory.class.getDeclaredField("entriesCache");
+                        field.setAccessible(true);
+                        field.set(parentDirectory, updatedEntries);
+                        // 标记为脏，确保会同步到磁盘
+                        var dirtyField = Directory.class.getDeclaredField("isDirty");
+                        dirtyField.setAccessible(true);
+                        dirtyField.setBoolean(parentDirectory, true);
+                    } catch (Exception e) {
+                        LogUtil.error("更新父目录缓存失败", e);
+                    }
+                    
+                    // 直接同步父目录到磁盘，确保文件大小更新被持久化
+                    parentDirectory.syncToDisk();
+                    // 同步后再刷新，确保内存中的数据是最新的
+                    parentDirectory.refreshEntries();
+                }
+            }
+            
+            LogUtil.info("修改文件大小成功：" + fullPath + "，新大小：" + FileSizeUtil.format(newSize));
+        } catch (DiskFullException e) {
+            throw new FileSystemException("修改文件大小失败：磁盘空间不足");
+        } catch (InvalidBlockIdException e) {
+            throw new FileSystemException("修改文件大小失败：块查询异常");
+        }
+    }
+
     // ======================== 目录操作：创建/删除/列出内容 ========================
     /**
      * 创建目录
