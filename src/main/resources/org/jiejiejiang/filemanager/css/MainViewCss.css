@@ -1,0 +1,204 @@
+/* ============================== 全局样式重置 ============================== */
+/* 消除默认边距和内边距，统一盒模型 */
+* {
+    -fx-box-sizing: border-box;
+    -fx-margin: 0;
+    -fx-padding: 0;
+}
+
+/* 全局字体：使用系统默认无衬线字体，确保跨平台一致性 */
+.root {
+    -fx-font-family: "Segoe UI", "Roboto", "Arial", sans-serif;
+    -fx-font-size: 13px;
+    -fx-text-fill: #333333; /* 主文本色：深灰，避免纯黑刺眼 */
+}
+
+
+/* ============================== 1. 顶部菜单栏样式 ============================== */
+/* 菜单栏背景与边框 */
+MenuBar {
+    -fx-background-color: #ffffff;
+    -fx-border-width: 0 0 1px 0;
+    -fx-border-color: #e0e0e0; /* 底部灰色边框，分隔菜单与内容区 */
+}
+
+/* 菜单 hover 效果 */
+Menu {
+    -fx-padding: 8px 16px;
+    -fx-cursor: hand;
+}
+Menu:hover {
+    -fx-background-color: #f0f0f0; /* 浅灰背景，突出当前菜单 */
+}
+
+/* 子菜单（下拉菜单）样式 */
+ContextMenu {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #e0e0e0;
+    -fx-border-width: 1px;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 5, 0, 0, 1); /* 轻微阴影，增强层次感 */
+}
+
+/* 菜单项样式（含分隔线） */
+MenuItem {
+    -fx-padding: 8px 24px;
+    -fx-cursor: hand;
+}
+MenuItem:hover {
+    -fx-background-color: #4a86e8; /* 主色调：淡蓝，突出选中项 */
+    -fx-text-fill: #ffffff; /* 选中时文本变白 */
+}
+Separator {
+    -fx-padding: 4px 0;
+    -fx-background-color: transparent;
+}
+Separator .line {
+    -fx-background-color: #e0e0e0;
+    -fx-height: 1px;
+}
+
+
+/* ============================== 2. 左侧侧边栏样式 ============================== */
+/* 侧边栏容器：浅灰背景，与主内容区区分 */
+VBox#sidebarContainer { /* 需给侧边栏VBox加fx:id="sidebarContainer" */
+    -fx-background-color: #f8f8f8;
+    -fx-pref-width: 240px; /* 固定宽度，避免缩放时过窄 */
+    -fx-max-width: 300px;
+}
+
+/* 侧边栏标题（快速访问/磁盘目录） */
+Label#sidebarTitle { /* 给标题Label加fx:id="sidebarTitle"，或直接用.text样式 */
+    -fx-font-weight: 600;
+    -fx-text-fill: #555555;
+    -fx-padding: 0 0 4px 0;
+}
+
+/* 快速访问项：hover效果 + 点击反馈 */
+Label#quickAccessItem { /* 给快速访问Label加fx:id="quickAccessItem" */
+    -fx-padding: 6px 8px;
+    -fx-border-radius: 4px;
+    -fx-cursor: hand;
+}
+Label#quickAccessItem:hover {
+    -fx-background-color: #e8e8e8;
+}
+Label#quickAccessItem:pressed {
+    -fx-background-color: #d0d0d0; /* 按下时加深背景，模拟点击感 */
+}
+
+/* 目录树样式 */
+TreeView {
+    -fx-background-color: transparent; /* 透明背景，继承侧边栏底色 */
+    -fx-border-width: 0;
+}
+/* 目录树节点：默认文本色 + hover效果 */
+TreeItem {
+    -fx-padding: 4px 0;
+}
+TreeCell {
+    -fx-padding: 4px 8px;
+    -fx-border-radius: 4px;
+}
+TreeCell:hover {
+    -fx-background-color: #e8e8e8;
+}
+/* 选中节点样式（与菜单项主色调一致） */
+TreeCell:focused, TreeCell:selected {
+    -fx-background-color: #4a86e8;
+    -fx-text-fill: #ffffff;
+}
+/* 目录树图标：可自定义（示例用默认图标，如需替换可加-fx-graphic） */
+TreeView .tree-disclosure-node .arrow {
+    -fx-shape: "M 0 0 L 8 4 L 0 8 Z"; /* 三角形展开/折叠图标 */
+    -fx-scale-x: 0.8;
+    -fx-scale-y: 0.8;
+    -fx-fill: #666666;
+}
+
+
+/* ============================== 3. 中间文件列表（表格模式）样式 ============================== */
+/* 表格容器：白色背景 + 轻微边框 */
+TableView {
+    -fx-background-color: #ffffff;
+    -fx-border-width: 1px 0 0 0;
+    -fx-border-color: #e0e0e0;
+}
+
+/* 表格表头：深色背景 + 居中文字 */
+TableHeaderCell {
+    -fx-background-color: #f5f5f5;
+    -fx-border-width: 0 0 1px 0;
+    -fx-border-color: #e0e0e0;
+    -fx-font-weight: 600;
+    -fx-text-fill: #555555;
+    -fx-alignment: CENTER_LEFT; /* 表头文字左对齐，符合文件管理器习惯 */
+    -fx-padding: 10px 8px;
+}
+
+/* 表格行：交替底色（增强可读性） + hover效果 */
+TableRow {
+    -fx-height: 36px; /* 行高适中，避免拥挤 */
+}
+/* 交替行底色（奇偶行区分） */
+TableRow:odd {
+    -fx-background-color: #fafafa;
+}
+TableRow:even {
+    -fx-background-color: #ffffff;
+}
+/* 行hover效果 */
+TableRow:hover {
+    -fx-background-color: #f0f0f0;
+}
+/* 选中行样式（与目录树选中色一致） */
+TableRow:selected {
+    -fx-background-color: #4a86e8;
+    -fx-text-fill: #ffffff;
+}
+
+/* 表格单元格：内边距 + 文字对齐 */
+TableCell {
+    -fx-padding: 8px;
+    -fx-border-width: 0 0 1px 0;
+    -fx-border-color: #f0f0f0; /* 细边框分隔单元格，避免杂乱 */
+}
+/* 不同列的文字对齐：大小、时间列右对齐 */
+TableCell#sizeColumn, TableCell#timeColumn { /* 给列加fx:id */
+    -fx-alignment: CENTER_RIGHT;
+}
+
+
+/* ============================== 4. 底部状态栏样式 ============================== */
+/* 状态栏容器：浅灰背景 + 底部边框 */
+HBox#statusBar { /* 给状态栏HBox加fx:id="statusBar" */
+    -fx-background-color: #f0f0f0;
+    -fx-border-width: 1px 0 0 0;
+    -fx-border-color: #e0e0e0;
+    -fx-padding: 6px 16px;
+}
+
+/* 状态栏文本：灰色，区分主内容 */
+Label#statusLabel { /* 给状态栏Label加fx:id="statusLabel" */
+    -fx-text-fill: #666666;
+    -fx-font-size: 12px;
+}
+
+
+/* ============================== 5. 响应式适配（窗口缩放） ============================== */
+/* 窗口缩小时，侧边栏最小宽度限制 */
+@media (max-width: 800px) {
+    VBox#sidebarContainer {
+        -fx-pref-width: 200px;
+    }
+    TableColumn {
+        -fx-pref-width: 120px; /* 窄窗口时缩小表格列宽 */
+    }
+}
+
+/* 窗口极窄时（如手机模拟器），隐藏侧边栏（需Controller配合逻辑） */
+@media (max-width: 500px) {
+    VBox#sidebarContainer {
+        -fx-visibility: hidden;
+        -fx-pref-width: 0;
+    }
+}
