@@ -10,6 +10,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  * 目录内容管理器
@@ -301,9 +302,22 @@ public class Directory {
      */
     private FileEntry parseEntryString(String entryStr) {
         try {
-            String[] parts = entryStr.split(ENTRY_SEPARATOR);
+            // 添加调试信息，显示完整的entryStr和其长度
+            LogUtil.debug("解析目录项：长度=" + entryStr.length() + ", 内容=" + entryStr + ", 分隔符=" + ENTRY_SEPARATOR);
+            
+            // 修复：对特殊字符进行转义，避免split将|当作正则表达式的或操作符
+            String[] parts = entryStr.split(Pattern.quote(ENTRY_SEPARATOR));
+            
+            // 调试parts数组内容
+            StringBuilder partsDebug = new StringBuilder();
+            for (int i = 0; i < parts.length; i++) {
+                partsDebug.append("[").append(i).append("]=").append(parts[i]);
+                if (i < parts.length - 1) partsDebug.append(", ");
+            }
+            LogUtil.debug("分割后数组：长度=" + parts.length + ", 内容=[" + partsDebug + "]");
+            
             if (parts.length != 5) {
-                LogUtil.warn("无效的目录项格式：" + entryStr);
+                LogUtil.warn("无效的目录项格式：" + entryStr + ", 分割后长度=" + parts.length);
                 return null;
             }
 

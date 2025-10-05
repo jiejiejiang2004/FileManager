@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.Date;
 import java.util.List;
 
 import org.jiejiejiang.filemanager.core.Directory;
@@ -93,30 +94,34 @@ public class MainController {
             }
         });
 
-        // 时间列：正确处理long类型时间戳（解决类型不匹配问题）
-    // 1. 先绑定原始long值（确保类型匹配）
-        modifyTimeColumn.setCellValueFactory(new PropertyValueFactory<>("modifyTime"));
-    
-    // 2. 再通过cellFactory格式化显示（分离数据与显示）
+        // 时间列：在setCellValueFactory中直接将Date转换为格式化的String
+        modifyTimeColumn.setCellValueFactory(cellData -> {
+            FileEntry entry = cellData.getValue();
+            Date modifyTime = entry.getModifyTime();
+            
+            if (modifyTime == null) {
+                return new javafx.beans.property.SimpleStringProperty("");
+            }
+            
+            // 将Date转换为格式化的字符串
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            LocalDateTime dateTime = modifyTime.toInstant()
+                    .atZone(ZoneId.systemDefault())
+                    .toLocalDateTime();
+            
+            return new javafx.beans.property.SimpleStringProperty(dateTime.format(formatter));
+        });
+        
+        // 使用默认的String类型的TableCell
         modifyTimeColumn.setCellFactory(column -> new TableCell<FileEntry, String>() {
-            private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-    
             @Override
-            protected void updateItem(String timestamp, boolean empty) {
-                super.updateItem(timestamp, empty);
-    
-                // 处理空值和空单元格
-                if (empty || timestamp == null) {
+            protected void updateItem(String text, boolean empty) {
+                super.updateItem(text, empty);
+                if (empty || text == null) {
                     setText(null);
-                    return;
+                } else {
+                    setText(text);
                 }
-    
-                // 转换long时间戳为LocalDateTime并格式化
-                LocalDateTime time = LocalDateTime.ofInstant(
-                        Instant.ofEpochMilli(Long.parseLong(timestamp)),  // 假设是毫秒级时间戳
-                        ZoneId.systemDefault()
-                );
-                setText(time.format(formatter));
             }
         });
     }
@@ -225,13 +230,14 @@ public class MainController {
 
         dialog.showAndWait().ifPresent(fileName -> {
             try {
-                // 调用业务层创建文件
-                String currentPath = currentDirectory.getDirEntry().getFullPath();
-                String fullPath = currentPath.equals("/") ? "/" + fileName : currentPath + "/" + fileName;
+                // 调用业务层创建文件，确保路径格式正确
+                String parentPath = currentDirectory.getDirEntry().getFullPath();
+                String fullPath = parentPath.endsWith("/") ? parentPath + fileName : parentPath + "/" + fileName;
+                
                 fileSystem.createFile(fullPath);
                 
                 // 刷新列表
-                loadDirectory(currentPath);
+                loadDirectory(parentPath);
 
             } catch (FileSystemException e) {
                 showError("创建文件失败", e.getMessage());
@@ -255,13 +261,14 @@ public class MainController {
 
         dialog.showAndWait().ifPresent(dirName -> {
             try {
-                // 调用业务层创建文件夹
-                String currentPath = currentDirectory.getDirEntry().getFullPath();
-                String fullPath = currentPath.equals("/") ? "/" + dirName : currentPath + "/" + dirName;
+                // 调用业务层创建文件夹，确保路径格式正确
+                String parentPath = currentDirectory.getDirEntry().getFullPath();
+                String fullPath = parentPath.endsWith("/") ? parentPath + dirName : parentPath + "/" + dirName;
+                
                 fileSystem.createDirectory(fullPath);
                 
                 // 刷新列表和目录树
-                loadDirectory(currentPath);
+                loadDirectory(parentPath);
                 initDirectoryTree(); // 重新加载目录树
 
             } catch (FileSystemException e) {
