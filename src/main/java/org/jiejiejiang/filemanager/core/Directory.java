@@ -144,6 +144,13 @@ public class Directory {
     }
 
     /**
+     * 刷新目录项缓存（重新从磁盘加载）
+     */
+    public void refreshEntries() {
+        loadEntriesFromDisk();
+    }
+    
+    /**
      * 获取所有子目录项
      * @return 子项列表（返回副本，避免外部修改）
      */
