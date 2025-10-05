@@ -11,6 +11,7 @@ import org.jiejiejiang.filemanager.core.Directory;
 import org.jiejiejiang.filemanager.core.FileEntry;
 import org.jiejiejiang.filemanager.core.FileSystem;
 import org.jiejiejiang.filemanager.exception.FileSystemException;
+import org.jiejiejiang.filemanager.util.LogUtil;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
@@ -135,10 +136,20 @@ public class MainController {
 
         // 实际应从fileSystem获取所有磁盘/根目录
         if (fileSystem != null) {
-            String root = "//";
+            String root = "/";
             TreeItem<String> rootItem = new TreeItem<>(root);
             rootItem.setExpanded(true); // 默认展开根目录
             computerRootItem.getChildren().add(rootItem);
+            
+            // 加载根目录的子目录
+            loadSubDirectories(root, rootItem);
+            
+            // 添加展开事件监听，动态加载子目录
+            rootItem.addEventHandler(TreeItem.<String>branchExpandedEvent(), event -> {
+                TreeItem<String> expandedItem = event.getTreeItem();
+                String path = getFullPath(expandedItem);
+                loadSubDirectories(path, expandedItem);
+            });
         } else {
             // 模拟数据（开发阶段用）
             TreeItem<String> cDrive = new TreeItem<>("C:");
@@ -151,6 +162,44 @@ public class MainController {
 
         dirTreeView.setRoot(computerRootItem);
         dirTreeView.setShowRoot(true);
+    }
+    
+    /**
+     * 加载指定目录的子目录到目录树中
+     * @param path 目录路径
+     * @param parentItem 父节点
+     */
+    private void loadSubDirectories(String path, TreeItem<String> parentItem) {
+        // 先清空已有子节点（避免重复加载）
+        parentItem.getChildren().clear();
+        
+        try {
+            // 列出目录下的所有条目
+            List<FileEntry> entries = fileSystem.listDirectory(path);
+            
+            // 筛选出目录并添加到父节点
+            for (FileEntry entry : entries) {
+                if (entry.getType() == FileEntry.EntryType.DIRECTORY && !entry.isDeleted()) {
+                    TreeItem<String> dirItem = new TreeItem<>(entry.getName());
+                    parentItem.getChildren().add(dirItem);
+                    
+                    // 为每个目录添加一个临时子节点，以显示展开图标
+                    dirItem.getChildren().add(new TreeItem<>(""));
+                    
+                    // 添加展开事件监听
+                     dirItem.addEventHandler(TreeItem.<String>branchExpandedEvent(), event -> {
+                         TreeItem<String> expandedItem = event.getTreeItem();
+                         // 移除临时子节点
+                         expandedItem.getChildren().clear();
+                          
+                         String dirPath = getFullPath(expandedItem);
+                         loadSubDirectories(dirPath, expandedItem);
+                     });
+                }
+            }
+        } catch (FileSystemException e) {
+            LogUtil.error("加载子目录失败：" + e.getMessage());
+        }
     }
 
     /**
