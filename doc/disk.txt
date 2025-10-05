@@ -1,0 +1,98 @@
+类 Disk {
+    // 成员变量
+    块大小 (blockSize)：int
+    总块数 (totalBlocks)：int
+    磁盘文件路径 (diskFilePath)：String
+    随机访问文件 (diskFile)：RandomAccessFile
+    是否已初始化 (isInitialized)：boolean
+    磁盘总大小 (diskTotalSize)：long
+
+    // 构造器：通过配置文件初始化参数
+    方法 Disk(配置文件路径)：
+        调用 loadConfig(配置文件路径) 加载参数
+        计算 diskTotalSize = blockSize * totalBlocks
+        初始化 isInitialized 为 false
+        处理磁盘路径（替换反斜杠）
+
+    // 初始化磁盘：创建/打开物理文件
+    方法 initialize()：
+        若已初始化，返回 true
+        尝试：
+            将磁盘路径转为绝对路径
+            创建磁盘文件（若父目录不存在则创建）
+            以"rw"模式打开 RandomAccessFile
+            若文件大小 < diskTotalSize，扩展至 diskTotalSize
+            标记 isInitialized 为 true，返回 true
+        捕获 IO 异常：
+            抛出 DiskInitializeException
+
+    // 读取指定块
+    方法 readBlock(块ID)：
+        调用 checkInitialized() 检查初始化状态
+        若块ID无效（<0 或 >=总块数），抛出 InvalidBlockIdException
+        尝试：
+            计算偏移量 = 块ID * blockSize
+            移动文件指针到偏移量
+            读取 blockSize 字节到数据数组
+            若读取字节不足，剩余补0
+            返回数据数组
+        捕获 IO 异常：
+            抛出 DiskInitializeException（错误：使用了初始化异常）
+
+    // 写入指定块
+    方法 writeBlock(块ID, 数据)：
+        调用 checkInitialized() 检查初始化状态
+        若块ID无效，抛出 InvalidBlockIdException
+        尝试：
+            计算偏移量 = 块ID * blockSize
+            移动文件指针到偏移量
+            创建 blockSize 大小的写入数组
+            复制输入数据（超出截断，不足补0）
+            写入数据到文件
+            返回 true
+        捕获 IO 异常：
+            抛出 DiskWriteException
+
+    // 格式化磁盘
+    方法 format()：
+        调用 checkInitialized()
+        尝试：
+            将文件长度设为0
+            再将文件长度设为 diskTotalSize
+        捕获 IO 异常：
+            抛出 DiskInitializeException
+
+    // 关闭磁盘
+    方法 close()：
+        若 diskFile 不为空，关闭文件
+        标记 isInitialized 为 false
+
+    // 判断磁盘是否满（逻辑错误：用总块数判断）
+    方法 isDiskFull(需要的块数)：
+        返回 需要的块数 > totalBlocks
+
+    // 加载配置文件
+    方法 loadConfig(配置路径)：
+        读取 properties 文件
+        解析 blockSize、totalBlocks、diskFilePath（默认值兜底）
+        若 blockSize 或 totalBlocks <=0，抛出异常
+        捕获 IO 或格式异常，抛出 DiskInitializeException
+
+    // 辅助方法：计算偏移量
+    方法 calculateOffset(块ID)：
+        返回 块ID * blockSize
+
+    // 辅助方法：验证块ID
+    方法 validateBlockId(块ID)：
+        返回 块ID >=0 且 < totalBlocks
+
+    // 辅助方法：检查是否初始化
+    方法 checkInitialized()：
+        若未初始化，抛出 DiskInitializeException
+
+    // 析构方法：调用 close()
+    方法 finalize()：
+        调用 close()
+
+    // Getter 方法（获取块大小、总块数等）
+}

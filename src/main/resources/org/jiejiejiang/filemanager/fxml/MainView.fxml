@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- 根布局：BorderPane（上下左右中五区域布局，适合桌面应用） -->
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.control.MenuBar?>
+<?import javafx.scene.control.Menu?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.TreeView?>
+<?import javafx.scene.control.TreeItem?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.geometry.Insets?>
+
+<?import javafx.scene.control.SeparatorMenuItem?>
+<BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="org.jiejiejiang.filemanager.gui.controller.MainController"
+            stylesheets="@../css/MainViewCss.css">
+    <!-- 1. 顶部：菜单栏（文件操作、编辑、视图等） -->
+    <top>
+        <MenuBar>
+            <!-- 文件菜单（新建、打开、保存、退出） -->
+            <Menu text="文件">
+                <MenuItem text="新建文件" fx:id="newFileItem"/>
+                <MenuItem text="新建文件夹" fx:id="newDirItem"/>
+                <SeparatorMenuItem/>
+                <MenuItem text="打开" fx:id="openItem"/>
+                <MenuItem text="保存" fx:id="saveItem"/>
+                <SeparatorMenuItem/>
+                <MenuItem text="退出" fx:id="exitItem"/>
+            </Menu>
+
+            <!-- 编辑菜单（复制、粘贴、删除） -->
+            <Menu text="编辑">
+                <MenuItem text="复制" fx:id="copyItem"/>
+                <MenuItem text="剪切" fx:id="cutItem"/>
+                <MenuItem text="粘贴" fx:id="pasteItem"/>
+                <SeparatorMenuItem/>
+                <MenuItem text="删除" fx:id="deleteItem"/>
+            </Menu>
+
+            <!-- 视图菜单（切换显示模式、刷新） -->
+            <Menu text="视图">
+                <MenuItem text="列表模式" fx:id="listViewItem"/>
+                <MenuItem text="图标模式" fx:id="iconViewItem"/>
+                <SeparatorMenuItem/>
+                <MenuItem text="刷新" fx:id="refreshItem"/>
+            </Menu>
+
+            <!-- 帮助菜单 -->
+            <Menu text="帮助">
+                <MenuItem text="关于" fx:id="aboutItem"/>
+            </Menu>
+        </MenuBar>
+    </top>
+
+    <!-- 2. 左侧：侧边栏（目录树 + 快速访问） -->
+    <left>
+        <VBox spacing="10" style="-fx-background-color: #f5f5f5;">
+            <!-- 快速访问区域 -->
+            <Label text="快速访问" style="-fx-font-weight: bold;"/>
+            <VBox spacing="5">
+                <Label text="📂 我的文档" fx:id="myDocsLabel" style="-fx-cursor: hand;"/>
+                <Label text="📄 最近文件" fx:id="recentFilesLabel" style="-fx-cursor: hand;"/>
+                <Label text="🗑️ 回收站" fx:id="recycleBinLabel" style="-fx-cursor: hand;"/>
+            </VBox>
+
+            <Separator/>
+
+            <!-- 目录树区域（显示磁盘目录结构） -->
+            <Label text="磁盘目录" style="-fx-font-weight: bold;"/>
+            <TreeView fx:id="dirTreeView" VBox.vgrow="ALWAYS">
+                <!-- 根节点：默认显示所有磁盘（后续由Controller动态加载） -->
+                <TreeItem value="此电脑" fx:id="computerRootItem">
+                    <!-- 子节点示例（实际由Controller动态生成） -->
+
+                </TreeItem>
+            </TreeView>
+        </VBox>
+    </left>
+
+    <!-- 3. 中间：主内容区（文件列表，默认表格模式） -->
+    <center>
+        <TableView fx:id="fileTableView" style="-fx-background-color: white;">
+            <!-- 表格列：名称、类型、大小、修改时间 -->
+            <columns>
+                <TableColumn text="名称" prefWidth="200" fx:id="nameColumn">
+                    <!-- 后续通过Controller绑定FileEntry的name属性 -->
+                </TableColumn>
+                <TableColumn text="类型" prefWidth="100" fx:id="typeColumn">
+                    <!-- 绑定FileEntry的type属性（FILE/DIRECTORY） -->
+                </TableColumn>
+                <TableColumn text="大小(KB)" prefWidth="100" fx:id="sizeColumn">
+                    <!-- 绑定FileEntry的size属性（需计算转换） -->
+                </TableColumn>
+                <TableColumn text="修改时间" prefWidth="180" fx:id="modifyTimeColumn">
+                    <!-- 绑定FileEntry的modifyTime属性 -->
+                </TableColumn>
+            </columns>
+        </TableView>
+    </center>
+
+    <!-- 4. 底部：状态栏（显示当前路径、文件数量） -->
+    <bottom>
+        <HBox spacing="20" style="-fx-background-color: #e8e8e8;">
+            <Label text="当前路径：" fx:id="currentPathLabel"/>
+            <Label text="文件数量：0" fx:id="fileCountLabel"/>
+        </HBox>
+    </bottom>
+
+</BorderPane>
