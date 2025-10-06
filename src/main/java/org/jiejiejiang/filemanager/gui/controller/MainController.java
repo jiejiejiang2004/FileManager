@@ -53,11 +53,17 @@ public class MainController {
     @FXML private MenuItem newDirItem;
     @FXML private MenuItem deleteItem;
     @FXML private MenuItem refreshItem;
+    @FXML private MenuItem copyItem;    // 新增：复制菜单项
+    @FXML private MenuItem pasteItem;   // 新增：粘贴菜单项
 
     // ============================== 业务对象 ==============================
     private FileSystem fileSystem; // 文件系统核心对象（由外部注入）
     private Directory currentDirectory; // 当前选中的目录
-
+    private String copiedFilePath; // 新增：存储被复制的文件路径
+    // 关键改进：保存复制的文件内容（实现深拷贝）
+    private byte[] copiedFileContent;
+    private String copiedFileName;
+    
     // ============================== 初始化 ==============================
     @FXML
     public void initialize() {
@@ -263,7 +269,13 @@ public class MainController {
                 loadDirectory(currentDirectory.getDirEntry().getFullPath());
             }
         });
-        
+
+        // 新增：复制菜单
+        copyItem.setOnAction(e -> copySelectedFile());
+
+        // 新增：粘贴菜单
+        pasteItem.setOnAction(e -> pasteFile());
+
         // 6. 文件表格双击事件：双击文件修改大小，双击文件夹打开目录
         fileTableView.setOnMouseClicked(event -> {
             if (event.getClickCount() == 2) {
@@ -440,7 +452,7 @@ public class MainController {
             // 从文件系统获取目录对象
             currentDirectory = fileSystem.getDirectory(path);
             if (currentDirectory == null) {
-                showError("错误", "目录不存在：" + path);
+                // 用户要求不显示"目录不存在"的提示，这里静默处理
                 return;
             }
 
@@ -450,7 +462,7 @@ public class MainController {
             // 先刷新目录缓存，确保获取到最新数据
             currentDirectory.refreshEntries();
             
-            // 关键修复：不从currentDirectory直接获取条目，而是通过fileSystem.listDirectory重新加载
+            // 关键改进：不从currentDirectory直接获取条目，而是通过fileSystem.listDirectory重新加载
             // 这确保了获取到的是文件系统的最新状态，而仅仅是内存缓存
             List<FileEntry> entries = new ArrayList<>(fileSystem.listDirectory(path));
             
@@ -470,7 +482,10 @@ public class MainController {
             fileCountLabel.setText(String.format("文件数量：%d", entries.size()));
 
         } catch (FileSystemException e) {
-            showError("加载目录失败", e.getMessage());
+            // 继续捕获其他类型的文件系统异常，但不显示目录不存在的错误
+            if (!e.getMessage().contains("目录不存在")) {
+                showError("加载目录失败", e.getMessage());
+            }
         }
     }
 
@@ -635,6 +650,161 @@ public class MainController {
         alert.showAndWait();
     }
 
+    // ============================== 文件操作 ==============================
+    
+    /**
+     * 复制选中的文件
+     */
+    private void copySelectedFile() {
+        FileEntry selectedEntry = fileTableView.getSelectionModel().getSelectedItem();
+        if (selectedEntry == null) {
+            showWarning("提示", "请先选择要复制的文件");
+            return;
+        }
+        
+        if (selectedEntry.getType() != FileEntry.EntryType.FILE) {
+            showWarning("提示", "只能复制文件，不能复制文件夹");
+            return;
+        }
+        
+        try {
+            // 构建完整的文件路径
+            String parentPath = currentDirectory.getDirEntry().getFullPath();
+            copiedFilePath = parentPath.endsWith("/") ? parentPath + selectedEntry.getName() : parentPath + "/" + selectedEntry.getName();
+            
+            // 关键改进：读取并保存文件内容，实现深拷贝
+            copiedFileContent = fileSystem.readFile(copiedFilePath);
+            copiedFileName = selectedEntry.getName();
+            
+            // 显示成功提示
+            showSuccess("复制成功", "文件\"" + selectedEntry.getName() + "\"已复制到剪贴板");
+        } catch (Exception e) {
+            showError("复制失败", "复制文件时发生错误：" + e.getMessage());
+        }
+    }
+
+    /**
+     * 粘贴文件
+     */
+    private void pasteFile() {
+        if (copiedFilePath == null || copiedFilePath.isEmpty() || copiedFileContent == null) {
+            showWarning("提示", "没有可粘贴的文件");
+            return;
+        }
+
+        try {
+            // 获取目标目录路径
+            String parentPath = currentDirectory.getDirEntry().getFullPath();
+            
+            // 构建目标文件路径
+            String targetPath = parentPath.endsWith("/") ? parentPath + copiedFileName : parentPath + "/" + copiedFileName;
+            
+            // 检查目标文件是否已存在
+            FileEntry existingFile = fileSystem.getEntry(targetPath);
+            
+            if (existingFile != null) {
+                // 文件已存在，显示确认覆盖对话框
+                Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+                confirm.setTitle("确认覆盖");
+                confirm.setHeaderText(null);
+                confirm.setContentText("文件\"" + copiedFileName + "\"已存在，是否覆盖？");
+                
+                confirm.showAndWait().ifPresent(response -> {
+                    if (response == ButtonType.OK) {
+                        try {
+                            // 先删除已存在的文件
+                            fileSystem.deleteFile(targetPath);
+                            // 关键改进：使用保存的文件内容创建新文件，而不是通过文件路径复制
+                            FileEntry newFile = fileSystem.createFile(targetPath);
+                            fileSystem.writeFile(targetPath, copiedFileContent);
+                            
+                            // 同时刷新源文件所在目录和目标目录
+                            refreshRelatedDirectories(copiedFilePath, parentPath);
+                            
+                            // 显示成功提示
+                            showSuccess("粘贴成功", "文件\"" + copiedFileName + "\"已成功粘贴到当前目录");
+                        } catch (FileSystemException e) {
+                            showError("粘贴文件失败", e.getMessage());
+                        }
+                    }
+                });
+            } else {
+                // 目标文件不存在，直接使用保存的文件内容创建新文件
+                FileEntry newFile = fileSystem.createFile(targetPath);
+                fileSystem.writeFile(targetPath, copiedFileContent);
+                
+                // 同时刷新源文件所在目录和目标目录
+                refreshRelatedDirectories(copiedFilePath, parentPath);
+                
+                // 显示成功提示
+                showSuccess("粘贴成功", "文件\"" + copiedFileName + "\"已成功粘贴到当前目录");
+            }
+        } catch (FileSystemException e) {
+            showError("粘贴文件失败", e.getMessage());
+        }
+    }
+
+    /**
+     * 关键修复2：同时刷新源文件所在目录和目标目录
+     * 确保所有相关视图都能及时反映文件系统的最新状态
+     */
+    private void refreshRelatedDirectories(String sourcePath, String targetPath) {
+        try {
+            // 1. 获取源文件所在的目录
+            int lastSlashIndex = sourcePath.lastIndexOf('/');
+            String sourceDirPath = (lastSlashIndex != -1) ? sourcePath.substring(0, lastSlashIndex) : targetPath;
+            
+            // 2. 如果当前目录是目标目录，则刷新当前目录
+            if (currentDirectory != null && currentDirectory.getDirEntry().getFullPath().equals(targetPath)) {
+                loadDirectory(targetPath);
+            }
+            
+            // 3. 刷新源文件所在目录的缓存（即使不在当前视图中）
+            // 关键修复：先检查目录是否存在，避免抛出"路径不存在"的异常
+            if (fileSystem.getEntry(sourceDirPath) != null) {
+                Directory sourceDir = fileSystem.getDirectory(sourceDirPath);
+                if (sourceDir != null) {
+                    sourceDir.refreshEntries();
+                }
+            }
+            
+            // 4. 刷新目标目录的缓存
+            // 关键修复：先检查目录是否存在，避免抛出"路径不存在"的异常
+            if (fileSystem.getEntry(targetPath) != null) {
+                Directory targetDir = fileSystem.getDirectory(targetPath);
+                if (targetDir != null) {
+                    targetDir.refreshEntries();
+                }
+            }
+            
+            // 5. 强制刷新整个文件系统的相关缓存
+            // 移除源目录和目标目录的缓存，这样下次访问时会重新加载
+            fileSystem.removeEntryFromCache(sourceDirPath);
+            fileSystem.removeEntryFromCache(targetPath);
+            
+            // 6. 强制在UI线程中刷新所有视图
+            Platform.runLater(() -> {
+                // 重新加载当前目录以确保UI显示最新状态
+                loadDirectory(targetPath);
+                // 刷新目录树，确保文件和目录的层级结构正确显示
+                initDirectoryTree();
+            });
+        } catch (FileSystemException e) {
+            LogUtil.error("刷新目录失败：" + e.getMessage());
+        }
+    }
+
+    /**
+     * 显示成功提示对话框
+     */
+    private void showSuccess(String title, String message) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
+
     // ============================== 外部注入 ==============================
     /**
      * 注入FileSystem实例（由应用启动类调用）
@@ -644,3 +814,4 @@ public class MainController {
         initDirectoryTree(); // 重新初始化目录树
     }
 }
+
