@@ -76,6 +76,10 @@ public class FileSystem {
         }
 
         try {
+            // 重要：在挂载前清空全局缓存，确保每次程序启动时缓存都是空的
+            entryCache.clear();
+            LogUtil.debug("文件系统挂载前已清空全局缓存");
+            
             // 1. 创建根目录 Entry（父路径为自身，起始块ID=-1 表示空目录）
             rootDir = new FileEntry(ROOT_NAME, FileEntry.EntryType.DIRECTORY, ROOT_PATH, -1);
             // 2. 缓存根目录（完整路径为 "/"）
@@ -111,6 +115,17 @@ public class FileSystem {
             throw new FileSystemException("文件系统卸载失败：" + e.getMessage());
         }
     }
+    
+    /**
+     * 从缓存中移除指定的文件/目录条目
+     * @param fullPath 文件/目录的完整路径
+     */
+    public void removeEntryFromCache(String fullPath) {
+        if (fullPath != null) {
+            entryCache.remove(fullPath);
+            LogUtil.debug("从FileSystem缓存中移除条目：" + fullPath);
+        }
+    }
 
     // ======================== 文件操作：创建/删除/读取/写入 ========================
     /**
@@ -119,49 +134,102 @@ public class FileSystem {
      * @return 创建成功的 FileEntry
      * @throws FileSystemException 路径非法、文件已存在、磁盘满时抛出
      */
+    /**
+     * 创建文件（创建元数据 + 分配块）
+     * @param fullPath 文件完整路径
+     * @return 创建的文件元数据
+     * @throws FileSystemException 路径无效、父目录不存在、文件已存在时抛出
+     */
     public FileEntry createFile(String fullPath) throws FileSystemException {
         checkMounted();
         validateFullPath(fullPath);
+        LogUtil.debug("尝试创建文件：" + fullPath);
 
         // 1. 解析路径：拆分父目录路径和文件名
         String parentPath = PathUtil.getParentPath(fullPath);
         String fileName = PathUtil.getFileNameFromPath(fullPath);
+        LogUtil.debug("解析路径 - 父目录：" + parentPath + ", 文件名：" + fileName);
 
         // 2. 校验父目录是否存在且为目录
         FileEntry parentDir = getEntry(parentPath);
         if (parentDir == null) {
+            LogUtil.error("创建文件失败：父目录不存在 → " + parentPath);
             throw new FileSystemException("创建文件失败：父目录不存在 → " + parentPath);
         }
         if (parentDir.getType() != FileEntry.EntryType.DIRECTORY) {
+            LogUtil.error("创建文件失败：" + parentPath + " 不是目录");
             throw new FileSystemException("创建文件失败：" + parentPath + " 不是目录");
         }
 
-        // 3. 校验文件是否已存在
-        if (entryCache.containsKey(fullPath)) {
+        // 3. 校验文件是否已存在（考虑已删除的文件）
+        FileEntry existingEntry = entryCache.get(fullPath);
+        if (existingEntry != null) {
+            LogUtil.debug("文件已在缓存中存在，检查删除状态：" + existingEntry.isDeleted());
+        }
+        if (existingEntry != null && !existingEntry.isDeleted()) {
+            LogUtil.error("创建文件失败：文件已存在且未删除 → " + fullPath);
             throw new FileSystemException("创建文件失败：文件已存在 → " + fullPath);
+        }
+        // 如果文件已被标记为删除，则从缓存中移除它，允许重新创建
+        if (existingEntry != null && existingEntry.isDeleted()) {
+            LogUtil.debug("文件已被标记为删除，从缓存中移除：" + fullPath);
+            entryCache.remove(fullPath);
+            
+            // 重要修复：同时从父目录的entriesCache中移除已删除的文件
+            try {
+                Directory parentDirectory = getDirectory(parentPath);
+                if (parentDirectory != null) {
+                    // 从父目录的缓存中查找并移除已删除的文件
+                    FileEntry entryToRemove = null;
+                    for (FileEntry entry : parentDirectory.getEntries()) {
+                        if (entry.getName().equals(fileName) && entry.isDeleted()) {
+                            entryToRemove = entry;
+                            break;
+                        }
+                    }
+                    if (entryToRemove != null) {
+                        parentDirectory.getEntries().remove(entryToRemove);
+                        LogUtil.debug("从父目录缓存中移除已删除的文件：" + fileName);
+                    }
+                }
+            } catch (FileSystemException e) {
+                LogUtil.warn("清理父目录缓存失败，但继续创建文件：" + e.getMessage());
+            }
         }
 
         try {
             // 4. 分配文件的起始块（FAT 分配空闲块）
             int startBlockId = fat.allocateBlock();
+            LogUtil.debug("为文件分配起始块：" + startBlockId);
             // 5. 创建文件元数据
             FileEntry newFile = new FileEntry(fileName, FileEntry.EntryType.FILE, parentPath, startBlockId);
+            LogUtil.debug("创建文件元数据：" + newFile);
             // 6. 缓存文件元数据
             entryCache.put(fullPath, newFile);
+            LogUtil.debug("文件元数据已缓存：" + fullPath);
             // 7. 更新父目录的修改时间
             updateDirModifyTime(parentDir);
+            LogUtil.debug("父目录修改时间已更新：" + parentPath);
             
             // 8. 将新文件添加到父目录并同步到磁盘
             Directory parentDirectory = new Directory(this, parentDir);
+            LogUtil.debug("创建父目录对象：" + parentPath);
             parentDirectory.addEntry(newFile);
+            LogUtil.debug("文件已添加到父目录：" + fileName + " → " + parentPath);
             parentDirectory.syncToDisk();
+            LogUtil.debug("父目录已同步到磁盘：" + parentPath);
 
             LogUtil.info("创建文件成功：" + newFile);
             return newFile;
         } catch (DiskFullException e) {
+            LogUtil.error("创建文件失败：磁盘空间不足", e);
             throw new FileSystemException("创建文件失败：磁盘空间不足");
         } catch (InvalidBlockIdException e) {
+            LogUtil.error("创建文件失败：块分配异常", e);
             throw new FileSystemException("创建文件失败：块分配异常");
+        } catch (Exception e) {
+            LogUtil.error("创建文件失败：未知异常", e);
+            throw new FileSystemException("创建文件失败：" + e.getMessage(), e);
         }
     }
 
@@ -195,6 +263,8 @@ public class FileSystem {
             // 4. 更新父目录的修改时间
             FileEntry parentDir = getEntry(file.getParentPath());
             updateDirModifyTime(parentDir);
+            // 5. 从entryCache中完全移除已删除的文件，确保后续创建同名文件时不会受到影响
+            entryCache.remove(fullPath);
 
             LogUtil.info("删除文件成功：" + fullPath);
         } catch (InvalidBlockIdException e) {

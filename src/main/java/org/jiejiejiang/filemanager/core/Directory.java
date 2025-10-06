@@ -10,6 +10,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.regex.Pattern;
 
 /**
@@ -91,7 +92,7 @@ public class Directory {
     public void addEntry(FileEntry entry) throws FileSystemException {
         validateEntry(entry);
 
-        // 检查是否已存在同名项
+        // 检查是否已存在同名项（检查本地缓存）
         if (findEntryByName(entry.getName()) != null) {
             throw new FileSystemException("目录项已存在：" + entry.getName() + "（目录：" + dirEntry.getFullPath() + "）");
         }
@@ -113,19 +114,32 @@ public class Directory {
      * @throws FileSystemException 磁盘操作失败时抛出
      */
     public FileEntry removeEntry(String entryName) throws FileSystemException {
+        LogUtil.debug("尝试删除目录项：" + entryName + "，目录：" + dirEntry.getFullPath());
+        
         FileEntry toRemove = findEntryByName(entryName);
         if (toRemove == null) {
+            LogUtil.warn("未找到要删除的目录项：" + entryName + "，目录：" + dirEntry.getFullPath());
             return null;
         }
+
+        // 关键修复：先标记文件为已删除，确保同步到磁盘时能正确过滤
+        toRemove.markAsDeleted();
+        LogUtil.debug("已标记目录项为已删除：" + entryName);
 
         // 从缓存移除并标记为脏
         entriesCache.remove(toRemove);
         isDirty = true;
+        LogUtil.debug("已从目录本地缓存移除条目：" + entryName);
 
+        // 同时从FileSystem的全局缓存中移除对应的条目
+        String fullPath = toRemove.getFullPath();
+        fileSystem.removeEntryFromCache(fullPath);
+        LogUtil.debug("已请求从FileSystem全局缓存移除条目：" + fullPath);
+        
         // 移除自动同步，由上层调用者决定何时同步到磁盘
         // syncToDisk();  // 注释掉自动同步
 
-        LogUtil.debug("目录删除项成功：" + entryName + " → " + dirEntry.getFullPath());
+        LogUtil.info("目录删除项成功：" + entryName + " → " + dirEntry.getFullPath());
         return toRemove;
     }
 
@@ -136,7 +150,7 @@ public class Directory {
      */
     public FileEntry findEntryByName(String entryName) {
         for (FileEntry entry : entriesCache) {
-            if (entry.getName().equals(entryName)) {
+            if (entry.getName().equals(entryName) && !entry.isDeleted()) {
                 return entry;
             }
         }
@@ -169,26 +183,51 @@ public class Directory {
     // ======================== 持久化操作（磁盘读写） ========================
 
     /**
-     * 从磁盘加载目录项（从起始块开始遍历块链）
+     * 从磁盘加载目录项（覆盖当前缓存）
      */
-    private void loadEntriesFromDisk() {
-        entriesCache.clear();
-        int currentBlockId = dirEntry.getStartBlockId();
+    public void loadEntriesFromDisk() {
+        if (dirEntry.getStartBlockId() == -1) {
+            // 未分配块，清空缓存
+            entriesCache.clear();
+            isDirty = false;
+            return;
+        }
 
         try {
+            List<FileEntry> loadedEntries = new ArrayList<>();
+            int currentBlockId = dirEntry.getStartBlockId();
+
+            // 遍历所有块（如果目录不为空）
             while (currentBlockId != FAT.END_OF_FILE) {
-                // 读取当前块数据
+                // 读取块数据
                 byte[] blockData = disk.readBlock(currentBlockId);
                 String blockContent = new String(blockData).trim();
-
-                // 解析块中的所有目录项
+                
                 if (!blockContent.isEmpty()) {
-                    String[] entries = blockContent.split(ENTRY_TERMINATOR);
-                    for (String entryStr : entries) {
-                        if (!entryStr.isEmpty()) {
+                    // 按条目结束符分割
+                    String[] entryStrings = blockContent.split(ENTRY_TERMINATOR);
+                    for (String entryStr : entryStrings) {
+                        if (!entryStr.trim().isEmpty()) {
+                            // 解析条目
                             FileEntry entry = parseEntryString(entryStr);
                             if (entry != null) {
-                                entriesCache.add(entry);
+                                // 重要：只加载未被删除的条目，避免已删除文件重新出现
+                                if (!entry.isDeleted()) {
+                                    // 检查是否有重复项（同名且未删除）
+                                    boolean isDuplicate = false;
+                                    for (FileEntry loadedEntry : loadedEntries) {
+                                        if (loadedEntry.getName().equals(entry.getName())) {
+                                            LogUtil.warn("发现重复的目录项（已跳过）：" + entry.getName() + "，目录：" + dirEntry.getFullPath());
+                                            isDuplicate = true;
+                                            break;
+                                        }
+                                    }
+                                    if (!isDuplicate) {
+                                        loadedEntries.add(entry);
+                                    }
+                                } else {
+                                    LogUtil.debug("跳过已删除的目录项：" + entry.getName() + "，目录：" + dirEntry.getFullPath());
+                                }
                             }
                         }
                     }
@@ -197,6 +236,10 @@ public class Directory {
                 // 移动到下一块
                 currentBlockId = fat.getNextBlock(currentBlockId);
             }
+            
+            // 替换缓存并标记为未修改
+            entriesCache = loadedEntries;
+            isDirty = false;
             LogUtil.debug("从磁盘加载目录项完成：" + dirEntry.getFullPath() + "，共" + entriesCache.size() + "项");
         } catch (Exception e) {
             LogUtil.error("加载目录项失败：" + dirEntry.getFullPath(), e);
@@ -251,9 +294,12 @@ public class Directory {
 
                         while (entriesInBlock < MAX_ENTRIES_PER_BLOCK && entryIndex < entriesCache.size()) {
                             FileEntry entry = entriesCache.get(entryIndex);
-                            blockContent.append(formatEntryString(entry))
-                                    .append(ENTRY_TERMINATOR);
-                            entriesInBlock++;
+                            // 只写入未被删除的条目，防止已删除文件在同步后重新出现
+                            if (!entry.isDeleted()) {
+                                blockContent.append(formatEntryString(entry))
+                                        .append(ENTRY_TERMINATOR);
+                                entriesInBlock++;
+                            }
                             entryIndex++;
                         }
 
@@ -292,7 +338,7 @@ public class Directory {
 
     /**
      * 将FileEntry格式化为字符串（用于存储到磁盘）
-     * 格式：名称|类型|起始块ID|大小|是否删除
+     * 格式：名称|类型|起始块ID|大小|是否删除|UUID
      */
     private String formatEntryString(FileEntry entry) {
         return String.join(ENTRY_SEPARATOR,
@@ -300,7 +346,8 @@ public class Directory {
                 entry.getType().name(),         // 类型（FILE/DIRECTORY）
                 String.valueOf(entry.getStartBlockId()),
                 String.valueOf(entry.getSize()),
-                String.valueOf(entry.isDeleted())
+                String.valueOf(entry.isDeleted()),
+                entry.getUuid()  // 添加UUID字段
         );
     }
 
@@ -323,7 +370,31 @@ public class Directory {
             }
             LogUtil.debug("分割后数组：长度=" + parts.length + ", 内容=[" + partsDebug + "]");
             
-            if (parts.length != 5) {
+            if (parts.length != 6) { // 现在需要6个部分，因为添加了UUID
+                // 兼容旧格式（没有UUID的情况）
+                if (parts.length == 5) {
+                    LogUtil.debug("检测到旧格式目录项，将使用新的UUID");
+                    // 创建一个新的UUID
+                    String uuid = UUID.randomUUID().toString();
+                    
+                    // 创建临时FileEntry，使用新UUID构造器
+                    FileEntry entry = new FileEntry(parts[0], 
+                                                  FileEntry.EntryType.valueOf(parts[1]), 
+                                                  dirEntry.getFullPath(), 
+                                                  Integer.parseInt(parts[2]),
+                                                  uuid);
+                    
+                    // 恢复大小和删除状态
+                    if (entry.getType() == FileEntry.EntryType.FILE) {
+                        setEntrySize(entry, Long.parseLong(parts[3]));
+                    }
+                    if (Boolean.parseBoolean(parts[4])) {
+                        entry.markAsDeleted();
+                    }
+                    
+                    return entry;
+                }
+                
                 LogUtil.warn("无效的目录项格式：" + entryStr + ", 分割后长度=" + parts.length);
                 return null;
             }
@@ -333,12 +404,12 @@ public class Directory {
             int startBlockId = Integer.parseInt(parts[2]);
             long size = Long.parseLong(parts[3]);
             boolean isDeleted = Boolean.parseBoolean(parts[4]);
+            String uuid = parts[5]; // 获取UUID字段
 
-            // 创建临时FileEntry
-            // 注意：FileEntry的fullPath是通过parentPath和name动态计算的
-            FileEntry entry = new FileEntry(name, type, dirEntry.getFullPath(), startBlockId);
+            // 创建FileEntry，使用包含UUID的构造器
+            FileEntry entry = new FileEntry(name, type, dirEntry.getFullPath(), startBlockId, uuid);
 
-            // 恢复大小和删除状态（通过反射，实际项目中建议添加setter）
+            // 恢复大小和删除状态
             if (type == FileEntry.EntryType.FILE) {
                 setEntrySize(entry, size);
             }

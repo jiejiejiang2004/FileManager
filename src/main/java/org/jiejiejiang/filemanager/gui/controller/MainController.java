@@ -380,7 +380,11 @@ public class MainController {
                     });
                     
                 } catch (NumberFormatException | FileSystemException e) {
-                    showError("修改文件大小失败", e.getMessage());
+                    // 关键修复：即使出现异常也要刷新UI，确保移除不存在的文件
+                    Platform.runLater(() -> {
+                        loadDirectory(currentDirectory.getDirEntry().getFullPath());
+                        showError("修改文件大小失败", e.getMessage());
+                    });
                 }
             }
         });
@@ -424,8 +428,9 @@ public class MainController {
             // 先刷新目录缓存，确保获取到最新数据
             currentDirectory.refreshEntries();
             
-            // 创建全新的列表，确保JavaFX能检测到列表引用变化
-            List<FileEntry> entries = new ArrayList<>(currentDirectory.getEntries());
+            // 关键修复：不从currentDirectory直接获取条目，而是通过fileSystem.listDirectory重新加载
+            // 这确保了获取到的是文件系统的最新状态，而仅仅是内存缓存
+            List<FileEntry> entries = new ArrayList<>(fileSystem.listDirectory(path));
             
             // 清空现有项并添加新项
             fileTableView.getItems().clear();
@@ -462,17 +467,23 @@ public class MainController {
         dialog.setContentText("文件名：");
 
         dialog.showAndWait().ifPresent(fileName -> {
+            String fullPath = null;
             try {
                 // 调用业务层创建文件，确保路径格式正确
                 String parentPath = currentDirectory.getDirEntry().getFullPath();
-                String fullPath = parentPath.endsWith("/") ? parentPath + fileName : parentPath + "/" + fileName;
+                fullPath = parentPath.endsWith("/") ? parentPath + fileName : parentPath + "/" + fileName;
                 
+                LogUtil.debug("准备创建文件：" + fullPath);
                 fileSystem.createFile(fullPath);
+                LogUtil.info("文件创建成功：" + fullPath);
                 
                 // 刷新列表
+                LogUtil.debug("创建文件后刷新目录：" + parentPath);
                 loadDirectory(parentPath);
 
             } catch (FileSystemException e) {
+                String pathInfo = (fullPath != null) ? "，路径：" + fullPath : "";
+                LogUtil.error("创建文件失败：" + e.getMessage() + pathInfo);
                 showError("创建文件失败", e.getMessage());
             }
         });
