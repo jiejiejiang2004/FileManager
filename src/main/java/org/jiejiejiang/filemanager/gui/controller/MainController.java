@@ -137,42 +137,64 @@ public class MainController {
     }
 
     /**
-     * 初始化目录树（模拟磁盘加载）
+     * 初始化目录树（显示C盘和D盘）
      */
     private void initDirectoryTree() {
-        // 清空示例节点
-        computerRootItem.getChildren().clear();
-
-        // 实际应从fileSystem获取所有磁盘/根目录
+        // 创建根节点"此电脑"
+        computerRootItem = new TreeItem<>("此电脑");
+        computerRootItem.setExpanded(true);
+        
+        // 创建C盘和D盘节点
+        TreeItem<String> cDrive = new TreeItem<>("C");
+        TreeItem<String> dDrive = new TreeItem<>("D");
+        
+        cDrive.setExpanded(true);
+        
+        // 将C盘和D盘添加到"此电脑"下
+        computerRootItem.getChildren().addAll(cDrive, dDrive);
+        
+        // 如果文件系统已初始化，加载C盘和D盘的内容
         if (fileSystem != null) {
-            String root = "/";
-            TreeItem<String> rootItem = new TreeItem<>(root);
-            rootItem.setExpanded(true); // 默认展开根目录
-            computerRootItem.getChildren().add(rootItem);
-            
-            // 加载根目录的子目录
-            loadSubDirectories(root, rootItem);
-            
-            // 添加展开事件监听，动态加载子目录
-            rootItem.addEventHandler(TreeItem.<String>branchExpandedEvent(), event -> {
-                TreeItem<String> expandedItem = event.getTreeItem();
-                String path = getFullPath(expandedItem);
-                loadSubDirectories(path, expandedItem);
-            });
+            // 为C盘和D盘加载子目录
+            loadDriveContent(cDrive, "C");
+            loadDriveContent(dDrive, "D");
         } else {
-            // 模拟数据（开发阶段用）
-            TreeItem<String> cDrive = new TreeItem<>("C:");
-            TreeItem<String> dDrive = new TreeItem<>("D:");
-            cDrive.getChildren().add(new TreeItem<>("Users"));
-            cDrive.getChildren().add(new TreeItem<>("Program Files"));
-            dDrive.getChildren().add(new TreeItem<>("Documents"));
-            computerRootItem.getChildren().addAll(cDrive, dDrive);
+            // 开发阶段的模拟数据
+            cDrive.getChildren().add(new TreeItem<>("用户"));
+            cDrive.getChildren().add(new TreeItem<>("程序文件"));
+            dDrive.getChildren().add(new TreeItem<>("文档"));
         }
 
         dirTreeView.setRoot(computerRootItem);
         dirTreeView.setShowRoot(true);
     }
-    
+
+    // 开发模式标记
+    private static final boolean DEVELOPMENT_MODE = true; // 可根据需要设置为false
+
+    /**
+     * 加载磁盘内容到目录树
+     * @param driveItem 磁盘对应的TreeItem
+     * @param driveLetter 磁盘字母（如 "C", "D"）
+     */
+    private void loadDriveContent(TreeItem<String> driveItem, String driveLetter) {
+        String drivePath = "/" + driveLetter;
+        
+        try {
+            // 检查磁盘目录是否存在，不存在则创建
+            FileEntry driveDir = fileSystem.getEntry(drivePath);
+            if (driveDir == null) {
+                fileSystem.createDirectory(drivePath);
+                LogUtil.info("已创建磁盘目录: " + drivePath);
+            }
+            
+            // 加载磁盘下的子目录
+            loadSubDirectories(drivePath, driveItem);
+        } catch (FileSystemException e) {
+            LogUtil.error("加载磁盘内容失败: " + e.getMessage());
+        }
+    }
+
     /**
      * 加载指定目录的子目录到目录树中
      * @param path 目录路径
@@ -200,7 +222,7 @@ public class MainController {
                          TreeItem<String> expandedItem = event.getTreeItem();
                          // 移除临时子节点
                          expandedItem.getChildren().clear();
-                          
+                           
                          String dirPath = getFullPath(expandedItem);
                          loadSubDirectories(dirPath, expandedItem);
                      });
@@ -558,16 +580,35 @@ public class MainController {
         if (item == computerRootItem) {
             return "/";
         }
+        
+        // 检查是否为磁盘根节点（如C:、D:）
+        String itemValue = item.getValue();
+        if (itemValue.endsWith(":")) {
+            // 将磁盘名称转换为文件系统路径（C: -> /C）
+            return "/" + itemValue.replace(":", "");
+        }
+        
         StringBuilder path = new StringBuilder(item.getValue());
         TreeItem<String> parent = item.getParent();
+        
+        // 处理磁盘下的路径
         while (parent != null && parent != computerRootItem) {
-            path.insert(0, parent.getValue() + "/");
+            String parentValue = parent.getValue();
+            if (parentValue.endsWith(":")) {
+                // 遇到磁盘根节点，转换为文件系统路径格式
+                path.insert(0, parentValue.replace(":", ""));
+                break;
+            } else {
+                path.insert(0, parentValue + "/");
+            }
             parent = parent.getParent();
         }
+        
         // 确保路径以/开头
         if (!path.toString().startsWith("/")) {
             path.insert(0, "/");
         }
+        
         // 移除多余的斜杠
         return path.toString().replaceAll("//+", "/");
     }
