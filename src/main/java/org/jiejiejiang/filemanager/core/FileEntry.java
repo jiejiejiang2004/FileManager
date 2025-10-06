@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
 import java.util.Objects;
+import java.util.UUID;
 
 /**
  * 文件/目录元数据实体（类比 inode）
@@ -27,6 +28,7 @@ public class FileEntry {
     private final Date createTime;      // 创建时间
     private Date modifyTime;            // 修改时间
     private boolean isDeleted;          // 是否被删除（标记删除，避免立即释放空间）
+    private final String uuid;          // 唯一标识符，用于精确区分文件/目录
 
     // ======================== 构造器 ========================
     /**
@@ -62,6 +64,42 @@ public class FileEntry {
         this.createTime = new Date();
         this.modifyTime = new Date();
         this.isDeleted = false;
+        this.uuid = UUID.randomUUID().toString(); // 生成唯一标识符
+
+        this.size = (type == EntryType.DIRECTORY) ? 0 : 0;
+    }
+
+    // 用于从磁盘加载时恢复UUID的构造器
+    public FileEntry(String name, EntryType type, String parentPath, int startBlockId, String uuid) {
+        // 1. 处理名称为空的特殊情况（仅允许根目录）
+        boolean isNameEmpty = (name == null || name.trim().isEmpty());
+        if (isNameEmpty) {
+            // 根目录判定条件：名称为空 + 父路径为"/" + 类型为目录
+            boolean isRootDir = "/".equals(parentPath.trim()) && type == EntryType.DIRECTORY;
+            if (!isRootDir) {
+                throw new IllegalArgumentException("文件/目录名称不能为空");
+            }
+        }
+
+        // 2. 校验其他必填参数
+        if (type == null) {
+            throw new IllegalArgumentException("文件类型不能为空");
+        }
+        if (parentPath == null || parentPath.trim().isEmpty()) {
+            throw new IllegalArgumentException("父目录路径不能为空");
+        }
+        if (uuid == null || uuid.trim().isEmpty()) {
+            throw new IllegalArgumentException("UUID不能为空");
+        }
+
+        this.name = isNameEmpty ? "" : name.trim();  // 根目录保留空名称
+        this.type = type;
+        this.parentPath = parentPath.trim();
+        this.startBlockId = startBlockId;
+        this.createTime = new Date();
+        this.modifyTime = new Date();
+        this.isDeleted = false;
+        this.uuid = uuid; // 使用提供的UUID
 
         this.size = (type == EntryType.DIRECTORY) ? 0 : 0;
     }
@@ -119,24 +157,25 @@ public class FileEntry {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         FileEntry fileEntry = (FileEntry) o;
-        // 完整路径唯一标识一个文件/目录
-        return Objects.equals(getFullPath(), fileEntry.getFullPath());
+        // UUID唯一标识一个文件/目录，而不是依赖路径
+        return Objects.equals(uuid, fileEntry.uuid);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getFullPath());
+        return Objects.hash(uuid);
     }
 
     @Override
     public String toString() {
         return String.format(
-                "[%s] %s | 大小：%s | 创建时间：%s | 起始块：%s | 状态：%s",  // 起始块用 %s
+                "[%s] %s | 大小：%s | 创建时间：%s | 起始块：%s | UUID：%s | 状态：%s",
                 type == EntryType.FILE ? "文件" : "目录",
                 getFullPath(),
                 getFormattedSize(),
                 createTime,
-                startBlockId == -1 ? "未分配" : String.valueOf(startBlockId),  // 转为字符串
+                startBlockId == -1 ? "未分配" : String.valueOf(startBlockId),
+                uuid.substring(0, 8), // 只显示UUID的前8位，便于阅读
                 isDeleted ? "已删除" : "正常"
         );
     }
@@ -173,6 +212,10 @@ public class FileEntry {
 
     public boolean isDeleted() {
         return isDeleted;
+    }
+
+    public String getUuid() {
+        return uuid;
     }
 
     public void setStartBlockId(int newBlockId) {
