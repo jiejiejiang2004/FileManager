@@ -527,6 +527,69 @@ public class FileSystem {
         }
     }
 
+    /**
+     * 复制文件
+     * @param sourcePath 源文件完整路径
+     * @param targetPath 目标文件完整路径
+     * @throws FileSystemException 文件不存在、路径无效、复制失败时抛出
+     */
+    public void copyFile(String sourcePath, String targetPath) throws FileSystemException {
+        checkMounted();
+        validateFullPath(sourcePath);
+        validateFullPath(targetPath);
+
+        // 1. 检查源文件是否存在且为文件
+        FileEntry sourceFile = getEntry(sourcePath);
+        if (sourceFile == null) {
+            throw new FileSystemException("复制文件失败：源文件不存在 → " + sourcePath);
+        }
+        if (sourceFile.getType() != FileEntry.EntryType.FILE) {
+            throw new FileSystemException("复制文件失败：" + sourcePath + " 不是文件");
+        }
+        if (sourceFile.isDeleted()) {
+            throw new FileSystemException("复制文件失败：源文件已删除 → " + sourcePath);
+        }
+
+        // 2. 检查目标路径是否合法（不能与源文件路径相同）
+        if (sourcePath.equals(targetPath)) {
+            throw new FileSystemException("复制文件失败：源文件和目标文件路径不能相同");
+        }
+
+        // 3. 解析目标路径：拆分父目录路径和文件名
+        String targetParentPath = PathUtil.getParentPath(targetPath);
+        String targetFileName = PathUtil.getFileNameFromPath(targetPath);
+        
+        // 4. 检查目标父目录是否存在且为目录
+        FileEntry targetParentDir = getEntry(targetParentPath);
+        if (targetParentDir == null) {
+            throw new FileSystemException("复制文件失败：目标父目录不存在 → " + targetParentPath);
+        }
+        if (targetParentDir.getType() != FileEntry.EntryType.DIRECTORY) {
+            throw new FileSystemException("复制文件失败：" + targetParentPath + " 不是目录");
+        }
+        
+        // 5. 检查目标文件是否已存在
+        FileEntry existingFile = getEntry(targetPath);
+        if (existingFile != null) {
+            throw new FileSystemException("复制文件失败：目标文件已存在 → " + targetPath);
+        }
+        
+        try {
+            // 6. 读取源文件内容
+            byte[] fileContent = readFile(sourcePath);
+            
+            // 7. 在目标路径创建新文件
+            FileEntry newFile = createFile(targetPath);
+            
+            // 8. 将源文件内容写入目标文件
+            writeFile(targetPath, fileContent);
+            
+            LogUtil.info("复制文件成功：" + sourcePath + " → " + targetPath);
+        } catch (Exception e) {
+            throw new FileSystemException("复制文件失败：" + e.getMessage(), e);
+        }
+    }
+
     // ======================== 目录操作：创建/删除/列出内容 ========================
     /**
      * 创建目录
