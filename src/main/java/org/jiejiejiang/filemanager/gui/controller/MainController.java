@@ -232,15 +232,21 @@ public class MainController {
 
         // 5. 刷新菜单
         refreshItem.setOnAction(e -> {
-            if (currentDirectory != null) {
-                loadDirectory(currentDirectory.getDirEntry().getFullPath());
-            }
+            String currentPath = (currentDirectory != null) ? currentDirectory.getDirEntry().getFullPath() : "/";
+            loadDirectory(currentPath);
+            initDirectoryTree();
+            selectTreeItemByPath(currentPath);
             // 刷新FAT视图
             refreshFatView();
         });
         
         // 6. 返回按钮
         backButton.setOnAction(e -> navigateBack());
+        
+        // 地址栏回车跳转路径
+        if (pathTextField != null) {
+            pathTextField.setOnAction(e -> handlePathEnter());
+        }
         
         // 7. 设置右键菜单
         setupContextMenus();
@@ -747,5 +753,82 @@ public class MainController {
         if (fatFreeCountLabel != null) fatFreeCountLabel.setText("空闲：" + free);
         if (fatUsedCountLabel != null) fatUsedCountLabel.setText("已用：" + used);
         if (fatBadCountLabel != null) fatBadCountLabel.setText("坏块：" + bad);
+    }
+
+
+    // 地址栏回车事件处理
+    private void handlePathEnter() {
+        String input = pathTextField.getText();
+        if (input == null) return;
+        String targetPath = normalizePath(input.trim());
+        try {
+            Directory dir = fileSystem.getDirectory(targetPath);
+            if (dir == null) {
+                showWarning("提示", "目录不存在：" + targetPath);
+                // 回退到当前目录
+                if (currentDirectory != null) {
+                    pathTextField.setText(currentDirectory.getDirEntry().getFullPath());
+                } else {
+                    pathTextField.setText("/");
+                }
+                return;
+            }
+            loadDirectory(targetPath);
+            // 同步目录树选中
+            selectTreeItemByPath(targetPath);
+        } catch (FileSystemException e) {
+            showError("跳转目录失败", e.getMessage());
+        }
+    }
+
+    // 规范化路径：确保以/开头并清理重复斜杠
+    private String normalizePath(String path) {
+        if (path.isEmpty()) return "/";
+        String p = path;
+        if (!p.startsWith("/")) p = "/" + p;
+        return p.replaceAll("/+", "/");
+    }
+
+    // 在目录树中选中指定路径
+    private void selectTreeItemByPath(String path) {
+        if (dirTreeView == null || computerRootItem == null) return;
+        // 找到根'/'节点
+        TreeItem<String> rootItem = null;
+        for (TreeItem<String> child : computerRootItem.getChildren()) {
+            if ("/".equals(child.getValue())) {
+                rootItem = child;
+                break;
+            }
+        }
+        if (rootItem == null) return;
+        rootItem.setExpanded(true);
+        dirTreeView.getSelectionModel().select(rootItem);
+        
+        String[] parts = path.split("/");
+        TreeItem<String> current = rootItem;
+        String built = "/";
+        for (String part : parts) {
+            if (part == null || part.isEmpty()) continue;
+            built = built.endsWith("/") ? built + part : built + "/" + part;
+            // 确保当前节点的子目录已加载
+            loadSubDirectories(built, current);
+            // 在子节点中查找匹配项
+            TreeItem<String> next = null;
+            for (TreeItem<String> child : current.getChildren()) {
+                if (part.equals(child.getValue())) {
+                    next = child;
+                    break;
+                }
+            }
+            if (next == null) break;
+            next.setExpanded(true);
+            current = next;
+        }
+        // 选中最后定位到的节点
+        dirTreeView.getSelectionModel().select(current);
+        try {
+            int row = dirTreeView.getRow(current);
+            if (row >= 0) dirTreeView.scrollTo(row);
+        } catch (Exception ignore) {}
     }
 }

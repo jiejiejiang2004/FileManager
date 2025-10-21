@@ -87,7 +87,7 @@
             <!-- 导航栏：返回按钮 + 路径栏 -->
             <HBox spacing="10" style="-fx-padding: 5; -fx-background-color: #f0f0f0;">
                 <Button fx:id="backButton" text="← 返回" style="-fx-cursor: hand;"/>
-                <TextField fx:id="pathTextField" HBox.hgrow="ALWAYS" promptText="当前路径" editable="false"/>
+                <TextField fx:id="pathTextField" HBox.hgrow="ALWAYS" promptText="当前路径" editable="true"/>
             </HBox>
             
             <TableView fx:id="fileTableView" style="-fx-background-color: white;" VBox.vgrow="ALWAYS">
