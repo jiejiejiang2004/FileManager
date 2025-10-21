@@ -10,6 +10,7 @@ import java.util.List;
 import org.jiejiejiang.filemanager.core.Directory;
 import org.jiejiejiang.filemanager.core.FileEntry;
 import org.jiejiejiang.filemanager.core.FileSystem;
+import org.jiejiejiang.filemanager.core.FAT;
 import org.jiejiejiang.filemanager.exception.FileSystemException;
 import org.jiejiejiang.filemanager.util.LogUtil;
 
@@ -48,6 +49,15 @@ public class MainController {
     @FXML private Label currentPathLabel;
     @FXML private Label fileCountLabel;
 
+    // FAT监视器组件
+    @FXML private TableView<FatRow> fatTableView;
+    @FXML private TableColumn<FatRow, Integer> fatBlockIdColumn;
+    @FXML private TableColumn<FatRow, String> fatValueColumn;
+    @FXML private TableColumn<FatRow, String> fatStatusColumn;
+    @FXML private Label fatFreeCountLabel;
+    @FXML private Label fatUsedCountLabel;
+    @FXML private Label fatBadCountLabel;
+
     // 菜单组件
     @FXML private MenuItem newFileItem;
     @FXML private MenuItem newDirItem;
@@ -63,10 +73,12 @@ public class MainController {
     public void initialize() {
         // 1. 初始化表格列与FileEntry属性绑定
         initTableColumns();
-
+        // 初始化 FAT 监视器表格列
+        initFatTableColumns();
+        
         // 2. 初始化目录树（模拟加载磁盘，实际应从fileSystem获取）
         initDirectoryTree();
-
+        
         // 3. 绑定事件监听器
         bindEvents();
     }
@@ -240,6 +252,8 @@ public class MainController {
             if (currentDirectory != null) {
                 loadDirectory(currentDirectory.getDirEntry().getFullPath());
             }
+            // 刷新FAT视图
+            refreshFatView();
         });
         
         // 6. 文件表格双击事件：双击文件修改大小，双击文件夹打开目录
@@ -371,6 +385,8 @@ public class MainController {
                     Platform.runLater(() -> {
                         // 重新加载目录，让TableView完全重建，避免属性绑定问题
                         loadDirectory(currentDirectory.getDirEntry().getFullPath());
+                        // 刷新 FAT 视图
+                        refreshFatView();
                         // 显示成功提示
                         Alert success = new Alert(Alert.AlertType.INFORMATION);
                         success.setTitle("成功");
@@ -383,6 +399,8 @@ public class MainController {
                     // 关键修复：即使出现异常也要刷新UI，确保移除不存在的文件
                     Platform.runLater(() -> {
                         loadDirectory(currentDirectory.getDirEntry().getFullPath());
+                        // 刷新 FAT 视图
+                        refreshFatView();
                         showError("修改文件大小失败", e.getMessage());
                     });
                 }
@@ -480,6 +498,8 @@ public class MainController {
                 // 刷新列表
                 LogUtil.debug("创建文件后刷新目录：" + parentPath);
                 loadDirectory(parentPath);
+                // 刷新 FAT 视图
+                refreshFatView();
 
             } catch (FileSystemException e) {
                 String pathInfo = (fullPath != null) ? "，路径：" + fullPath : "";
@@ -514,6 +534,8 @@ public class MainController {
                 // 刷新列表和目录树
                 loadDirectory(parentPath);
                 initDirectoryTree(); // 重新加载目录树
+                // 刷新 FAT 视图
+                refreshFatView();
 
             } catch (FileSystemException e) {
                 showError("创建文件夹失败", e.getMessage());
@@ -543,6 +565,8 @@ public class MainController {
                     currentDirectory.syncToDisk();
                     loadDirectory(currentDirectory.getDirEntry().getFullPath()); // 刷新列表
                     initDirectoryTree(); // 刷新目录树
+                    // 删除后刷新 FAT 视图
+                    refreshFatView();
                 } catch (FileSystemException e) {
                     showError("删除失败", e.getMessage());
                 }
@@ -601,5 +625,61 @@ public class MainController {
     public void setFileSystem(FileSystem fileSystem) {
         this.fileSystem = fileSystem;
         initDirectoryTree(); // 重新初始化目录树
+        // 初次注入后刷新 FAT 视图
+        refreshFatView();
+    }
+
+    // 初始化 FAT监视器的列
+    private void initFatTableColumns() {
+        if (fatBlockIdColumn != null) {
+            fatBlockIdColumn.setCellValueFactory(new PropertyValueFactory<>("blockId"));
+        }
+        if (fatValueColumn != null) {
+            fatValueColumn.setCellValueFactory(new PropertyValueFactory<>("fatValue"));
+        }
+        if (fatStatusColumn != null) {
+            fatStatusColumn.setCellValueFactory(new PropertyValueFactory<>("status"));
+        }
+    }
+
+    // FAT行模型
+    public static class FatRow {
+        private final int blockId;
+        private final int value;
+        public FatRow(int blockId, int value) {
+            this.blockId = blockId;
+            this.value = value;
+        }
+        public int getBlockId() { return blockId; }
+        public String getFatValue() { return String.valueOf(value); }
+        public String getStatus() {
+            if (value == FAT.FREE_BLOCK) return "空闲";
+            if (value == FAT.END_OF_FILE) return "文件结束";
+            if (value == FAT.BAD_BLOCK) return "坏块";
+            return "指向 " + value;
+        }
+    }
+
+    // 刷新 FAT 视图
+    private void refreshFatView() {
+        if (fileSystem == null || fileSystem.getFat() == null || fatTableView == null) {
+            return;
+        }
+        FAT fat = fileSystem.getFat();
+        byte[] table = fat.getFatTable();
+        List<FatRow> rows = new ArrayList<>(table.length);
+        int free = 0, used = 0, bad = 0;
+        for (int i = 0; i < table.length; i++) {
+            byte v = table[i];
+            int intValue = v & 0xFF; // 转换为无符号整数显示
+            rows.add(new FatRow(i, intValue));
+            if (v == FAT.FREE_BLOCK) free++;
+            else if (v == FAT.BAD_BLOCK) bad++;
+            else used++;
+        }
+        fatTableView.getItems().setAll(rows);
+        if (fatFreeCountLabel != null) fatFreeCountLabel.setText("空闲：" + free);
+        if (fatUsedCountLabel != null) fatUsedCountLabel.setText("已用：" + used);
+        if (fatBadCountLabel != null) fatBadCountLabel.setText("坏块：" + bad);
     }
 }

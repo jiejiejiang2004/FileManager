@@ -38,6 +38,10 @@ public class FileSystem {
     /** 根目录（文件系统初始化时创建） */
     private FileEntry rootDir;
 
+    // ======================== 已打开文件表 ========================
+    /** 已打开文件表（OFT），管理最多5个同时打开的文件 */
+    private final OpenFileTable oft;
+
     // ======================== 状态标记 ========================
     private boolean isMounted;        // 文件系统是否已挂载（初始化完成）
 
@@ -61,6 +65,7 @@ public class FileSystem {
         this.fat = fat;
         this.blockSize = disk.getBlockSize();
         this.entryCache = new ConcurrentHashMap<>(); // 支持多线程安全操作
+        this.oft = new OpenFileTable(); // 初始化已打开文件表
         this.isMounted = false;
     }
 
@@ -103,11 +108,13 @@ public class FileSystem {
         }
 
         try {
-            // 1. 持久化FAT表（可选，确保块分配状态不丢失）
+            // 1. 关闭所有打开的文件
+            oft.closeAllFiles();
+            // 2. 持久化FAT表（可选，确保块分配状态不丢失）
             fat.saveToDisk();
-            // 2. 关闭磁盘
+            // 3. 关闭磁盘
             disk.close();
-            // 3. 清理缓存，标记未挂载
+            // 4. 清理缓存，标记未挂载
             entryCache.clear();
             this.isMounted = false;
             LogUtil.info("文件系统卸载成功");
@@ -125,6 +132,107 @@ public class FileSystem {
             entryCache.remove(fullPath);
             LogUtil.debug("从FileSystem缓存中移除条目：" + fullPath);
         }
+    }
+
+    // ======================== 已打开文件表（OFT）操作 ========================
+    /**
+     * 打开文件，加入OFT管理
+     * @param fullPath 文件完整路径
+     * @param mode 打开模式：READ, WRITE, READ_WRITE
+     * @return OFT索引（0-4），如果OFT已满则返回-1
+     * @throws FileSystemException 文件不存在、不是文件或OFT操作失败时抛出
+     */
+    public int openFile(String fullPath, String mode) throws FileSystemException {
+        checkMounted();
+        validateFullPath(fullPath);
+        
+        // 1. 校验文件是否存在且为文件
+        FileEntry file = getEntry(fullPath);
+        if (file == null) {
+            throw new FileSystemException("打开文件失败：文件不存在 → " + fullPath);
+        }
+        if (file.getType() != FileEntry.EntryType.FILE) {
+            throw new FileSystemException("打开文件失败：" + fullPath + " 不是文件");
+        }
+        if (file.isDeleted()) {
+            throw new FileSystemException("打开文件失败：文件已删除 → " + fullPath);
+        }
+        
+        // 2. 验证打开模式
+        if (!mode.equals("READ") && !mode.equals("WRITE") && !mode.equals("READ_WRITE")) {
+            throw new FileSystemException("打开文件失败：无效的打开模式 → " + mode);
+        }
+        
+        // 3. 将文件加入OFT
+        int oftIndex = oft.openFile(fullPath, file, mode.toUpperCase());
+        if (oftIndex == -1) {
+            throw new FileSystemException("打开文件失败：OFT已满，无法打开更多文件");
+        }
+        
+        LogUtil.info("文件已打开：" + fullPath + "，模式：" + mode + "，OFT索引：" + oftIndex);
+        return oftIndex;
+    }
+    
+    /**
+     * 关闭文件，从OFT中移除
+     * @param oftIndex OFT索引
+     * @throws FileSystemException OFT操作失败时抛出
+     */
+    public void closeFile(int oftIndex) throws FileSystemException {
+        checkMounted();
+        oft.closeFile(oftIndex);
+    }
+    
+    /**
+     * 根据文件路径关闭文件
+     * @param fullPath 文件完整路径
+     * @throws FileSystemException 文件未打开或OFT操作失败时抛出
+     */
+    public void closeFile(String fullPath) throws FileSystemException {
+        checkMounted();
+        oft.closeFile(fullPath);
+    }
+    
+    /**
+     * 检查文件是否已打开
+     * @param fullPath 文件完整路径
+     * @return 如果文件已打开则返回OFT索引，否则返回-1
+     */
+    public int isFileOpen(String fullPath) {
+        if (!isMounted) {
+            return -1;
+        }
+        return oft.findOpenFile(fullPath);
+    }
+    
+    /**
+     * 获取OFT状态信息
+     * @return OFT状态字符串
+     */
+    public String getOftStatus() {
+        return oft.getStatus();
+    }
+    
+    /**
+     * 设置文件读指针位置
+     * @param oftIndex OFT索引
+     * @param position 新的读指针位置
+     * @throws FileSystemException OFT操作失败时抛出
+     */
+    public void setReadPointer(int oftIndex, long position) throws FileSystemException {
+        checkMounted();
+        oft.setReadPointer(oftIndex, position);
+    }
+    
+    /**
+     * 设置文件写指针位置
+     * @param oftIndex OFT索引
+     * @param position 新的写指针位置
+     * @throws FileSystemException OFT操作失败时抛出
+     */
+    public void setWritePointer(int oftIndex, long position) throws FileSystemException {
+        checkMounted();
+        oft.setWritePointer(oftIndex, position);
     }
 
     // ======================== 文件操作：创建/删除/读取/写入 ========================
@@ -405,6 +513,196 @@ public class FileSystem {
             throw new FileSystemException("读取文件失败：块查询异常");
         } catch (IOException e) {
             throw new FileSystemException("读取文件失败：流操作异常");
+        }
+    }
+
+    /**
+     * 基于OFT读取文件内容（从当前读指针位置开始）
+     * @param oftIndex OFT索引
+     * @param length 要读取的字节数，-1表示读取到文件末尾
+     * @return 读取的内容（字节数组）
+     * @throws FileSystemException OFT操作失败或读取失败时抛出
+     */
+    public byte[] readFileFromOft(int oftIndex, int length) throws FileSystemException {
+        checkMounted();
+        
+        // 1. 获取OFT条目
+        OpenFileTable.OpenFileEntry oftEntry = oft.getOpenFileEntry(oftIndex);
+        if (oftEntry == null || !oftEntry.isActive()) {
+            throw new FileSystemException("读取文件失败：OFT索引 " + oftIndex + " 处无活跃文件");
+        }
+        
+        // 2. 检查读权限
+        String mode = oftEntry.getMode();
+        if (!mode.equals("READ") && !mode.equals("READ_WRITE")) {
+            throw new FileSystemException("读取文件失败：文件未以读模式打开");
+        }
+        
+        FileEntry file = oftEntry.getFileEntry();
+        long readPointer = oftEntry.getReadPointer();
+        
+        // 3. 检查读指针位置
+        if (readPointer >= file.getSize()) {
+            return new byte[0]; // 已到文件末尾
+        }
+        
+        // 4. 计算实际读取长度
+        long remainingBytes = file.getSize() - readPointer;
+        int actualLength = (length == -1) ? (int) remainingBytes : Math.min(length, (int) remainingBytes);
+        
+        if (actualLength <= 0) {
+            return new byte[0];
+        }
+        
+        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+            // 5. 计算起始块和块内偏移
+            int startBlockIndex = (int) (readPointer / blockSize);
+            int blockOffset = (int) (readPointer % blockSize);
+            int bytesRead = 0;
+            
+            // 6. 遍历块链找到起始块
+            int currentBlockId = file.getStartBlockId();
+            for (int i = 0; i < startBlockIndex; i++) {
+                currentBlockId = fat.getNextBlock(currentBlockId);
+                if (currentBlockId == FAT.END_OF_FILE) {
+                    throw new FileSystemException("读取文件失败：块链中断");
+                }
+            }
+            
+            // 7. 从起始块开始读取
+            while (bytesRead < actualLength && currentBlockId != FAT.END_OF_FILE) {
+                byte[] blockContent = disk.readBlock(currentBlockId);
+                
+                // 计算当前块要读取的字节数
+                int startPos = (bytesRead == 0) ? blockOffset : 0;
+                int endPos = Math.min(blockSize, startPos + (actualLength - bytesRead));
+                int blockReadLength = endPos - startPos;
+                
+                outputStream.write(blockContent, startPos, blockReadLength);
+                bytesRead += blockReadLength;
+                
+                // 移动到下一块
+                if (bytesRead < actualLength) {
+                    currentBlockId = fat.getNextBlock(currentBlockId);
+                }
+            }
+            
+            // 8. 更新读指针
+            oft.setReadPointer(oftIndex, readPointer + bytesRead);
+            
+            byte[] result = outputStream.toByteArray();
+            LogUtil.debug("从OFT读取文件：" + oftEntry.getFilePath() + "，读取字节数：" + bytesRead + "，新读指针：" + (readPointer + bytesRead));
+            return result;
+            
+        } catch (InvalidBlockIdException e) {
+            throw new FileSystemException("读取文件失败：块查询异常");
+        } catch (IOException e) {
+            throw new FileSystemException("读取文件失败：流操作异常");
+        }
+    }
+    
+    /**
+     * 基于OFT写入文件内容（从当前写指针位置开始）
+     * @param oftIndex OFT索引
+     * @param content 要写入的内容
+     * @throws FileSystemException OFT操作失败或写入失败时抛出
+     */
+    public void writeFileToOft(int oftIndex, byte[] content) throws FileSystemException {
+        checkMounted();
+        
+        if (content == null) {
+            content = new byte[0];
+        }
+        
+        // 1. 获取OFT条目
+        OpenFileTable.OpenFileEntry oftEntry = oft.getOpenFileEntry(oftIndex);
+        if (oftEntry == null || !oftEntry.isActive()) {
+            throw new FileSystemException("写入文件失败：OFT索引 " + oftIndex + " 处无活跃文件");
+        }
+        
+        // 2. 检查写权限
+        String mode = oftEntry.getMode();
+        if (!mode.equals("WRITE") && !mode.equals("READ_WRITE")) {
+            throw new FileSystemException("写入文件失败：文件未以写模式打开");
+        }
+        
+        FileEntry file = oftEntry.getFileEntry();
+        long writePointer = oftEntry.getWritePointer();
+        
+        if (content.length == 0) {
+            return; // 无内容写入
+        }
+        
+        try {
+            // 3. 计算写入后的文件大小
+            long newSize = Math.max(file.getSize(), writePointer + content.length);
+            
+            // 4. 检查是否需要扩展文件
+            int currentBlocks = (int) Math.ceil((double) file.getSize() / blockSize);
+            int requiredBlocks = (int) Math.ceil((double) newSize / blockSize);
+            
+            // 5. 扩展块（若需要）
+            if (requiredBlocks > currentBlocks) {
+                int currentBlockId = file.getStartBlockId();
+                // 遍历到当前最后一块
+                while (fat.getNextBlock(currentBlockId) != FAT.END_OF_FILE) {
+                    currentBlockId = fat.getNextBlock(currentBlockId);
+                }
+                // 分配剩余需要的块
+                for (int i = 0; i < requiredBlocks - currentBlocks; i++) {
+                    currentBlockId = fat.allocateNextBlock(currentBlockId);
+                }
+            }
+            
+            // 6. 计算起始块和块内偏移
+            int startBlockIndex = (int) (writePointer / blockSize);
+            int blockOffset = (int) (writePointer % blockSize);
+            int bytesWritten = 0;
+            
+            // 7. 遍历块链找到起始块
+            int currentBlockId = file.getStartBlockId();
+            for (int i = 0; i < startBlockIndex; i++) {
+                currentBlockId = fat.getNextBlock(currentBlockId);
+                if (currentBlockId == FAT.END_OF_FILE) {
+                    throw new FileSystemException("写入文件失败：块链中断");
+                }
+            }
+            
+            // 8. 从起始块开始写入
+            while (bytesWritten < content.length && currentBlockId != FAT.END_OF_FILE) {
+                // 读取当前块内容（用于部分写入）
+                byte[] blockContent = disk.readBlock(currentBlockId);
+                
+                // 计算当前块要写入的字节数
+                int startPos = (bytesWritten == 0) ? blockOffset : 0;
+                int writeLength = Math.min(blockSize - startPos, content.length - bytesWritten);
+                
+                // 将新内容复制到块中
+                System.arraycopy(content, bytesWritten, blockContent, startPos, writeLength);
+                
+                // 写回磁盘
+                disk.writeBlock(currentBlockId, blockContent);
+                
+                bytesWritten += writeLength;
+                
+                // 移动到下一块
+                if (bytesWritten < content.length) {
+                    currentBlockId = fat.getNextBlock(currentBlockId);
+                }
+            }
+            
+            // 9. 更新文件大小和写指针
+            if (newSize > file.getSize()) {
+                file.updateSize(newSize);
+            }
+            oft.setWritePointer(oftIndex, writePointer + bytesWritten);
+            
+            LogUtil.debug("向OFT写入文件：" + oftEntry.getFilePath() + "，写入字节数：" + bytesWritten + "，新写指针：" + (writePointer + bytesWritten));
+            
+        } catch (DiskFullException e) {
+            throw new FileSystemException("写入文件失败：磁盘空间不足");
+        } catch (InvalidBlockIdException | DiskWriteException e) {
+            throw new FileSystemException("写入文件失败：磁盘操作异常");
         }
     }
 
