@@ -14,19 +14,19 @@ import java.util.Set;
  * 核心功能：标记块状态、分配空闲块、释放已用块、查询块的后续块
  */
 public class FAT {
-    // ======================== FAT 特殊标记值 ========================
+    // ======================== FAT 特殊标记值（字节语义） ========================
     /** 空闲块标记（表示该块未被使用） */
-    public static final int FREE_BLOCK = 0;
+    public static final byte FREE_BLOCK = 0;
     /** 文件结束标记（表示该块是文件的最后一个块） */
-    public static final int END_OF_FILE = -1;
+    public static final byte END_OF_FILE = (byte) 255;
     /** 坏块标记（表示该块物理损坏，不可使用） */
-    public static final int BAD_BLOCK = -2;
+    public static final byte BAD_BLOCK = (byte) 254;
 
     // ======================== 核心属性 ========================
     /** 关联的磁盘实例（依赖 Disk 获取块大小、总块数） */
     private final Disk disk;
     /** FAT 表本体：索引 = 磁盘块ID，值 = 下一个块ID（或特殊标记） */
-    private int[] fatTable;
+    private byte[] fatTable;
     /** 磁盘总块数（从 Disk 同步） */
     private int totalBlocks;
     /** FAT 是否已初始化 */
@@ -56,19 +56,32 @@ public class FAT {
      */
     public void initialize() {
         // 1. 初始化 FAT 表数组
-        this.fatTable = new int[totalBlocks];
+        this.fatTable = new byte[totalBlocks];
         // 2. 所有块默认设为空闲（FREE_BLOCK）
         Arrays.fill(fatTable, FREE_BLOCK);
-//        for (int i = 0; i < totalBlocks; i++) {
-//            freeBlocks.add(i);
-//        }
-        // 3. 可选：标记第0块为预留（模拟真实FAT的引导块）
+        
+        // 3. 标记FAT占用的块0和块1（FAT持久化区域）
         if (totalBlocks > 0) {
-            fatTable[0] = BAD_BLOCK; // 此处用 BAD_BLOCK 模拟预留，实际可自定义
-            LogUtil.info("FAT 初始化：预留块 0 为引导区（标记为坏块）");
+            fatTable[0] = BAD_BLOCK; // 块0用于FAT存储
+            LogUtil.info("FAT 初始化：块 0 标记为FAT存储区");
         }
+        if (totalBlocks > 1) {
+            fatTable[1] = BAD_BLOCK; // 块1用于FAT存储
+            LogUtil.info("FAT 初始化：块 1 标记为FAT存储区");
+        }
+        
+        // 4. 标记题目指定的坏块23和49
+        if (totalBlocks > 23) {
+            fatTable[23] = BAD_BLOCK;
+            LogUtil.info("FAT 初始化：块 23 标记为坏块");
+        }
+        if (totalBlocks > 49) {
+            fatTable[49] = BAD_BLOCK;
+            LogUtil.info("FAT 初始化：块 49 标记为坏块");
+        }
+        
         this.isInitialized = true;
-        LogUtil.info("FAT 初始化完成：总块数=" + totalBlocks + "，FAT表大小=" + fatTable.length);
+        LogUtil.info("FAT 初始化完成：总块数=" + totalBlocks + "，FAT表大小=" + fatTable.length + "，数据分配从块2开始");
     }
 
     /**
@@ -80,13 +93,17 @@ public class FAT {
     public synchronized int allocateBlock() throws DiskFullException, InvalidBlockIdException {
         checkInitialized();
 
-        // 遍历 FAT 表，找第一个空闲块（从1开始，跳过0号预留块）
-        for (int blockId = 1; blockId < totalBlocks; blockId++) {
+        // 遍历 FAT 表，找第一个空闲块（从2开始，跳过0、1号FAT存储块和坏块）
+        for (int blockId = 2; blockId < totalBlocks; blockId++) {
             if (fatTable[blockId] == FREE_BLOCK) {
-                // 标记块为“已占用”（初始无后续块，设为 END_OF_FILE）
+                // 标记块为"已占用"（初始无后续块，设为 END_OF_FILE）
                 fatTable[blockId] = END_OF_FILE;
-                LogUtil.info("FAT 分配块：blockId=" + blockId);
+                LogUtil.info("FAT 分配块：blockId=" + blockId + "（跳过坏块23、49）");
                 return blockId;
+            }
+            // 明确跳过坏块（虽然坏块不会是FREE_BLOCK，但为了清晰性添加日志）
+            if (fatTable[blockId] == BAD_BLOCK) {
+                LogUtil.debug("FAT 分配：跳过坏块 " + blockId);
             }
         }
 
@@ -108,7 +125,7 @@ public class FAT {
         // 1. 分配一个新的空闲块
         int nextBlockId = allocateBlock();
         // 2. 将当前块的“下一块”指向新块
-        fatTable[currentBlockId] = nextBlockId;
+        fatTable[currentBlockId] = (byte) nextBlockId;
         // 3. 新块的“下一块”设为文件结束（END_OF_FILE）
         fatTable[nextBlockId] = END_OF_FILE;
 
@@ -159,9 +176,21 @@ public class FAT {
         checkInitialized();
         validateAllocatedBlock(blockId); // 校验块是否合法且已占用
 
-        int nextBlockId = fatTable[blockId];
-        // 校验下一个块ID的合法性（只能是 END_OF_FILE 或有效块ID）
-        if (nextBlockId != END_OF_FILE && (nextBlockId < 1 || nextBlockId >= totalBlocks)) {
+        byte nextBlockByte = fatTable[blockId];
+        // 处理特殊值
+        if (nextBlockByte == END_OF_FILE) {
+            return -1; // 返回-1表示文件结束
+        }
+        if (nextBlockByte == BAD_BLOCK) {
+            throw new InvalidBlockIdException("查询下一块失败：块ID=" + blockId + " 指向坏块");
+        }
+        if (nextBlockByte == FREE_BLOCK) {
+            throw new InvalidBlockIdException("查询下一块失败：块ID=" + blockId + " 指向空闲块");
+        }
+        
+        // 将无符号字节转换为块ID（0-127范围内的正值）
+        int nextBlockId = nextBlockByte & 0xFF;
+        if (nextBlockId < 2 || nextBlockId >= totalBlocks) {
             throw new InvalidBlockIdException("查询下一块失败：块ID=" + blockId + " 的后续块ID=" + nextBlockId + " 无效");
         }
         return nextBlockId;
@@ -264,25 +293,23 @@ public class FAT {
                 throw new IllegalStateException("FAT表大小不匹配：当前表大小=" + fatTable.length + "，总块数=" + totalBlocks);
             }
 
-            // 2. 将 int[] FAT 表转为字节数组（每个 int 占4字节）
-            byte[] fatBytes = new byte[totalBlocks * 4];
-            for (int i = 0; i < totalBlocks; i++) {
-                // int 转 4字节（小端序，适配多数系统）
-                fatBytes[i * 4] = (byte) (fatTable[i] & 0xFF);
-                fatBytes[i * 4 + 1] = (byte) ((fatTable[i] >> 8) & 0xFF);
-                fatBytes[i * 4 + 2] = (byte) ((fatTable[i] >> 16) & 0xFF);
-                fatBytes[i * 4 + 3] = (byte) ((fatTable[i] >> 24) & 0xFF);
-            }
+            // 2. FAT表已经是字节数组，直接使用
+            byte[] fatBytes = fatTable.clone();
 
-            // 3. 写入磁盘从第1块开始的连续块
+            // 3. 写入磁盘块0和块1（FAT存储区域）
             int blockSize = disk.getBlockSize();
             int requiredBlocks = (fatBytes.length + blockSize - 1) / blockSize; // 向上取整计算需要的块数
             
-            LogUtil.info("开始保存FAT表到磁盘，总大小=" + fatBytes.length + "字节，需要" + requiredBlocks + "个块");
+            // 确保不超过2个块（块0和块1）
+            if (requiredBlocks > 2) {
+                throw new IllegalStateException("FAT表过大，无法存储在块0和块1中：需要" + requiredBlocks + "个块，但只有2个块可用");
+            }
             
-            // 分块写入
+            LogUtil.info("开始保存FAT表到磁盘，总大小=" + fatBytes.length + "字节，使用块0和块1");
+            
+            // 分块写入到块0和块1
             for (int i = 0; i < requiredBlocks; i++) {
-                int blockId = i + 1; // 从第1块开始写入
+                int blockId = i; // 从第0块开始写入
                 int offset = i * blockSize;
                 int length = Math.min(blockSize, fatBytes.length - offset);
                 
@@ -314,19 +341,24 @@ public class FAT {
                 throw new IllegalStateException("无效的总块数：" + totalBlocks);
             }
             
-            // 2. 计算需要读取的块数
+            // 2. 计算需要读取的块数（FAT表现在是字节数组）
             int blockSize = disk.getBlockSize();
-            int requiredBytes = totalBlocks * 4;
+            int requiredBytes = totalBlocks; // 每个块对应1字节
             int requiredBlocks = (requiredBytes + blockSize - 1) / blockSize;
+            
+            // 确保不超过2个块（块0和块1）
+            if (requiredBlocks > 2) {
+                throw new IllegalStateException("FAT表过大，无法从块0和块1中读取：需要" + requiredBlocks + "个块，但只有2个块可用");
+            }
             
             // 3. 创建足够大的字节数组
             byte[] fatBytes = new byte[requiredBytes];
             
-            // 4. 从磁盘读取连续块
-            LogUtil.info("开始从磁盘加载FAT表，总大小=" + requiredBytes + "字节，需要" + requiredBlocks + "个块");
+            // 4. 从磁盘块0和块1读取
+            LogUtil.info("开始从磁盘加载FAT表，总大小=" + requiredBytes + "字节，从块0和块1读取");
             
             for (int i = 0; i < requiredBlocks; i++) {
-                int blockId = i + 1; // 从第1块开始读取
+                int blockId = i; // 从第0块开始读取
                 int offset = i * blockSize;
                 int length = Math.min(blockSize, requiredBytes - offset);
                 
@@ -336,29 +368,22 @@ public class FAT {
                 LogUtil.debug("已读取FAT表块 " + blockId);
             }
             
-            // 5. 将字节数组转为 int[] FAT 表
-            this.fatTable = new int[totalBlocks];
-            for (int i = 0; i < totalBlocks; i++) {
-                // 4字节转 int（小端序）
-                fatTable[i] = (fatBytes[i * 4] & 0xFF)
-                        | ((fatBytes[i * 4 + 1] & 0xFF) << 8)
-                        | ((fatBytes[i * 4 + 2] & 0xFF) << 16)
-                        | ((fatBytes[i * 4 + 3] & 0xFF) << 24);
-            }
+            // 5. 直接使用字节数组作为FAT表
+            this.fatTable = fatBytes;
             
             this.isInitialized = true;
             LogUtil.info("FAT 表已从磁盘加载完成，表大小=" + fatTable.length + "，总块数=" + totalBlocks);
         } catch (Exception e) {
             // 添加更详细的错误信息
             String errorMsg = "FAT 加载失败：" + e.getMessage() + 
-                              "（块大小=" + disk.getBlockSize() + "，FAT表大小=" + (totalBlocks * 4) + "，总块数=" + totalBlocks + "）";
+                              "（块大小=" + disk.getBlockSize() + "，FAT表大小=" + totalBlocks + "，总块数=" + totalBlocks + "）";
             LogUtil.error(errorMsg, e);
             throw new DiskInitializeException(errorMsg, e);
         }
     }
 
     // ======================== Getter 方法 ========================
-    public int[] getFatTable() {
+    public byte[] getFatTable() {
         return fatTable.clone(); // 返回克隆数组，防止外部修改FAT表
     }
 
@@ -386,18 +411,28 @@ public class FAT {
         // 验证当前块ID合法性
         validateBlockId(currentBlockId);
 
-        // 验证下一个块ID合法性（允许为END_OF_FILE）
-        if (nextBlockId != END_OF_FILE) {
-            validateBlockId(nextBlockId);
+        // 处理特殊值：文件结束
+        if (nextBlockId == -1) {
+            fatTable[currentBlockId] = END_OF_FILE;
+            LogUtil.debug("FAT更新块链：" + currentBlockId + " → END_OF_FILE");
+            return;
+        }
+
+        // 验证下一个块ID合法性
+        validateBlockId(nextBlockId);
+        
+        // 检查块ID是否在字节范围内（0-127）
+        if (nextBlockId > 127) {
+            throw new InvalidBlockIdException("块ID超出字节范围：nextBlockId=" + nextBlockId + "，最大支持127");
         }
 
         // 不允许指向空闲块（避免块链混乱）
-        if (nextBlockId != END_OF_FILE && fatTable[nextBlockId] == FREE_BLOCK) {
+        if (fatTable[nextBlockId] == FREE_BLOCK) {
             throw new InvalidBlockIdException("无法指向空闲块：nextBlockId=" + nextBlockId);
         }
 
         // 更新FAT表
-        fatTable[currentBlockId] = nextBlockId;
+        fatTable[currentBlockId] = (byte) nextBlockId;
         LogUtil.debug("FAT更新块链：" + currentBlockId + " → " + nextBlockId);
     }
 
