@@ -20,8 +20,10 @@ import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
@@ -33,6 +35,7 @@ import javafx.scene.control.TextInputDialog;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.input.MouseButton;
 import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
 
@@ -48,6 +51,8 @@ public class MainController {
     @FXML private TableColumn<FileEntry, String> modifyTimeColumn;
     @FXML private Label currentPathLabel;
     @FXML private Label fileCountLabel;
+    @FXML private Button backButton;
+    @FXML private TextField pathTextField;
 
     // FAT监视器组件
     @FXML private TableView<FatRow> fatTableView;
@@ -116,35 +121,13 @@ public class MainController {
             }
         });
 
-        // 时间列：在setCellValueFactory中直接将Date转换为格式化的String
+        // 修改时间列：格式化显示
         modifyTimeColumn.setCellValueFactory(cellData -> {
             FileEntry entry = cellData.getValue();
             Date modifyTime = entry.getModifyTime();
-            
-            if (modifyTime == null) {
-                return new javafx.beans.property.SimpleStringProperty("");
-            }
-            
-            // 将Date转换为格式化的字符串
+            LocalDateTime localDateTime = LocalDateTime.ofInstant(modifyTime.toInstant(), ZoneId.systemDefault());
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-            LocalDateTime dateTime = modifyTime.toInstant()
-                    .atZone(ZoneId.systemDefault())
-                    .toLocalDateTime();
-            
-            return new javafx.beans.property.SimpleStringProperty(dateTime.format(formatter));
-        });
-        
-        // 使用默认的String类型的TableCell
-        modifyTimeColumn.setCellFactory(column -> new TableCell<FileEntry, String>() {
-            @Override
-            protected void updateItem(String text, boolean empty) {
-                super.updateItem(text, empty);
-                if (empty || text == null) {
-                    setText(null);
-                } else {
-                    setText(text);
-                }
-            }
+            return new javafx.beans.property.SimpleStringProperty(localDateTime.format(formatter));
         });
     }
 
@@ -256,7 +239,13 @@ public class MainController {
             refreshFatView();
         });
         
-        // 6. 文件表格双击事件：双击文件修改大小，双击文件夹打开目录
+        // 6. 返回按钮
+        backButton.setOnAction(e -> navigateBack());
+        
+        // 7. 设置右键菜单
+        setupContextMenus();
+        
+        // 8. 文件表格双击事件：双击文件修改大小，双击文件夹打开目录
         fileTableView.setOnMouseClicked(event -> {
             if (event.getClickCount() == 2) {
                 FileEntry selectedEntry = fileTableView.getSelectionModel().getSelectedItem();
@@ -442,6 +431,10 @@ public class MainController {
 
             // 更新UI状态
             currentPathLabel.setText("当前路径：" + path);
+            pathTextField.setText(path);
+            
+            // 更新返回按钮状态（根目录时禁用）
+            backButton.setDisable(path.equals("/"));
 
             // 先刷新目录缓存，确保获取到最新数据
             currentDirectory.refreshEntries();
@@ -572,6 +565,79 @@ public class MainController {
                 }
             }
         });
+    }
+
+    /**
+     * 设置右键菜单
+     */
+    private void setupContextMenus() {
+        // 创建空白区域右键菜单（新建文件、新建文件夹）
+        ContextMenu emptyAreaContextMenu = new ContextMenu();
+        MenuItem newFileMenuItem = new MenuItem("新建文件");
+        MenuItem newDirMenuItem = new MenuItem("新建文件夹");
+        
+        newFileMenuItem.setOnAction(e -> showNewFileDialog());
+        newDirMenuItem.setOnAction(e -> showNewDirDialog());
+        
+        emptyAreaContextMenu.getItems().addAll(newFileMenuItem, newDirMenuItem);
+        
+        // 创建选中项右键菜单（删除）
+        ContextMenu selectedItemContextMenu = new ContextMenu();
+        MenuItem deleteMenuItem = new MenuItem("删除");
+        deleteMenuItem.setOnAction(e -> deleteSelectedEntry());
+        selectedItemContextMenu.getItems().add(deleteMenuItem);
+        
+        // 为文件表格设置右键菜单
+        fileTableView.setOnContextMenuRequested(event -> {
+            FileEntry selectedEntry = fileTableView.getSelectionModel().getSelectedItem();
+            if (selectedEntry != null) {
+                // 有选中项时显示删除菜单
+                selectedItemContextMenu.show(fileTableView, event.getScreenX(), event.getScreenY());
+            } else {
+                // 空白区域显示新建菜单
+                emptyAreaContextMenu.show(fileTableView, event.getScreenX(), event.getScreenY());
+            }
+        });
+        
+        // 点击其他地方时隐藏菜单
+        fileTableView.setOnMouseClicked(event -> {
+            if (event.getButton() == MouseButton.PRIMARY) {
+                emptyAreaContextMenu.hide();
+                selectedItemContextMenu.hide();
+            }
+        });
+    }
+
+    /**
+     * 返回上级目录
+     */
+    private void navigateBack() {
+        if (currentDirectory == null) {
+            return;
+        }
+        
+        String currentPath = currentDirectory.getDirEntry().getFullPath();
+        
+        // 如果已经在根目录，不能再返回
+        if (currentPath.equals("/")) {
+            return;
+        }
+        
+        // 计算父目录路径
+        String parentPath;
+        if (currentPath.endsWith("/")) {
+            currentPath = currentPath.substring(0, currentPath.length() - 1);
+        }
+        
+        int lastSlashIndex = currentPath.lastIndexOf('/');
+        if (lastSlashIndex <= 0) {
+            parentPath = "/";
+        } else {
+            parentPath = currentPath.substring(0, lastSlashIndex);
+        }
+        
+        // 加载父目录
+        loadDirectory(parentPath);
     }
 
     // ============================== 工具方法 ==============================
