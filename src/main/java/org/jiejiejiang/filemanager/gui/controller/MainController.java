@@ -10,6 +10,7 @@ import java.util.List;
 import org.jiejiejiang.filemanager.core.Directory;
 import org.jiejiejiang.filemanager.core.FileEntry;
 import org.jiejiejiang.filemanager.core.FileSystem;
+import org.jiejiejiang.filemanager.core.FAT;
 import org.jiejiejiang.filemanager.exception.FileSystemException;
 import org.jiejiejiang.filemanager.util.LogUtil;
 
@@ -19,19 +20,23 @@ import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.control.TableRow;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextInputDialog;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.input.MouseButton;
 import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
 
@@ -47,32 +52,44 @@ public class MainController {
     @FXML private TableColumn<FileEntry, String> modifyTimeColumn;
     @FXML private Label currentPathLabel;
     @FXML private Label fileCountLabel;
+    @FXML private Button backButton;
+    @FXML private TextField pathTextField;
+
+    // FAT监视器组件
+    @FXML private TableView<FatRow> fatTableView;
+    @FXML private TableColumn<FatRow, Integer> fatBlockIdColumn;
+    @FXML private TableColumn<FatRow, String> fatValueColumn;
+    @FXML private TableColumn<FatRow, String> fatStatusColumn;
+    @FXML private Label fatFreeCountLabel;
+    @FXML private Label fatUsedCountLabel;
+    @FXML private Label fatBadCountLabel;
 
     // 菜单组件
     @FXML private MenuItem newFileItem;
     @FXML private MenuItem newDirItem;
     @FXML private MenuItem deleteItem;
     @FXML private MenuItem refreshItem;
-    @FXML private MenuItem copyItem;    // 新增：复制菜单项
-    @FXML private MenuItem pasteItem;   // 新增：粘贴菜单项
 
     // ============================== 业务对象 ==============================
     private FileSystem fileSystem; // 文件系统核心对象（由外部注入）
     private Directory currentDirectory; // 当前选中的目录
-    private String copiedFilePath; // 新增：存储被复制的文件路径
-    // 关键改进：保存复制的文件内容（实现深拷贝）
-    private byte[] copiedFileContent;
-    private String copiedFileName;
-    
+
+    // ============================== 点击行为状态 ==============================
+    private long lastClickTime = 0L;
+    private int lastClickedRowIndex = -1;
+    private static final int DOUBLE_CLICK_THRESHOLD_MS = 350;
+
     // ============================== 初始化 ==============================
     @FXML
     public void initialize() {
         // 1. 初始化表格列与FileEntry属性绑定
         initTableColumns();
-
+        // 初始化 FAT 监视器表格列
+        initFatTableColumns();
+        
         // 2. 初始化目录树（模拟加载磁盘，实际应从fileSystem获取）
         initDirectoryTree();
-
+        
         // 3. 绑定事件监听器
         bindEvents();
     }
@@ -110,97 +127,53 @@ public class MainController {
             }
         });
 
-        // 时间列：在setCellValueFactory中直接将Date转换为格式化的String
+        // 修改时间列：格式化显示
         modifyTimeColumn.setCellValueFactory(cellData -> {
             FileEntry entry = cellData.getValue();
             Date modifyTime = entry.getModifyTime();
-            
-            if (modifyTime == null) {
-                return new javafx.beans.property.SimpleStringProperty("");
-            }
-            
-            // 将Date转换为格式化的字符串
+            LocalDateTime localDateTime = LocalDateTime.ofInstant(modifyTime.toInstant(), ZoneId.systemDefault());
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-            LocalDateTime dateTime = modifyTime.toInstant()
-                    .atZone(ZoneId.systemDefault())
-                    .toLocalDateTime();
-            
-            return new javafx.beans.property.SimpleStringProperty(dateTime.format(formatter));
-        });
-        
-        // 使用默认的String类型的TableCell
-        modifyTimeColumn.setCellFactory(column -> new TableCell<FileEntry, String>() {
-            @Override
-            protected void updateItem(String text, boolean empty) {
-                super.updateItem(text, empty);
-                if (empty || text == null) {
-                    setText(null);
-                } else {
-                    setText(text);
-                }
-            }
+            return new javafx.beans.property.SimpleStringProperty(localDateTime.format(formatter));
         });
     }
 
     /**
-     * 初始化目录树（显示C盘和D盘）
+     * 初始化目录树（模拟磁盘加载）
      */
     private void initDirectoryTree() {
-        // 创建根节点"此电脑"
-        computerRootItem = new TreeItem<>("此电脑");
-        computerRootItem.setExpanded(true);
-        
-        // 创建C盘和D盘节点
-        TreeItem<String> cDrive = new TreeItem<>("C");
-        TreeItem<String> dDrive = new TreeItem<>("D");
-        
-        cDrive.setExpanded(true);
-        
-        // 将C盘和D盘添加到"此电脑"下
-        computerRootItem.getChildren().addAll(cDrive, dDrive);
-        
-        // 如果文件系统已初始化，加载C盘和D盘的内容
+        // 清空示例节点
+        computerRootItem.getChildren().clear();
+
+        // 实际应从fileSystem获取所有磁盘/根目录
         if (fileSystem != null) {
-            // 为C盘和D盘加载子目录
-            loadDriveContent(cDrive, "C");
-            loadDriveContent(dDrive, "D");
+            String root = "/";
+            TreeItem<String> rootItem = new TreeItem<>(root);
+            rootItem.setExpanded(true); // 默认展开根目录
+            computerRootItem.getChildren().add(rootItem);
+            
+            // 加载根目录的子目录
+            loadSubDirectories(root, rootItem);
+            
+            // 添加展开事件监听，动态加载子目录
+            rootItem.addEventHandler(TreeItem.<String>branchExpandedEvent(), event -> {
+                TreeItem<String> expandedItem = event.getTreeItem();
+                String path = getFullPath(expandedItem);
+                loadSubDirectories(path, expandedItem);
+            });
         } else {
-            // 开发阶段的模拟数据
-            cDrive.getChildren().add(new TreeItem<>("用户"));
-            cDrive.getChildren().add(new TreeItem<>("程序文件"));
-            dDrive.getChildren().add(new TreeItem<>("文档"));
+            // 模拟数据（开发阶段用）
+            TreeItem<String> cDrive = new TreeItem<>("C:");
+            TreeItem<String> dDrive = new TreeItem<>("D:");
+            cDrive.getChildren().add(new TreeItem<>("Users"));
+            cDrive.getChildren().add(new TreeItem<>("Program Files"));
+            dDrive.getChildren().add(new TreeItem<>("Documents"));
+            computerRootItem.getChildren().addAll(cDrive, dDrive);
         }
 
         dirTreeView.setRoot(computerRootItem);
         dirTreeView.setShowRoot(true);
     }
-
-    // 开发模式标记
-    private static final boolean DEVELOPMENT_MODE = true; // 可根据需要设置为false
-
-    /**
-     * 加载磁盘内容到目录树
-     * @param driveItem 磁盘对应的TreeItem
-     * @param driveLetter 磁盘字母（如 "C", "D"）
-     */
-    private void loadDriveContent(TreeItem<String> driveItem, String driveLetter) {
-        String drivePath = "/" + driveLetter;
-        
-        try {
-            // 检查磁盘目录是否存在，不存在则创建
-            FileEntry driveDir = fileSystem.getEntry(drivePath);
-            if (driveDir == null) {
-                fileSystem.createDirectory(drivePath);
-                LogUtil.info("已创建磁盘目录: " + drivePath);
-            }
-            
-            // 加载磁盘下的子目录
-            loadSubDirectories(drivePath, driveItem);
-        } catch (FileSystemException e) {
-            LogUtil.error("加载磁盘内容失败: " + e.getMessage());
-        }
-    }
-
+    
     /**
      * 加载指定目录的子目录到目录树中
      * @param path 目录路径
@@ -228,7 +201,7 @@ public class MainController {
                          TreeItem<String> expandedItem = event.getTreeItem();
                          // 移除临时子节点
                          expandedItem.getChildren().clear();
-                           
+                          
                          String dirPath = getFullPath(expandedItem);
                          loadSubDirectories(dirPath, expandedItem);
                      });
@@ -265,34 +238,27 @@ public class MainController {
 
         // 5. 刷新菜单
         refreshItem.setOnAction(e -> {
-            if (currentDirectory != null) {
-                loadDirectory(currentDirectory.getDirEntry().getFullPath());
-            }
+            String currentPath = (currentDirectory != null) ? currentDirectory.getDirEntry().getFullPath() : "/";
+            loadDirectory(currentPath);
+            initDirectoryTree();
+            selectTreeItemByPath(currentPath);
+            // 刷新FAT视图
+            refreshFatView();
         });
-
-        // 新增：复制菜单
-        copyItem.setOnAction(e -> copySelectedFile());
-
-        // 新增：粘贴菜单
-        pasteItem.setOnAction(e -> pasteFile());
-
-        // 6. 文件表格双击事件：双击文件修改大小，双击文件夹打开目录
-        fileTableView.setOnMouseClicked(event -> {
-            if (event.getClickCount() == 2) {
-                FileEntry selectedEntry = fileTableView.getSelectionModel().getSelectedItem();
-                if (selectedEntry != null) {
-                    if (selectedEntry.getType() == FileEntry.EntryType.FILE) {
-                        // 双击文件：显示修改大小对话框
-                        showModifyFileSizeDialog(selectedEntry);
-                    } else if (selectedEntry.getType() == FileEntry.EntryType.DIRECTORY) {
-                        // 双击文件夹：打开该文件夹
-                        String parentPath = currentDirectory.getDirEntry().getFullPath();
-                        String path = parentPath.endsWith("/") ? parentPath + selectedEntry.getName() : parentPath + "/" + selectedEntry.getName();
-                        loadDirectory(path);
-                    }
-                }
-            }
-        });
+        
+        // 6. 返回按钮
+        backButton.setOnAction(e -> navigateBack());
+        
+        // 地址栏回车跳转路径
+        if (pathTextField != null) {
+            pathTextField.setOnAction(e -> handlePathEnter());
+        }
+        
+        // 7. 设置右键菜单
+        setupContextMenus();
+        
+        // 8. 文件表格点击事件统一由 setupContextMenus() 中注册的处理器负责
+        // （包含自定义双击阈值与取消选中逻辑，避免事件处理器覆盖问题）
     }
     
     /**
@@ -405,6 +371,8 @@ public class MainController {
                     Platform.runLater(() -> {
                         // 重新加载目录，让TableView完全重建，避免属性绑定问题
                         loadDirectory(currentDirectory.getDirEntry().getFullPath());
+                        // 刷新 FAT 视图
+                        refreshFatView();
                         // 显示成功提示
                         Alert success = new Alert(Alert.AlertType.INFORMATION);
                         success.setTitle("成功");
@@ -417,6 +385,8 @@ public class MainController {
                     // 关键修复：即使出现异常也要刷新UI，确保移除不存在的文件
                     Platform.runLater(() -> {
                         loadDirectory(currentDirectory.getDirEntry().getFullPath());
+                        // 刷新 FAT 视图
+                        refreshFatView();
                         showError("修改文件大小失败", e.getMessage());
                     });
                 }
@@ -452,17 +422,21 @@ public class MainController {
             // 从文件系统获取目录对象
             currentDirectory = fileSystem.getDirectory(path);
             if (currentDirectory == null) {
-                // 用户要求不显示"目录不存在"的提示，这里静默处理
+                showError("错误", "目录不存在：" + path);
                 return;
             }
 
             // 更新UI状态
             currentPathLabel.setText("当前路径：" + path);
+            pathTextField.setText(path);
+            
+            // 更新返回按钮状态（根目录时禁用）
+            backButton.setDisable(path.equals("/"));
 
             // 先刷新目录缓存，确保获取到最新数据
             currentDirectory.refreshEntries();
             
-            // 关键改进：不从currentDirectory直接获取条目，而是通过fileSystem.listDirectory重新加载
+            // 关键修复：不从currentDirectory直接获取条目，而是通过fileSystem.listDirectory重新加载
             // 这确保了获取到的是文件系统的最新状态，而仅仅是内存缓存
             List<FileEntry> entries = new ArrayList<>(fileSystem.listDirectory(path));
             
@@ -482,10 +456,7 @@ public class MainController {
             fileCountLabel.setText(String.format("文件数量：%d", entries.size()));
 
         } catch (FileSystemException e) {
-            // 继续捕获其他类型的文件系统异常，但不显示目录不存在的错误
-            if (!e.getMessage().contains("目录不存在")) {
-                showError("加载目录失败", e.getMessage());
-            }
+            showError("加载目录失败", e.getMessage());
         }
     }
 
@@ -517,6 +488,8 @@ public class MainController {
                 // 刷新列表
                 LogUtil.debug("创建文件后刷新目录：" + parentPath);
                 loadDirectory(parentPath);
+                // 刷新 FAT 视图
+                refreshFatView();
 
             } catch (FileSystemException e) {
                 String pathInfo = (fullPath != null) ? "，路径：" + fullPath : "";
@@ -551,6 +524,8 @@ public class MainController {
                 // 刷新列表和目录树
                 loadDirectory(parentPath);
                 initDirectoryTree(); // 重新加载目录树
+                // 刷新 FAT 视图
+                refreshFatView();
 
             } catch (FileSystemException e) {
                 showError("创建文件夹失败", e.getMessage());
@@ -571,20 +546,175 @@ public class MainController {
         Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
         confirm.setTitle("确认删除");
         confirm.setHeaderText(null);
-        confirm.setContentText("确定要删除 " + selectedEntry.getName() + " 吗？");
+        String confirmMessage = selectedEntry.getType() == FileEntry.EntryType.DIRECTORY 
+            ? "确定要删除文件夹 " + selectedEntry.getName() + " 及其所有内容吗？" 
+            : "确定要删除文件 " + selectedEntry.getName() + " 吗？";
+        confirm.setContentText(confirmMessage);
 
         confirm.showAndWait().ifPresent(response -> {
             if (response == ButtonType.OK) {
                 try {
-                    currentDirectory.removeEntry(selectedEntry.getName());
-                    currentDirectory.syncToDisk();
+                    String fullPath = selectedEntry.getFullPath();
+                    
+                    if (selectedEntry.getType() == FileEntry.EntryType.DIRECTORY) {
+                        // 对于目录，使用递归删除方法
+                        fileSystem.deleteDirectoryRecursively(fullPath);
+                    } else {
+                        // 对于文件，使用普通删除方法
+                        fileSystem.deleteFile(fullPath);
+                    }
+                    
                     loadDirectory(currentDirectory.getDirEntry().getFullPath()); // 刷新列表
                     initDirectoryTree(); // 刷新目录树
+                    // 删除后刷新 FAT 视图
+                    refreshFatView();
                 } catch (FileSystemException e) {
                     showError("删除失败", e.getMessage());
                 }
             }
         });
+    }
+
+    /**
+     * 设置右键菜单
+     */
+    private void setupContextMenus() {
+        // 创建空白区域右键菜单（新建文件、新建文件夹）
+        ContextMenu emptyAreaContextMenu = new ContextMenu();
+        MenuItem newFileMenuItem = new MenuItem("新建文件");
+        MenuItem newDirMenuItem = new MenuItem("新建文件夹");
+        
+        newFileMenuItem.setOnAction(e -> showNewFileDialog());
+        newDirMenuItem.setOnAction(e -> showNewDirDialog());
+        
+        emptyAreaContextMenu.getItems().addAll(newFileMenuItem, newDirMenuItem);
+        
+        // 创建选中项右键菜单（删除）
+        ContextMenu selectedItemContextMenu = new ContextMenu();
+        MenuItem deleteMenuItem = new MenuItem("删除");
+        deleteMenuItem.setOnAction(e -> deleteSelectedEntry());
+        selectedItemContextMenu.getItems().add(deleteMenuItem);
+        
+        // 为文件表格设置右键菜单
+        fileTableView.setOnContextMenuRequested(event -> {
+            // 获取点击位置的表格行
+            Node node = event.getPickResult().getIntersectedNode();
+            // 检查是否点击在空白区域（没有选中任何行）
+            boolean clickedOnEmpty = node == fileTableView || (node != null && node.getParent() == fileTableView);
+            
+            // 如果点击在空白区域，先清除选中
+            if (clickedOnEmpty) {
+                fileTableView.getSelectionModel().clearSelection();
+            }
+            
+            FileEntry selectedEntry = fileTableView.getSelectionModel().getSelectedItem();
+            if (selectedEntry != null) {
+                // 有选中项时显示删除菜单
+                selectedItemContextMenu.show(fileTableView, event.getScreenX(), event.getScreenY());
+            } else {
+                // 空白区域显示新建菜单
+                emptyAreaContextMenu.show(fileTableView, event.getScreenX(), event.getScreenY());
+            }
+        });
+        
+        // 点击其他地方时隐藏菜单并处理空白区域点击（自定义双击阈值）
+        fileTableView.setOnMouseClicked(event -> {
+            // 获取点击位置的节点并尝试找到对应的TableRow
+            Node node = event.getPickResult().getIntersectedNode();
+            TableRow<FileEntry> row = null;
+            Node cur = node;
+            while (cur != null && !(cur instanceof TableRow)) {
+                cur = cur.getParent();
+            }
+            if (cur instanceof TableRow) {
+                row = (TableRow<FileEntry>) cur;
+            }
+            int clickedRowIndex = (row != null) ? row.getIndex() : -1;
+            FileEntry clickedEntry = (row != null) ? row.getItem() : null;
+            boolean clickedOnEmpty = (row == null) || (clickedEntry == null);
+            
+            // 隐藏右键菜单
+            if (event.getButton() == MouseButton.PRIMARY) {
+                emptyAreaContextMenu.hide();
+                selectedItemContextMenu.hide();
+            }
+            
+            long now = System.currentTimeMillis();
+            boolean isDoubleClick = event.getButton() == MouseButton.PRIMARY
+                    && clickedRowIndex >= 0
+                    && clickedRowIndex == lastClickedRowIndex
+                    && (now - lastClickTime) <= DOUBLE_CLICK_THRESHOLD_MS;
+            
+            // 标记是否在本次点击中执行了取消选中，用于正确更新点击状态
+            boolean performedCancel = false;
+            
+            if (event.getButton() == MouseButton.PRIMARY) {
+                if (isDoubleClick && !clickedOnEmpty && clickedEntry != null) {
+                    // 快速双击：执行打开逻辑
+                    if (clickedEntry.getType() == FileEntry.EntryType.FILE) {
+                        showModifyFileSizeDialog(clickedEntry);
+                    } else if (clickedEntry.getType() == FileEntry.EntryType.DIRECTORY) {
+                        String parentPath = currentDirectory.getDirEntry().getFullPath();
+                        String path = parentPath.endsWith("/") ? parentPath + clickedEntry.getName() : parentPath + "/" + clickedEntry.getName();
+                        loadDirectory(path);
+                    }
+                } else {
+                    // 单击：空白区域取消选中；分开两次单击同一项才取消选中
+                    if (clickedOnEmpty) {
+                        fileTableView.getSelectionModel().clearSelection();
+                        fileTableView.refresh();
+                        try { fileTableView.getFocusModel().focus(-1); } catch (Exception ignore) {}
+                        performedCancel = true;
+                    } else {
+                        boolean isRepeatSingleClick = clickedRowIndex >= 0
+                                && clickedRowIndex == lastClickedRowIndex
+                                && (now - lastClickTime) > DOUBLE_CLICK_THRESHOLD_MS;
+                        if (isRepeatSingleClick) {
+                            fileTableView.getSelectionModel().clearSelection();
+                            fileTableView.refresh();
+                            try { fileTableView.getFocusModel().focus(-1); } catch (Exception ignore) {}
+                            performedCancel = true;
+                        } // 否则保持选中，无需处理
+                    }
+                }
+            }
+            
+            // 更新最近点击状态（若本次点击执行了取消选中，则重置为-1，避免后续单击立即再次被视为重复单击）
+            lastClickedRowIndex = performedCancel ? -1 : clickedRowIndex;
+            lastClickTime = now;
+        });
+    }
+
+    /**
+     * 返回上级目录
+     */
+    private void navigateBack() {
+        if (currentDirectory == null) {
+            return;
+        }
+        
+        String currentPath = currentDirectory.getDirEntry().getFullPath();
+        
+        // 如果已经在根目录，不能再返回
+        if (currentPath.equals("/")) {
+            return;
+        }
+        
+        // 计算父目录路径
+        String parentPath;
+        if (currentPath.endsWith("/")) {
+            currentPath = currentPath.substring(0, currentPath.length() - 1);
+        }
+        
+        int lastSlashIndex = currentPath.lastIndexOf('/');
+        if (lastSlashIndex <= 0) {
+            parentPath = "/";
+        } else {
+            parentPath = currentPath.substring(0, lastSlashIndex);
+        }
+        
+        // 加载父目录
+        loadDirectory(parentPath);
     }
 
     // ============================== 工具方法 ==============================
@@ -595,35 +725,16 @@ public class MainController {
         if (item == computerRootItem) {
             return "/";
         }
-        
-        // 检查是否为磁盘根节点（如C:、D:）
-        String itemValue = item.getValue();
-        if (itemValue.endsWith(":")) {
-            // 将磁盘名称转换为文件系统路径（C: -> /C）
-            return "/" + itemValue.replace(":", "");
-        }
-        
         StringBuilder path = new StringBuilder(item.getValue());
         TreeItem<String> parent = item.getParent();
-        
-        // 处理磁盘下的路径
         while (parent != null && parent != computerRootItem) {
-            String parentValue = parent.getValue();
-            if (parentValue.endsWith(":")) {
-                // 遇到磁盘根节点，转换为文件系统路径格式
-                path.insert(0, parentValue.replace(":", ""));
-                break;
-            } else {
-                path.insert(0, parentValue + "/");
-            }
+            path.insert(0, parent.getValue() + "/");
             parent = parent.getParent();
         }
-        
         // 确保路径以/开头
         if (!path.toString().startsWith("/")) {
             path.insert(0, "/");
         }
-        
         // 移除多余的斜杠
         return path.toString().replaceAll("//+", "/");
     }
@@ -650,161 +761,6 @@ public class MainController {
         alert.showAndWait();
     }
 
-    // ============================== 文件操作 ==============================
-    
-    /**
-     * 复制选中的文件
-     */
-    private void copySelectedFile() {
-        FileEntry selectedEntry = fileTableView.getSelectionModel().getSelectedItem();
-        if (selectedEntry == null) {
-            showWarning("提示", "请先选择要复制的文件");
-            return;
-        }
-        
-        if (selectedEntry.getType() != FileEntry.EntryType.FILE) {
-            showWarning("提示", "只能复制文件，不能复制文件夹");
-            return;
-        }
-        
-        try {
-            // 构建完整的文件路径
-            String parentPath = currentDirectory.getDirEntry().getFullPath();
-            copiedFilePath = parentPath.endsWith("/") ? parentPath + selectedEntry.getName() : parentPath + "/" + selectedEntry.getName();
-            
-            // 关键改进：读取并保存文件内容，实现深拷贝
-            copiedFileContent = fileSystem.readFile(copiedFilePath);
-            copiedFileName = selectedEntry.getName();
-            
-            // 显示成功提示
-            showSuccess("复制成功", "文件\"" + selectedEntry.getName() + "\"已复制到剪贴板");
-        } catch (Exception e) {
-            showError("复制失败", "复制文件时发生错误：" + e.getMessage());
-        }
-    }
-
-    /**
-     * 粘贴文件
-     */
-    private void pasteFile() {
-        if (copiedFilePath == null || copiedFilePath.isEmpty() || copiedFileContent == null) {
-            showWarning("提示", "没有可粘贴的文件");
-            return;
-        }
-
-        try {
-            // 获取目标目录路径
-            String parentPath = currentDirectory.getDirEntry().getFullPath();
-            
-            // 构建目标文件路径
-            String targetPath = parentPath.endsWith("/") ? parentPath + copiedFileName : parentPath + "/" + copiedFileName;
-            
-            // 检查目标文件是否已存在
-            FileEntry existingFile = fileSystem.getEntry(targetPath);
-            
-            if (existingFile != null) {
-                // 文件已存在，显示确认覆盖对话框
-                Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
-                confirm.setTitle("确认覆盖");
-                confirm.setHeaderText(null);
-                confirm.setContentText("文件\"" + copiedFileName + "\"已存在，是否覆盖？");
-                
-                confirm.showAndWait().ifPresent(response -> {
-                    if (response == ButtonType.OK) {
-                        try {
-                            // 先删除已存在的文件
-                            fileSystem.deleteFile(targetPath);
-                            // 关键改进：使用保存的文件内容创建新文件，而不是通过文件路径复制
-                            FileEntry newFile = fileSystem.createFile(targetPath);
-                            fileSystem.writeFile(targetPath, copiedFileContent);
-                            
-                            // 同时刷新源文件所在目录和目标目录
-                            refreshRelatedDirectories(copiedFilePath, parentPath);
-                            
-                            // 显示成功提示
-                            showSuccess("粘贴成功", "文件\"" + copiedFileName + "\"已成功粘贴到当前目录");
-                        } catch (FileSystemException e) {
-                            showError("粘贴文件失败", e.getMessage());
-                        }
-                    }
-                });
-            } else {
-                // 目标文件不存在，直接使用保存的文件内容创建新文件
-                FileEntry newFile = fileSystem.createFile(targetPath);
-                fileSystem.writeFile(targetPath, copiedFileContent);
-                
-                // 同时刷新源文件所在目录和目标目录
-                refreshRelatedDirectories(copiedFilePath, parentPath);
-                
-                // 显示成功提示
-                showSuccess("粘贴成功", "文件\"" + copiedFileName + "\"已成功粘贴到当前目录");
-            }
-        } catch (FileSystemException e) {
-            showError("粘贴文件失败", e.getMessage());
-        }
-    }
-
-    /**
-     * 关键修复2：同时刷新源文件所在目录和目标目录
-     * 确保所有相关视图都能及时反映文件系统的最新状态
-     */
-    private void refreshRelatedDirectories(String sourcePath, String targetPath) {
-        try {
-            // 1. 获取源文件所在的目录
-            int lastSlashIndex = sourcePath.lastIndexOf('/');
-            String sourceDirPath = (lastSlashIndex != -1) ? sourcePath.substring(0, lastSlashIndex) : targetPath;
-            
-            // 2. 如果当前目录是目标目录，则刷新当前目录
-            if (currentDirectory != null && currentDirectory.getDirEntry().getFullPath().equals(targetPath)) {
-                loadDirectory(targetPath);
-            }
-            
-            // 3. 刷新源文件所在目录的缓存（即使不在当前视图中）
-            // 关键修复：先检查目录是否存在，避免抛出"路径不存在"的异常
-            if (fileSystem.getEntry(sourceDirPath) != null) {
-                Directory sourceDir = fileSystem.getDirectory(sourceDirPath);
-                if (sourceDir != null) {
-                    sourceDir.refreshEntries();
-                }
-            }
-            
-            // 4. 刷新目标目录的缓存
-            // 关键修复：先检查目录是否存在，避免抛出"路径不存在"的异常
-            if (fileSystem.getEntry(targetPath) != null) {
-                Directory targetDir = fileSystem.getDirectory(targetPath);
-                if (targetDir != null) {
-                    targetDir.refreshEntries();
-                }
-            }
-            
-            // 5. 强制刷新整个文件系统的相关缓存
-            // 移除源目录和目标目录的缓存，这样下次访问时会重新加载
-            fileSystem.removeEntryFromCache(sourceDirPath);
-            fileSystem.removeEntryFromCache(targetPath);
-            
-            // 6. 强制在UI线程中刷新所有视图
-            Platform.runLater(() -> {
-                // 重新加载当前目录以确保UI显示最新状态
-                loadDirectory(targetPath);
-                // 刷新目录树，确保文件和目录的层级结构正确显示
-                initDirectoryTree();
-            });
-        } catch (FileSystemException e) {
-            LogUtil.error("刷新目录失败：" + e.getMessage());
-        }
-    }
-
-    /**
-     * 显示成功提示对话框
-     */
-    private void showSuccess(String title, String message) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.showAndWait();
-    }
-
     // ============================== 外部注入 ==============================
     /**
      * 注入FileSystem实例（由应用启动类调用）
@@ -812,6 +768,138 @@ public class MainController {
     public void setFileSystem(FileSystem fileSystem) {
         this.fileSystem = fileSystem;
         initDirectoryTree(); // 重新初始化目录树
+        // 初次注入后刷新 FAT 视图
+        refreshFatView();
+    }
+
+    // 初始化 FAT监视器的列
+    private void initFatTableColumns() {
+        if (fatBlockIdColumn != null) {
+            fatBlockIdColumn.setCellValueFactory(new PropertyValueFactory<>("blockId"));
+        }
+        if (fatValueColumn != null) {
+            fatValueColumn.setCellValueFactory(new PropertyValueFactory<>("fatValue"));
+        }
+        if (fatStatusColumn != null) {
+            fatStatusColumn.setCellValueFactory(new PropertyValueFactory<>("status"));
+        }
+    }
+
+    // FAT行模型
+    public static class FatRow {
+        private final int blockId;
+        private final int value;
+        public FatRow(int blockId, int value) {
+            this.blockId = blockId;
+            this.value = value;
+        }
+        public int getBlockId() { return blockId; }
+        public String getFatValue() { return String.valueOf(value); }
+        public String getStatus() {
+            if (value == FAT.FREE_BLOCK) return "空闲";
+            if (value == FAT.END_OF_FILE) return "文件结束";
+            if (value == FAT.BAD_BLOCK) return "坏块";
+            return "指向 " + value;
+        }
+    }
+
+    // 刷新 FAT 视图
+    private void refreshFatView() {
+        if (fileSystem == null || fileSystem.getFat() == null || fatTableView == null) {
+            return;
+        }
+        FAT fat = fileSystem.getFat();
+        byte[] table = fat.getFatTable();
+        List<FatRow> rows = new ArrayList<>(table.length);
+        int free = 0, used = 0, bad = 0;
+        for (int i = 0; i < table.length; i++) {
+            byte v = table[i];
+            int intValue = v & 0xFF; // 转换为无符号整数显示
+            rows.add(new FatRow(i, intValue));
+            if (v == FAT.FREE_BLOCK) free++;
+            else if (v == FAT.BAD_BLOCK) bad++;
+            else used++;
+        }
+        fatTableView.getItems().setAll(rows);
+        if (fatFreeCountLabel != null) fatFreeCountLabel.setText("空闲：" + free);
+        if (fatUsedCountLabel != null) fatUsedCountLabel.setText("已用：" + used);
+        if (fatBadCountLabel != null) fatBadCountLabel.setText("坏块：" + bad);
+    }
+
+
+    // 地址栏回车事件处理
+    private void handlePathEnter() {
+        String input = pathTextField.getText();
+        if (input == null) return;
+        String targetPath = normalizePath(input.trim());
+        try {
+            Directory dir = fileSystem.getDirectory(targetPath);
+            if (dir == null) {
+                showWarning("提示", "目录不存在：" + targetPath);
+                // 回退到当前目录
+                if (currentDirectory != null) {
+                    pathTextField.setText(currentDirectory.getDirEntry().getFullPath());
+                } else {
+                    pathTextField.setText("/");
+                }
+                return;
+            }
+            loadDirectory(targetPath);
+            // 同步目录树选中
+            selectTreeItemByPath(targetPath);
+        } catch (FileSystemException e) {
+            showError("跳转目录失败", e.getMessage());
+        }
+    }
+
+    // 规范化路径：确保以/开头并清理重复斜杠
+    private String normalizePath(String path) {
+        if (path.isEmpty()) return "/";
+        String p = path;
+        if (!p.startsWith("/")) p = "/" + p;
+        return p.replaceAll("/+", "/");
+    }
+
+    // 在目录树中选中指定路径
+    private void selectTreeItemByPath(String path) {
+        if (dirTreeView == null || computerRootItem == null) return;
+        // 找到根'/'节点
+        TreeItem<String> rootItem = null;
+        for (TreeItem<String> child : computerRootItem.getChildren()) {
+            if ("/".equals(child.getValue())) {
+                rootItem = child;
+                break;
+            }
+        }
+        if (rootItem == null) return;
+        rootItem.setExpanded(true);
+        dirTreeView.getSelectionModel().select(rootItem);
+        
+        String[] parts = path.split("/");
+        TreeItem<String> current = rootItem;
+        String built = "/";
+        for (String part : parts) {
+            if (part == null || part.isEmpty()) continue;
+            built = built.endsWith("/") ? built + part : built + "/" + part;
+            // 确保当前节点的子目录已加载
+            loadSubDirectories(built, current);
+            // 在子节点中查找匹配项
+            TreeItem<String> next = null;
+            for (TreeItem<String> child : current.getChildren()) {
+                if (part.equals(child.getValue())) {
+                    next = child;
+                    break;
+                }
+            }
+            if (next == null) break;
+            next.setExpanded(true);
+            current = next;
+        }
+        // 选中最后定位到的节点
+        dirTreeView.getSelectionModel().select(current);
+        try {
+            int row = dirTreeView.getRow(current);
+            if (row >= 0) dirTreeView.scrollTo(row);
+        } catch (Exception ignore) {}
     }
 }
-

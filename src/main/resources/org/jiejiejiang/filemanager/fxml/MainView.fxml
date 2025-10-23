@@ -2,6 +2,7 @@
 
 <!-- 根布局：BorderPane（上下左右中五区域布局，适合桌面应用） -->
 <?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.control.MenuBar?>
@@ -13,6 +14,8 @@
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.TextField?>
 <?import javafx.geometry.Insets?>
 
 <?import javafx.scene.control.SeparatorMenuItem?>
@@ -33,12 +36,8 @@
                 <MenuItem text="退出" fx:id="exitItem"/>
             </Menu>
 
-            <!-- 编辑菜单（复制、粘贴、删除） -->
+            <!-- 编辑菜单（删除） -->
             <Menu text="编辑">
-                <MenuItem text="复制" fx:id="copyItem"/>
-                <MenuItem text="剪切" fx:id="cutItem"/>
-                <MenuItem text="粘贴" fx:id="pasteItem"/>
-                <SeparatorMenuItem/>
                 <MenuItem text="删除" fx:id="deleteItem"/>
             </Menu>
 
@@ -84,7 +83,14 @@
 
     <!-- 3. 中间：主内容区（文件列表，默认表格模式） -->
     <center>
-        <TableView fx:id="fileTableView" style="-fx-background-color: white;">
+        <VBox>
+            <!-- 导航栏：返回按钮 + 路径栏 -->
+            <HBox spacing="10" style="-fx-padding: 5; -fx-background-color: #f0f0f0;">
+                <Button fx:id="backButton" text="← 返回" style="-fx-cursor: hand;"/>
+                <TextField fx:id="pathTextField" HBox.hgrow="ALWAYS" promptText="当前路径" editable="true"/>
+            </HBox>
+            
+            <TableView fx:id="fileTableView" style="-fx-background-color: white;" VBox.vgrow="ALWAYS">
             <!-- 表格列：名称、类型、大小、修改时间 -->
             <columns>
                 <TableColumn text="名称" prefWidth="200" fx:id="nameColumn">
@@ -101,6 +107,7 @@
                 </TableColumn>
             </columns>
         </TableView>
+        </VBox>
     </center>
 
     <!-- 4. 底部：状态栏（显示当前路径、文件数量） -->
@@ -110,5 +117,26 @@
             <Label text="文件数量：0" fx:id="fileCountLabel"/>
         </HBox>
     </bottom>
+
+    <!-- 5. 右侧：FAT表监视器 -->
+    <right>
+        <VBox spacing="8" style="-fx-background-color: #f9f9f9;" prefWidth="320">
+            <Label text="FAT监视器" style="-fx-font-weight: bold;"/>
+            <HBox spacing="10">
+                <Label text="空闲：" fx:id="fatFreeCountLabel"/>
+                <Label text="已用：" fx:id="fatUsedCountLabel"/>
+                <Label text="坏块：" fx:id="fatBadCountLabel"/>
+            </HBox>
+            <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS">
+                <TableView fx:id="fatTableView">
+                    <columns>
+                        <TableColumn text="块号" prefWidth="70" fx:id="fatBlockIdColumn"/>
+                        <TableColumn text="FAT值" prefWidth="90" fx:id="fatValueColumn"/>
+                        <TableColumn text="状态" prefWidth="140" fx:id="fatStatusColumn"/>
+                    </columns>
+                </TableView>
+            </ScrollPane>
+        </VBox>
+    </right>
 
 </BorderPane>
