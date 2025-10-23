@@ -595,6 +595,16 @@ public class MainController {
         
         // 为文件表格设置右键菜单
         fileTableView.setOnContextMenuRequested(event -> {
+            // 获取点击位置的表格行
+            Node node = event.getPickResult().getIntersectedNode();
+            // 检查是否点击在空白区域（没有选中任何行）
+            boolean clickedOnEmpty = node == fileTableView || (node != null && node.getParent() == fileTableView);
+            
+            // 如果点击在空白区域，先清除选中
+            if (clickedOnEmpty) {
+                fileTableView.getSelectionModel().clearSelection();
+            }
+            
             FileEntry selectedEntry = fileTableView.getSelectionModel().getSelectedItem();
             if (selectedEntry != null) {
                 // 有选中项时显示删除菜单
@@ -605,11 +615,22 @@ public class MainController {
             }
         });
         
-        // 点击其他地方时隐藏菜单
+        // 点击其他地方时隐藏菜单并处理空白区域点击
         fileTableView.setOnMouseClicked(event -> {
+            // 获取点击位置的表格行
+            Node node = event.getPickResult().getIntersectedNode();
+            // 检查是否点击在空白区域（没有选中任何行）
+            boolean clickedOnEmpty = node == fileTableView || (node != null && node.getParent() == fileTableView);
+            
+            // 隐藏右键菜单
             if (event.getButton() == MouseButton.PRIMARY) {
                 emptyAreaContextMenu.hide();
                 selectedItemContextMenu.hide();
+            }
+            
+            // 如果点击在空白区域，取消选中
+            if (clickedOnEmpty) {
+                fileTableView.getSelectionModel().clearSelection();
             }
         });
     }
