@@ -30,6 +30,7 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.control.TableRow;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextInputDialog;
 import javafx.scene.control.TreeItem;
@@ -72,6 +73,11 @@ public class MainController {
     // ============================== 业务对象 ==============================
     private FileSystem fileSystem; // 文件系统核心对象（由外部注入）
     private Directory currentDirectory; // 当前选中的目录
+
+    // ============================== 点击行为状态 ==============================
+    private long lastClickTime = 0L;
+    private int lastClickedRowIndex = -1;
+    private static final int DOUBLE_CLICK_THRESHOLD_MS = 350;
 
     // ============================== 初始化 ==============================
     @FXML
@@ -251,23 +257,8 @@ public class MainController {
         // 7. 设置右键菜单
         setupContextMenus();
         
-        // 8. 文件表格双击事件：双击文件修改大小，双击文件夹打开目录
-        fileTableView.setOnMouseClicked(event -> {
-            if (event.getClickCount() == 2) {
-                FileEntry selectedEntry = fileTableView.getSelectionModel().getSelectedItem();
-                if (selectedEntry != null) {
-                    if (selectedEntry.getType() == FileEntry.EntryType.FILE) {
-                        // 双击文件：显示修改大小对话框
-                        showModifyFileSizeDialog(selectedEntry);
-                    } else if (selectedEntry.getType() == FileEntry.EntryType.DIRECTORY) {
-                        // 双击文件夹：打开该文件夹
-                        String parentPath = currentDirectory.getDirEntry().getFullPath();
-                        String path = parentPath.endsWith("/") ? parentPath + selectedEntry.getName() : parentPath + "/" + selectedEntry.getName();
-                        loadDirectory(path);
-                    }
-                }
-            }
-        });
+        // 8. 文件表格点击事件统一由 setupContextMenus() 中注册的处理器负责
+        // （包含自定义双击阈值与取消选中逻辑，避免事件处理器覆盖问题）
     }
     
     /**
@@ -615,12 +606,21 @@ public class MainController {
             }
         });
         
-        // 点击其他地方时隐藏菜单并处理空白区域点击
+        // 点击其他地方时隐藏菜单并处理空白区域点击（自定义双击阈值）
         fileTableView.setOnMouseClicked(event -> {
-            // 获取点击位置的表格行
+            // 获取点击位置的节点并尝试找到对应的TableRow
             Node node = event.getPickResult().getIntersectedNode();
-            // 检查是否点击在空白区域（没有选中任何行）
-            boolean clickedOnEmpty = node == fileTableView || (node != null && node.getParent() == fileTableView);
+            TableRow<FileEntry> row = null;
+            Node cur = node;
+            while (cur != null && !(cur instanceof TableRow)) {
+                cur = cur.getParent();
+            }
+            if (cur instanceof TableRow) {
+                row = (TableRow<FileEntry>) cur;
+            }
+            int clickedRowIndex = (row != null) ? row.getIndex() : -1;
+            FileEntry clickedEntry = (row != null) ? row.getItem() : null;
+            boolean clickedOnEmpty = (row == null) || (clickedEntry == null);
             
             // 隐藏右键菜单
             if (event.getButton() == MouseButton.PRIMARY) {
@@ -628,10 +628,49 @@ public class MainController {
                 selectedItemContextMenu.hide();
             }
             
-            // 如果点击在空白区域，取消选中
-            if (clickedOnEmpty) {
-                fileTableView.getSelectionModel().clearSelection();
+            long now = System.currentTimeMillis();
+            boolean isDoubleClick = event.getButton() == MouseButton.PRIMARY
+                    && clickedRowIndex >= 0
+                    && clickedRowIndex == lastClickedRowIndex
+                    && (now - lastClickTime) <= DOUBLE_CLICK_THRESHOLD_MS;
+            
+            // 标记是否在本次点击中执行了取消选中，用于正确更新点击状态
+            boolean performedCancel = false;
+            
+            if (event.getButton() == MouseButton.PRIMARY) {
+                if (isDoubleClick && !clickedOnEmpty && clickedEntry != null) {
+                    // 快速双击：执行打开逻辑
+                    if (clickedEntry.getType() == FileEntry.EntryType.FILE) {
+                        showModifyFileSizeDialog(clickedEntry);
+                    } else if (clickedEntry.getType() == FileEntry.EntryType.DIRECTORY) {
+                        String parentPath = currentDirectory.getDirEntry().getFullPath();
+                        String path = parentPath.endsWith("/") ? parentPath + clickedEntry.getName() : parentPath + "/" + clickedEntry.getName();
+                        loadDirectory(path);
+                    }
+                } else {
+                    // 单击：空白区域取消选中；分开两次单击同一项才取消选中
+                    if (clickedOnEmpty) {
+                        fileTableView.getSelectionModel().clearSelection();
+                        fileTableView.refresh();
+                        try { fileTableView.getFocusModel().focus(-1); } catch (Exception ignore) {}
+                        performedCancel = true;
+                    } else {
+                        boolean isRepeatSingleClick = clickedRowIndex >= 0
+                                && clickedRowIndex == lastClickedRowIndex
+                                && (now - lastClickTime) > DOUBLE_CLICK_THRESHOLD_MS;
+                        if (isRepeatSingleClick) {
+                            fileTableView.getSelectionModel().clearSelection();
+                            fileTableView.refresh();
+                            try { fileTableView.getFocusModel().focus(-1); } catch (Exception ignore) {}
+                            performedCancel = true;
+                        } // 否则保持选中，无需处理
+                    }
+                }
             }
+            
+            // 更新最近点击状态（若本次点击执行了取消选中，则重置为-1，避免后续单击立即再次被视为重复单击）
+            lastClickedRowIndex = performedCancel ? -1 : clickedRowIndex;
+            lastClickTime = now;
         });
     }
 
