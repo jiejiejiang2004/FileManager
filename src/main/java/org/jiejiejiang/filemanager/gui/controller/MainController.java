@@ -546,13 +546,24 @@ public class MainController {
         Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
         confirm.setTitle("确认删除");
         confirm.setHeaderText(null);
-        confirm.setContentText("确定要删除 " + selectedEntry.getName() + " 吗？");
+        String confirmMessage = selectedEntry.getType() == FileEntry.EntryType.DIRECTORY 
+            ? "确定要删除文件夹 " + selectedEntry.getName() + " 及其所有内容吗？" 
+            : "确定要删除文件 " + selectedEntry.getName() + " 吗？";
+        confirm.setContentText(confirmMessage);
 
         confirm.showAndWait().ifPresent(response -> {
             if (response == ButtonType.OK) {
                 try {
-                    currentDirectory.removeEntry(selectedEntry.getName());
-                    currentDirectory.syncToDisk();
+                    String fullPath = selectedEntry.getFullPath();
+                    
+                    if (selectedEntry.getType() == FileEntry.EntryType.DIRECTORY) {
+                        // 对于目录，使用递归删除方法
+                        fileSystem.deleteDirectoryRecursively(fullPath);
+                    } else {
+                        // 对于文件，使用普通删除方法
+                        fileSystem.deleteFile(fullPath);
+                    }
+                    
                     loadDirectory(currentDirectory.getDirEntry().getFullPath()); // 刷新列表
                     initDirectoryTree(); // 刷新目录树
                     // 删除后刷新 FAT 视图

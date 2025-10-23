@@ -11,6 +11,7 @@ import java.io.IOException;
 //import java.nio.file.FileSystemException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 /**
  * 文件系统核心类：整合 Disk、FAT 实现文件/目录的完整操作
@@ -914,9 +915,34 @@ public class FileSystem {
             }
         }
 
-        // 3. 校验目录是否已存在
-        if (entryCache.containsKey(fullPath)) {
+        // 3. 校验目录是否已存在（考虑已删除的目录）
+        FileEntry existingEntry = entryCache.get(fullPath);
+        if (existingEntry != null) {
+            LogUtil.debug("目录已在缓存中存在，检查删除状态：" + existingEntry.isDeleted());
+        }
+        if (existingEntry != null && !existingEntry.isDeleted()) {
             throw new FileSystemException("创建目录失败：目录已存在 → " + fullPath);
+        }
+        // 如果目录已被标记为删除，则从缓存中移除它，允许重新创建
+        if (existingEntry != null && existingEntry.isDeleted()) {
+            LogUtil.debug("目录已被标记为删除，从缓存中移除：" + fullPath);
+            entryCache.remove(fullPath);
+            // 同步清理父目录的entries缓存
+            try {
+                Directory parentDirectoryObj = getDirectory(parentPath);
+                if (parentDirectoryObj != null) {
+                    List<FileEntry> entries = new ArrayList<>(parentDirectoryObj.getEntries());
+                    for (FileEntry entry : entries) {
+                        if (entry.getName().equals(dirName) && entry.isDeleted()) {
+                            parentDirectoryObj.getEntries().remove(entry);
+                            LogUtil.debug("从父目录缓存中移除已删除的目录：" + dirName);
+                            break;
+                        }
+                    }
+                }
+            } catch (FileSystemException e) {
+                LogUtil.warn("清理父目录缓存失败，但继续创建目录：" + e.getMessage());
+            }
         }
 
         // 4. 创建目录元数据（目录初始无块，startBlockId=-1）
@@ -980,6 +1006,71 @@ public class FileSystem {
         updateDirModifyTime(parentDir);
 
         LogUtil.info("删除目录成功：" + fullPath);
+    }
+
+    /**
+     * 递归删除目录及其所有内容
+     * @param fullPath 目录完整路径
+     * @throws FileSystemException 目录不存在、不是目录时抛出
+     */
+    public void deleteDirectoryRecursively(String fullPath) throws FileSystemException {
+        checkMounted();
+        validateFullPath(fullPath);
+
+        // 1. 禁止删除根目录
+        if (fullPath.equals(ROOT_PATH)) {
+            throw new FileSystemException("删除目录失败：根目录不允许删除");
+        }
+
+        // 2. 校验目录是否存在且为目录
+        FileEntry dir = getEntry(fullPath);
+        if (dir == null) {
+            throw new FileSystemException("删除目录失败：目录不存在 → " + fullPath);
+        }
+        if (dir.getType() != FileEntry.EntryType.DIRECTORY) {
+            throw new FileSystemException("删除目录失败：" + fullPath + " 不是目录");
+        }
+        if (dir.isDeleted()) {
+            LogUtil.warn("删除目录失败：目录已删除 → " + fullPath);
+            return;
+        }
+
+        // 3. 递归删除所有子条目
+        List<String> childPaths = entryCache.keySet().stream()
+                .filter(path -> !path.equals(fullPath)) // 排除目录自身
+                .filter(path -> path.startsWith(fullPath + "/")) // 找到所有子条目
+                .sorted((a, b) -> b.length() - a.length()) // 按路径长度降序排序，确保先删除深层文件
+                .collect(Collectors.toList());
+
+        for (String childPath : childPaths) {
+            FileEntry childEntry = getEntry(childPath);
+            if (childEntry != null && !childEntry.isDeleted()) {
+                if (childEntry.getType() == FileEntry.EntryType.FILE) {
+                    // 删除文件
+                    deleteFile(childPath);
+                } else if (childEntry.getType() == FileEntry.EntryType.DIRECTORY) {
+                    // 递归删除子目录
+                    deleteDirectoryRecursively(childPath);
+                }
+            }
+        }
+
+        // 4. 删除目录本身（现在应该是空的）：通过父目录移除并同步到磁盘
+        try {
+            Directory parentDirectory = getDirectory(dir.getParentPath());
+            parentDirectory.removeEntry(dir.getName());
+            parentDirectory.syncToDisk();
+        } catch (FileSystemException e) {
+            LogUtil.error("递归删除目录最终清理失败：" + e.getMessage(), e);
+            throw e;
+        }
+        // 5. 额外清理全局缓存，确保不存在残留
+        removeEntryFromCache(fullPath);
+        // 6. 更新父目录的修改时间
+        FileEntry parentDir = getEntry(dir.getParentPath());
+        updateDirModifyTime(parentDir);
+
+        LogUtil.info("递归删除目录成功：" + fullPath);
     }
 
     /**
