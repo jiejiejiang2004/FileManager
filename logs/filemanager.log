@@ -17525,3 +17525,803 @@ Caused by: java.lang.Error: Unresolved compilation problems:
 [2025-10-24 03:27:48] [INFO] FAT 表已持久化到磁盘，共使用2个块
 [2025-10-24 03:27:48] [INFO] 文件系统卸载成功
 [2025-10-24 03:27:48] [INFO] 应用关闭，文件系统已卸载
+[2025-10-24 03:34:13] [INFO] 已成功删除旧的磁盘文件：D:\Project\FileManager\data\disk.img
+[2025-10-24 03:34:13] [INFO] FAT 初始化：块 0 标记为FAT存储区
+[2025-10-24 03:34:13] [INFO] FAT 初始化：块 1 标记为FAT存储区
+[2025-10-24 03:34:13] [INFO] FAT 初始化：块 23 标记为坏块
+[2025-10-24 03:34:13] [INFO] FAT 初始化：块 49 标记为坏块
+[2025-10-24 03:34:13] [INFO] FAT 初始化完成：总块数=128，FAT表大小=128，数据分配从块2开始
+[2025-10-24 03:34:13] [INFO] 已打开文件表（OFT）初始化完成，容量：5
+[2025-10-24 03:34:13] [DEBUG] 文件系统挂载前已清空全局缓存
+[2025-10-24 03:34:13] [INFO] 文件系统挂载成功：块大小=64字节，总块数=128
+[2025-10-24 03:34:14] [INFO] 列出目录成功：/，子条目数：0
+[2025-10-24 03:34:15] [INFO] 应用启动成功
+[2025-10-24 03:34:19] [INFO] 列出目录成功：/，子条目数：0
+[2025-10-24 03:34:22] [DEBUG] 准备创建文件：/新建文件.txt
+[2025-10-24 03:34:22] [DEBUG] 尝试创建文件：/新建文件.txt
+[2025-10-24 03:34:22] [DEBUG] 解析路径 - 父目录：/, 文件名：新建文件.txt
+[2025-10-24 03:34:22] [INFO] FAT 分配块：blockId=2（跳过坏块23、49）
+[2025-10-24 03:34:22] [DEBUG] 为文件分配起始块：2
+[2025-10-24 03:34:22] [DEBUG] 创建文件元数据：[文件] /新建文件.txt | 大小：0 B | 创建时间：Fri Oct 24 03:34:22 CST 2025 | 起始块：2 | UUID：1ecf61a8 | 状态：正常
+[2025-10-24 03:34:22] [DEBUG] 文件元数据已缓存：/新建文件.txt
+[2025-10-24 03:34:22] [DEBUG] 父目录修改时间已更新：/
+[2025-10-24 03:34:22] [DEBUG] 创建父目录对象：/
+[2025-10-24 03:34:22] [DEBUG] 目录添加项成功：新建文件.txt → /
+[2025-10-24 03:34:22] [DEBUG] 文件已添加到父目录：新建文件.txt → /
+[2025-10-24 03:34:22] [INFO] FAT 分配块：blockId=3（跳过坏块23、49）
+[2025-10-24 03:34:22] [INFO] FAT 分配块：blockId=4（跳过坏块23、49）
+[2025-10-24 03:34:22] [DEBUG] FAT更新块链：3 → 4
+[2025-10-24 03:34:22] [DEBUG] FAT更新块链：4 → END_OF_FILE
+[2025-10-24 03:34:22] [DEBUG] 目录项同步到磁盘完成：/，块数：1
+[2025-10-24 03:34:22] [DEBUG] 父目录已同步到磁盘：/
+[2025-10-24 03:34:22] [INFO] 创建文件成功：[文件] /新建文件.txt | 大小：0 B | 创建时间：Fri Oct 24 03:34:22 CST 2025 | 起始块：2 | UUID：1ecf61a8 | 状态：正常
+[2025-10-24 03:34:22] [INFO] 文件创建成功：/新建文件.txt
+[2025-10-24 03:34:22] [DEBUG] 创建文件后刷新目录：/
+[2025-10-24 03:34:22] [DEBUG] 解析目录项：长度=56, 内容=新建文件.txt|FILE|2|0|false|1ecf61a8-1beb-4379-821a-39bf8fb2, 分隔符=|
+[2025-10-24 03:34:22] [DEBUG] 分割后数组：长度=6, 内容=[[0]=新建文件.txt, [1]=FILE, [2]=2, [3]=0, [4]=false, [5]=1ecf61a8-1beb-4379-821a-39bf8fb2]
+[2025-10-24 03:34:22] [DEBUG] 从磁盘加载目录项完成：/，共1项
+[2025-10-24 03:34:22] [DEBUG] 解析目录项：长度=56, 内容=新建文件.txt|FILE|2|0|false|1ecf61a8-1beb-4379-821a-39bf8fb2, 分隔符=|
+[2025-10-24 03:34:22] [DEBUG] 分割后数组：长度=6, 内容=[[0]=新建文件.txt, [1]=FILE, [2]=2, [3]=0, [4]=false, [5]=1ecf61a8-1beb-4379-821a-39bf8fb2]
+[2025-10-24 03:34:22] [DEBUG] 从磁盘加载目录项完成：/，共1项
+[2025-10-24 03:34:22] [INFO] 列出目录成功：/，子条目数：1
+[2025-10-24 03:34:26] [DEBUG] 解析目录项：长度=56, 内容=新建文件.txt|FILE|2|0|false|1ecf61a8-1beb-4379-821a-39bf8fb2, 分隔符=|
+[2025-10-24 03:34:26] [DEBUG] 分割后数组：长度=6, 内容=[[0]=新建文件.txt, [1]=FILE, [2]=2, [3]=0, [4]=false, [5]=1ecf61a8-1beb-4379-821a-39bf8fb2]
+[2025-10-24 03:34:26] [DEBUG] 从磁盘加载目录项完成：/，共1项
+[2025-10-24 03:34:26] [DEBUG] 目录添加项成功：新建文件夹 → /
+[2025-10-24 03:34:26] [INFO] FAT 分配块：blockId=5（跳过坏块23、49）
+[2025-10-24 03:34:26] [INFO] FAT 分配块：blockId=6（跳过坏块23、49）
+[2025-10-24 03:34:26] [DEBUG] FAT更新块链：5 → 6
+[2025-10-24 03:34:26] [DEBUG] FAT更新块链：6 → END_OF_FILE
+[2025-10-24 03:34:26] [INFO] FAT 释放块：blockId=3
+[2025-10-24 03:34:26] [INFO] FAT 释放块：blockId=4
+[2025-10-24 03:34:26] [DEBUG] 目录项同步到磁盘完成：/，块数：1
+[2025-10-24 03:34:26] [INFO] 创建目录成功：[目录] /新建文件夹 | 大小：0 B | 创建时间：Fri Oct 24 03:34:26 CST 2025 | 起始块：未分配 | UUID：7954c4df | 状态：正常
+[2025-10-24 03:34:26] [DEBUG] 解析目录项：长度=56, 内容=新建文件.txt|FILE|2|0|false|1ecf61a8-1beb-4379-821a-39bf8fb2, 分隔符=|
+[2025-10-24 03:34:26] [DEBUG] 分割后数组：长度=6, 内容=[[0]=新建文件.txt, [1]=FILE, [2]=2, [3]=0, [4]=false, [5]=1ecf61a8-1beb-4379-821a-39bf8fb2]
+[2025-10-24 03:34:26] [DEBUG] 从磁盘加载目录项完成：/，共1项
+[2025-10-24 03:34:26] [DEBUG] 解析目录项：长度=56, 内容=新建文件.txt|FILE|2|0|false|1ecf61a8-1beb-4379-821a-39bf8fb2, 分隔符=|
+[2025-10-24 03:34:26] [DEBUG] 分割后数组：长度=6, 内容=[[0]=新建文件.txt, [1]=FILE, [2]=2, [3]=0, [4]=false, [5]=1ecf61a8-1beb-4379-821a-39bf8fb2]
+[2025-10-24 03:34:26] [DEBUG] 从磁盘加载目录项完成：/，共1项
+[2025-10-24 03:34:26] [INFO] 列出目录成功：/，子条目数：2
+[2025-10-24 03:34:26] [INFO] 列出目录成功：/，子条目数：2
+[2025-10-24 03:34:26] [INFO] 列出目录成功：/新建文件夹，子条目数：0
+[2025-10-24 03:34:29] [DEBUG] 准备创建文件：/新建文件夹/新建文件.txt
+[2025-10-24 03:34:29] [DEBUG] 尝试创建文件：/新建文件夹/新建文件.txt
+[2025-10-24 03:34:29] [DEBUG] 解析路径 - 父目录：/新建文件夹, 文件名：新建文件.txt
+[2025-10-24 03:34:29] [INFO] FAT 分配块：blockId=3（跳过坏块23、49）
+[2025-10-24 03:34:29] [DEBUG] 为文件分配起始块：3
+[2025-10-24 03:34:29] [DEBUG] 创建文件元数据：[文件] /新建文件夹/新建文件.txt | 大小：0 B | 创建时间：Fri Oct 24 03:34:29 CST 2025 | 起始块：3 | UUID：88469d35 | 状态：正常
+[2025-10-24 03:34:29] [DEBUG] 文件元数据已缓存：/新建文件夹/新建文件.txt
+[2025-10-24 03:34:29] [DEBUG] 父目录修改时间已更新：/新建文件夹
+[2025-10-24 03:34:29] [DEBUG] 创建父目录对象：/新建文件夹
+[2025-10-24 03:34:29] [DEBUG] 目录添加项成功：新建文件.txt → /新建文件夹
+[2025-10-24 03:34:29] [DEBUG] 文件已添加到父目录：新建文件.txt → /新建文件夹
+[2025-10-24 03:34:29] [INFO] FAT 分配块：blockId=4（跳过坏块23、49）
+[2025-10-24 03:34:29] [INFO] FAT 分配块：blockId=7（跳过坏块23、49）
+[2025-10-24 03:34:29] [DEBUG] FAT更新块链：4 → 7
+[2025-10-24 03:34:29] [DEBUG] FAT更新块链：7 → END_OF_FILE
+[2025-10-24 03:34:29] [DEBUG] 目录项同步到磁盘完成：/新建文件夹，块数：1
+[2025-10-24 03:34:29] [DEBUG] 父目录已同步到磁盘：/新建文件夹
+[2025-10-24 03:34:29] [INFO] 创建文件成功：[文件] /新建文件夹/新建文件.txt | 大小：0 B | 创建时间：Fri Oct 24 03:34:29 CST 2025 | 起始块：3 | UUID：88469d35 | 状态：正常
+[2025-10-24 03:34:29] [INFO] 文件创建成功：/新建文件夹/新建文件.txt
+[2025-10-24 03:34:29] [DEBUG] 创建文件后刷新目录：/新建文件夹
+[2025-10-24 03:34:29] [DEBUG] 解析目录项：长度=56, 内容=新建文件.txt|FILE|3|0|false|88469d35-f134-4ba9-9cee-2a73a190, 分隔符=|
+[2025-10-24 03:34:29] [DEBUG] 分割后数组：长度=6, 内容=[[0]=新建文件.txt, [1]=FILE, [2]=3, [3]=0, [4]=false, [5]=88469d35-f134-4ba9-9cee-2a73a190]
+[2025-10-24 03:34:29] [DEBUG] 从磁盘加载目录项完成：/新建文件夹，共1项
+[2025-10-24 03:34:29] [DEBUG] 解析目录项：长度=56, 内容=新建文件.txt|FILE|3|0|false|88469d35-f134-4ba9-9cee-2a73a190, 分隔符=|
+[2025-10-24 03:34:29] [DEBUG] 分割后数组：长度=6, 内容=[[0]=新建文件.txt, [1]=FILE, [2]=3, [3]=0, [4]=false, [5]=88469d35-f134-4ba9-9cee-2a73a190]
+[2025-10-24 03:34:29] [DEBUG] 从磁盘加载目录项完成：/新建文件夹，共1项
+[2025-10-24 03:34:29] [INFO] 列出目录成功：/新建文件夹，子条目数：1
+[2025-10-24 03:34:38] [DEBUG] 解析目录项：长度=56, 内容=新建文件.txt|FILE|2|0|false|1ecf61a8-1beb-4379-821a-39bf8fb2, 分隔符=|
+[2025-10-24 03:34:38] [DEBUG] 分割后数组：长度=6, 内容=[[0]=新建文件.txt, [1]=FILE, [2]=2, [3]=0, [4]=false, [5]=1ecf61a8-1beb-4379-821a-39bf8fb2]
+[2025-10-24 03:34:38] [DEBUG] 从磁盘加载目录项完成：/，共1项
+[2025-10-24 03:34:38] [DEBUG] 解析目录项：长度=56, 内容=新建文件.txt|FILE|2|0|false|1ecf61a8-1beb-4379-821a-39bf8fb2, 分隔符=|
+[2025-10-24 03:34:38] [DEBUG] 分割后数组：长度=6, 内容=[[0]=新建文件.txt, [1]=FILE, [2]=2, [3]=0, [4]=false, [5]=1ecf61a8-1beb-4379-821a-39bf8fb2]
+[2025-10-24 03:34:38] [DEBUG] 从磁盘加载目录项完成：/，共1项
+[2025-10-24 03:34:38] [INFO] 列出目录成功：/，子条目数：2
+[2025-10-24 03:34:39] [INFO] OFT清理完成，关闭了 0 个文件
+[2025-10-24 03:34:39] [INFO] 开始保存FAT表到磁盘，总大小=128字节，使用块0和块1
+[2025-10-24 03:34:39] [DEBUG] FAT表块 0 已写入磁盘
+[2025-10-24 03:34:39] [DEBUG] FAT表块 1 已写入磁盘
+[2025-10-24 03:34:39] [INFO] FAT 表已持久化到磁盘，共使用2个块
+[2025-10-24 03:34:39] [INFO] 文件系统卸载成功
+[2025-10-24 03:34:39] [INFO] 应用关闭，文件系统已卸载
+[2025-10-25 01:48:07] [INFO] 已成功删除旧的磁盘文件：D:\Project\FileManager\data\disk.img
+[2025-10-25 01:48:07] [INFO] FAT 初始化：块 0 标记为FAT存储区
+[2025-10-25 01:48:07] [INFO] FAT 初始化：块 1 标记为FAT存储区
+[2025-10-25 01:48:07] [INFO] FAT 初始化：块 23 标记为坏块
+[2025-10-25 01:48:07] [INFO] FAT 初始化：块 49 标记为坏块
+[2025-10-25 01:48:07] [INFO] FAT 初始化完成：总块数=128，FAT表大小=128，数据分配从块2开始
+[2025-10-25 01:48:07] [INFO] 已打开文件表（OFT）初始化完成，容量：5
+[2025-10-25 01:48:07] [DEBUG] 文件系统挂载前已清空全局缓存
+[2025-10-25 01:48:07] [INFO] 文件系统挂载成功：块大小=64字节，总块数=128
+[2025-10-25 01:48:08] [ERROR] 应用启动失败
+javafx.fxml.LoadException: 
+/D:/Project/FileManager/target/classes/org/jiejiejiang/filemanager/fxml/MainView.fxml:24
+
+	at javafx.fxml@21/javafx.fxml.FXMLLoader.constructLoadException(FXMLLoader.java:2722)
+	at javafx.fxml@21/javafx.fxml.FXMLLoader$ValueElement.processAttribute(FXMLLoader.java:946)
+	at javafx.fxml@21/javafx.fxml.FXMLLoader$InstanceDeclarationElement.processAttribute(FXMLLoader.java:983)
+	at javafx.fxml@21/javafx.fxml.FXMLLoader$Element.processStartElement(FXMLLoader.java:230)
+	at javafx.fxml@21/javafx.fxml.FXMLLoader$ValueElement.processStartElement(FXMLLoader.java:757)
+	at javafx.fxml@21/javafx.fxml.FXMLLoader.processStartElement(FXMLLoader.java:2853)
+	at javafx.fxml@21/javafx.fxml.FXMLLoader.loadImpl(FXMLLoader.java:2649)
+	at javafx.fxml@21/javafx.fxml.FXMLLoader.loadImpl(FXMLLoader.java:2563)
+	at javafx.fxml@21/javafx.fxml.FXMLLoader.load(FXMLLoader.java:2531)
+	at org.jiejiejiang.filemanager.gui.FileManagerApp.start(FileManagerApp.java:46)
+	at javafx.graphics@21/com.sun.javafx.application.LauncherImpl.lambda$launchApplication1$9(LauncherImpl.java:839)
+	at javafx.graphics@21/com.sun.javafx.application.PlatformImpl.lambda$runAndWait$12(PlatformImpl.java:483)
+	at javafx.graphics@21/com.sun.javafx.application.PlatformImpl.lambda$runLater$10(PlatformImpl.java:456)
+	at java.base/java.security.AccessController.doPrivileged(AccessController.java:400)
+	at javafx.graphics@21/com.sun.javafx.application.PlatformImpl.lambda$runLater$11(PlatformImpl.java:455)
+	at javafx.graphics@21/com.sun.glass.ui.InvokeLaterDispatcher$Future.run(InvokeLaterDispatcher.java:95)
+	at javafx.graphics@21/com.sun.glass.ui.win.WinApplication._runLoop(Native Method)
+	at javafx.graphics@21/com.sun.glass.ui.win.WinApplication.lambda$runLoop$3(WinApplication.java:185)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+Caused by: java.lang.reflect.InvocationTargetException
+	at java.base/jdk.internal.reflect.DirectConstructorHandleAccessor.newInstance(DirectConstructorHandleAccessor.java:74)
+	at java.base/java.lang.reflect.Constructor.newInstanceWithCaller(Constructor.java:502)
+	at java.base/java.lang.reflect.Constructor.newInstance(Constructor.java:486)
+	at javafx.fxml@21/javafx.fxml.FXMLLoader$ValueElement.processAttribute(FXMLLoader.java:941)
+	... 17 more
+Caused by: java.lang.Error: Unresolved compilation problem: 
+	The method fire() is undefined for the type Node
+
+	at org.jiejiejiang.filemanager.gui.controller.MainController.<init>(MainController.java:315)
+	at java.base/jdk.internal.reflect.DirectConstructorHandleAccessor.newInstance(DirectConstructorHandleAccessor.java:62)
+	... 20 more
+[2025-10-25 01:48:08] [INFO] OFT清理完成，关闭了 0 个文件
+[2025-10-25 01:48:08] [INFO] 开始保存FAT表到磁盘，总大小=128字节，使用块0和块1
+[2025-10-25 01:48:08] [DEBUG] FAT表块 0 已写入磁盘
+[2025-10-25 01:48:08] [DEBUG] FAT表块 1 已写入磁盘
+[2025-10-25 01:48:08] [INFO] FAT 表已持久化到磁盘，共使用2个块
+[2025-10-25 01:48:08] [INFO] 文件系统卸载成功
+[2025-10-25 01:48:08] [INFO] 应用关闭，文件系统已卸载
+[2025-10-25 01:48:35] [INFO] 已成功删除旧的磁盘文件：D:\Project\FileManager\data\disk.img
+[2025-10-25 01:48:35] [INFO] FAT 初始化：块 0 标记为FAT存储区
+[2025-10-25 01:48:35] [INFO] FAT 初始化：块 1 标记为FAT存储区
+[2025-10-25 01:48:35] [INFO] FAT 初始化：块 23 标记为坏块
+[2025-10-25 01:48:35] [INFO] FAT 初始化：块 49 标记为坏块
+[2025-10-25 01:48:35] [INFO] FAT 初始化完成：总块数=128，FAT表大小=128，数据分配从块2开始
+[2025-10-25 01:48:35] [INFO] 已打开文件表（OFT）初始化完成，容量：5
+[2025-10-25 01:48:35] [DEBUG] 文件系统挂载前已清空全局缓存
+[2025-10-25 01:48:35] [INFO] 文件系统挂载成功：块大小=64字节，总块数=128
+[2025-10-25 01:48:35] [ERROR] 应用启动失败
+javafx.fxml.LoadException: 
+/D:/Project/FileManager/target/classes/org/jiejiejiang/filemanager/fxml/MainView.fxml:24
+
+	at javafx.fxml@21/javafx.fxml.FXMLLoader.constructLoadException(FXMLLoader.java:2722)
+	at javafx.fxml@21/javafx.fxml.FXMLLoader$ValueElement.processAttribute(FXMLLoader.java:946)
+	at javafx.fxml@21/javafx.fxml.FXMLLoader$InstanceDeclarationElement.processAttribute(FXMLLoader.java:983)
+	at javafx.fxml@21/javafx.fxml.FXMLLoader$Element.processStartElement(FXMLLoader.java:230)
+	at javafx.fxml@21/javafx.fxml.FXMLLoader$ValueElement.processStartElement(FXMLLoader.java:757)
+	at javafx.fxml@21/javafx.fxml.FXMLLoader.processStartElement(FXMLLoader.java:2853)
+	at javafx.fxml@21/javafx.fxml.FXMLLoader.loadImpl(FXMLLoader.java:2649)
+	at javafx.fxml@21/javafx.fxml.FXMLLoader.loadImpl(FXMLLoader.java:2563)
+	at javafx.fxml@21/javafx.fxml.FXMLLoader.load(FXMLLoader.java:2531)
+	at org.jiejiejiang.filemanager.gui.FileManagerApp.start(FileManagerApp.java:46)
+	at javafx.graphics@21/com.sun.javafx.application.LauncherImpl.lambda$launchApplication1$9(LauncherImpl.java:839)
+	at javafx.graphics@21/com.sun.javafx.application.PlatformImpl.lambda$runAndWait$12(PlatformImpl.java:483)
+	at javafx.graphics@21/com.sun.javafx.application.PlatformImpl.lambda$runLater$10(PlatformImpl.java:456)
+	at java.base/java.security.AccessController.doPrivileged(AccessController.java:400)
+	at javafx.graphics@21/com.sun.javafx.application.PlatformImpl.lambda$runLater$11(PlatformImpl.java:455)
+	at javafx.graphics@21/com.sun.glass.ui.InvokeLaterDispatcher$Future.run(InvokeLaterDispatcher.java:95)
+	at javafx.graphics@21/com.sun.glass.ui.win.WinApplication._runLoop(Native Method)
+	at javafx.graphics@21/com.sun.glass.ui.win.WinApplication.lambda$runLoop$3(WinApplication.java:185)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+Caused by: java.lang.reflect.InvocationTargetException
+	at java.base/jdk.internal.reflect.DirectConstructorHandleAccessor.newInstance(DirectConstructorHandleAccessor.java:74)
+	at java.base/java.lang.reflect.Constructor.newInstanceWithCaller(Constructor.java:502)
+	at java.base/java.lang.reflect.Constructor.newInstance(Constructor.java:486)
+	at javafx.fxml@21/javafx.fxml.FXMLLoader$ValueElement.processAttribute(FXMLLoader.java:941)
+	... 17 more
+Caused by: java.lang.Error: Unresolved compilation problem: 
+	The method fire() is undefined for the type Node
+
+	at org.jiejiejiang.filemanager.gui.controller.MainController.<init>(MainController.java:315)
+	at java.base/jdk.internal.reflect.DirectConstructorHandleAccessor.newInstance(DirectConstructorHandleAccessor.java:62)
+	... 20 more
+[2025-10-25 01:48:35] [INFO] OFT清理完成，关闭了 0 个文件
+[2025-10-25 01:48:35] [INFO] 开始保存FAT表到磁盘，总大小=128字节，使用块0和块1
+[2025-10-25 01:48:35] [DEBUG] FAT表块 0 已写入磁盘
+[2025-10-25 01:48:35] [DEBUG] FAT表块 1 已写入磁盘
+[2025-10-25 01:48:35] [INFO] FAT 表已持久化到磁盘，共使用2个块
+[2025-10-25 01:48:35] [INFO] 文件系统卸载成功
+[2025-10-25 01:48:35] [INFO] 应用关闭，文件系统已卸载
+[2025-10-25 01:49:47] [INFO] 已成功删除旧的磁盘文件：D:\Project\FileManager\data\disk.img
+[2025-10-25 01:49:47] [INFO] FAT 初始化：块 0 标记为FAT存储区
+[2025-10-25 01:49:47] [INFO] FAT 初始化：块 1 标记为FAT存储区
+[2025-10-25 01:49:47] [INFO] FAT 初始化：块 23 标记为坏块
+[2025-10-25 01:49:47] [INFO] FAT 初始化：块 49 标记为坏块
+[2025-10-25 01:49:47] [INFO] FAT 初始化完成：总块数=128，FAT表大小=128，数据分配从块2开始
+[2025-10-25 01:49:47] [INFO] 已打开文件表（OFT）初始化完成，容量：5
+[2025-10-25 01:49:47] [DEBUG] 文件系统挂载前已清空全局缓存
+[2025-10-25 01:49:47] [INFO] 文件系统挂载成功：块大小=64字节，总块数=128
+[2025-10-25 01:49:47] [INFO] 列出目录成功：/，子条目数：0
+[2025-10-25 01:49:48] [INFO] 应用启动成功
+[2025-10-25 01:49:53] [INFO] 列出目录成功：/，子条目数：0
+[2025-10-25 01:49:57] [DEBUG] 准备创建文件：/新建文件.txt
+[2025-10-25 01:49:57] [DEBUG] 尝试创建文件：/新建文件.txt
+[2025-10-25 01:49:57] [DEBUG] 解析路径 - 父目录：/, 文件名：新建文件.txt
+[2025-10-25 01:49:57] [INFO] FAT 分配块：blockId=2（跳过坏块23、49）
+[2025-10-25 01:49:57] [DEBUG] 为文件分配起始块：2
+[2025-10-25 01:49:57] [DEBUG] 创建文件元数据：[文件] /新建文件.txt | 大小：0 B | 创建时间：Sat Oct 25 01:49:57 CST 2025 | 起始块：2 | UUID：3f9a6e22 | 状态：正常
+[2025-10-25 01:49:57] [DEBUG] 文件元数据已缓存：/新建文件.txt
+[2025-10-25 01:49:57] [DEBUG] 父目录修改时间已更新：/
+[2025-10-25 01:49:57] [DEBUG] 创建父目录对象：/
+[2025-10-25 01:49:57] [DEBUG] 目录添加项成功：新建文件.txt → /
+[2025-10-25 01:49:57] [DEBUG] 文件已添加到父目录：新建文件.txt → /
+[2025-10-25 01:49:57] [INFO] FAT 分配块：blockId=3（跳过坏块23、49）
+[2025-10-25 01:49:57] [INFO] FAT 分配块：blockId=4（跳过坏块23、49）
+[2025-10-25 01:49:57] [DEBUG] FAT更新块链：3 → 4
+[2025-10-25 01:49:57] [DEBUG] FAT更新块链：4 → END_OF_FILE
+[2025-10-25 01:49:57] [DEBUG] 目录项同步到磁盘完成：/，块数：1
+[2025-10-25 01:49:57] [DEBUG] 父目录已同步到磁盘：/
+[2025-10-25 01:49:57] [INFO] 创建文件成功：[文件] /新建文件.txt | 大小：0 B | 创建时间：Sat Oct 25 01:49:57 CST 2025 | 起始块：2 | UUID：3f9a6e22 | 状态：正常
+[2025-10-25 01:49:57] [INFO] 文件创建成功：/新建文件.txt
+[2025-10-25 01:49:57] [DEBUG] 创建文件后刷新目录：/
+[2025-10-25 01:49:57] [DEBUG] 解析目录项：长度=56, 内容=新建文件.txt|FILE|2|0|false|3f9a6e22-22cf-48dc-b524-721e6dda, 分隔符=|
+[2025-10-25 01:49:57] [DEBUG] 分割后数组：长度=6, 内容=[[0]=新建文件.txt, [1]=FILE, [2]=2, [3]=0, [4]=false, [5]=3f9a6e22-22cf-48dc-b524-721e6dda]
+[2025-10-25 01:49:57] [DEBUG] 从磁盘加载目录项完成：/，共1项
+[2025-10-25 01:49:57] [DEBUG] 解析目录项：长度=56, 内容=新建文件.txt|FILE|2|0|false|3f9a6e22-22cf-48dc-b524-721e6dda, 分隔符=|
+[2025-10-25 01:49:57] [DEBUG] 分割后数组：长度=6, 内容=[[0]=新建文件.txt, [1]=FILE, [2]=2, [3]=0, [4]=false, [5]=3f9a6e22-22cf-48dc-b524-721e6dda]
+[2025-10-25 01:49:57] [DEBUG] 从磁盘加载目录项完成：/，共1项
+[2025-10-25 01:49:57] [INFO] 列出目录成功：/，子条目数：1
+[2025-10-25 01:50:02] [INFO] 写入文件成功：/新建文件.txt，大小：8 B
+[2025-10-25 01:50:02] [DEBUG] 解析目录项：长度=56, 内容=新建文件.txt|FILE|2|0|false|3f9a6e22-22cf-48dc-b524-721e6dda, 分隔符=|
+[2025-10-25 01:50:02] [DEBUG] 分割后数组：长度=6, 内容=[[0]=新建文件.txt, [1]=FILE, [2]=2, [3]=0, [4]=false, [5]=3f9a6e22-22cf-48dc-b524-721e6dda]
+[2025-10-25 01:50:02] [DEBUG] 从磁盘加载目录项完成：/，共1项
+[2025-10-25 01:50:02] [DEBUG] 解析目录项：长度=56, 内容=新建文件.txt|FILE|2|0|false|3f9a6e22-22cf-48dc-b524-721e6dda, 分隔符=|
+[2025-10-25 01:50:02] [DEBUG] 分割后数组：长度=6, 内容=[[0]=新建文件.txt, [1]=FILE, [2]=2, [3]=0, [4]=false, [5]=3f9a6e22-22cf-48dc-b524-721e6dda]
+[2025-10-25 01:50:02] [DEBUG] 从磁盘加载目录项完成：/，共1项
+[2025-10-25 01:50:02] [INFO] 列出目录成功：/，子条目数：1
+[2025-10-25 01:50:08] [INFO] 读取文件成功：/新建文件.txt，大小：8 B
+[2025-10-25 01:50:14] [INFO] FAT 分配块：blockId=5（跳过坏块23、49）
+[2025-10-25 01:50:14] [INFO] FAT 扩展块：currentBlockId=2 → nextBlockId=5
+[2025-10-25 01:50:14] [INFO] 写入文件成功：/新建文件.txt，大小：67 B
+[2025-10-25 01:50:14] [DEBUG] 解析目录项：长度=56, 内容=新建文件.txt|FILE|2|0|false|3f9a6e22-22cf-48dc-b524-721e6dda, 分隔符=|
+[2025-10-25 01:50:14] [DEBUG] 分割后数组：长度=6, 内容=[[0]=新建文件.txt, [1]=FILE, [2]=2, [3]=0, [4]=false, [5]=3f9a6e22-22cf-48dc-b524-721e6dda]
+[2025-10-25 01:50:14] [DEBUG] 从磁盘加载目录项完成：/，共1项
+[2025-10-25 01:50:14] [DEBUG] 解析目录项：长度=56, 内容=新建文件.txt|FILE|2|0|false|3f9a6e22-22cf-48dc-b524-721e6dda, 分隔符=|
+[2025-10-25 01:50:14] [DEBUG] 分割后数组：长度=6, 内容=[[0]=新建文件.txt, [1]=FILE, [2]=2, [3]=0, [4]=false, [5]=3f9a6e22-22cf-48dc-b524-721e6dda]
+[2025-10-25 01:50:14] [DEBUG] 从磁盘加载目录项完成：/，共1项
+[2025-10-25 01:50:14] [INFO] 列出目录成功：/，子条目数：1
+[2025-10-25 01:50:17] [INFO] OFT清理完成，关闭了 0 个文件
+[2025-10-25 01:50:17] [INFO] 开始保存FAT表到磁盘，总大小=128字节，使用块0和块1
+[2025-10-25 01:50:17] [DEBUG] FAT表块 0 已写入磁盘
+[2025-10-25 01:50:17] [DEBUG] FAT表块 1 已写入磁盘
+[2025-10-25 01:50:17] [INFO] FAT 表已持久化到磁盘，共使用2个块
+[2025-10-25 01:50:17] [INFO] 文件系统卸载成功
+[2025-10-25 01:50:17] [INFO] 应用关闭，文件系统已卸载
+[2025-10-25 01:51:04] [INFO] 已成功删除旧的磁盘文件：D:\Project\FileManager\data\disk.img
+[2025-10-25 01:51:04] [INFO] FAT 初始化：块 0 标记为FAT存储区
+[2025-10-25 01:51:04] [INFO] FAT 初始化：块 1 标记为FAT存储区
+[2025-10-25 01:51:04] [INFO] FAT 初始化：块 23 标记为坏块
+[2025-10-25 01:51:04] [INFO] FAT 初始化：块 49 标记为坏块
+[2025-10-25 01:51:04] [INFO] FAT 初始化完成：总块数=128，FAT表大小=128，数据分配从块2开始
+[2025-10-25 01:51:04] [INFO] 已打开文件表（OFT）初始化完成，容量：5
+[2025-10-25 01:51:04] [DEBUG] 文件系统挂载前已清空全局缓存
+[2025-10-25 01:51:04] [INFO] 文件系统挂载成功：块大小=64字节，总块数=128
+[2025-10-25 01:51:05] [INFO] 列出目录成功：/，子条目数：0
+[2025-10-25 01:51:05] [INFO] 应用启动成功
+[2025-10-25 01:51:12] [INFO] 列出目录成功：/，子条目数：0
+[2025-10-25 01:51:15] [DEBUG] 准备创建文件：/新建文件.txt
+[2025-10-25 01:51:15] [DEBUG] 尝试创建文件：/新建文件.txt
+[2025-10-25 01:51:15] [DEBUG] 解析路径 - 父目录：/, 文件名：新建文件.txt
+[2025-10-25 01:51:15] [INFO] FAT 分配块：blockId=2（跳过坏块23、49）
+[2025-10-25 01:51:15] [DEBUG] 为文件分配起始块：2
+[2025-10-25 01:51:15] [DEBUG] 创建文件元数据：[文件] /新建文件.txt | 大小：0 B | 创建时间：Sat Oct 25 01:51:15 CST 2025 | 起始块：2 | UUID：78863f1b | 状态：正常
+[2025-10-25 01:51:15] [DEBUG] 文件元数据已缓存：/新建文件.txt
+[2025-10-25 01:51:15] [DEBUG] 父目录修改时间已更新：/
+[2025-10-25 01:51:15] [DEBUG] 创建父目录对象：/
+[2025-10-25 01:51:15] [DEBUG] 目录添加项成功：新建文件.txt → /
+[2025-10-25 01:51:15] [DEBUG] 文件已添加到父目录：新建文件.txt → /
+[2025-10-25 01:51:15] [INFO] FAT 分配块：blockId=3（跳过坏块23、49）
+[2025-10-25 01:51:15] [INFO] FAT 分配块：blockId=4（跳过坏块23、49）
+[2025-10-25 01:51:15] [DEBUG] FAT更新块链：3 → 4
+[2025-10-25 01:51:15] [DEBUG] FAT更新块链：4 → END_OF_FILE
+[2025-10-25 01:51:15] [DEBUG] 目录项同步到磁盘完成：/，块数：1
+[2025-10-25 01:51:15] [DEBUG] 父目录已同步到磁盘：/
+[2025-10-25 01:51:15] [INFO] 创建文件成功：[文件] /新建文件.txt | 大小：0 B | 创建时间：Sat Oct 25 01:51:15 CST 2025 | 起始块：2 | UUID：78863f1b | 状态：正常
+[2025-10-25 01:51:15] [INFO] 文件创建成功：/新建文件.txt
+[2025-10-25 01:51:15] [DEBUG] 创建文件后刷新目录：/
+[2025-10-25 01:51:15] [DEBUG] 解析目录项：长度=56, 内容=新建文件.txt|FILE|2|0|false|78863f1b-c780-4826-96e9-76ae3ac1, 分隔符=|
+[2025-10-25 01:51:15] [DEBUG] 分割后数组：长度=6, 内容=[[0]=新建文件.txt, [1]=FILE, [2]=2, [3]=0, [4]=false, [5]=78863f1b-c780-4826-96e9-76ae3ac1]
+[2025-10-25 01:51:15] [DEBUG] 从磁盘加载目录项完成：/，共1项
+[2025-10-25 01:51:15] [DEBUG] 解析目录项：长度=56, 内容=新建文件.txt|FILE|2|0|false|78863f1b-c780-4826-96e9-76ae3ac1, 分隔符=|
+[2025-10-25 01:51:15] [DEBUG] 分割后数组：长度=6, 内容=[[0]=新建文件.txt, [1]=FILE, [2]=2, [3]=0, [4]=false, [5]=78863f1b-c780-4826-96e9-76ae3ac1]
+[2025-10-25 01:51:15] [DEBUG] 从磁盘加载目录项完成：/，共1项
+[2025-10-25 01:51:15] [INFO] 列出目录成功：/，子条目数：1
+[2025-10-25 01:51:21] [INFO] 写入文件成功：/新建文件.txt，大小：30 B
+[2025-10-25 01:51:21] [DEBUG] 解析目录项：长度=56, 内容=新建文件.txt|FILE|2|0|false|78863f1b-c780-4826-96e9-76ae3ac1, 分隔符=|
+[2025-10-25 01:51:21] [DEBUG] 分割后数组：长度=6, 内容=[[0]=新建文件.txt, [1]=FILE, [2]=2, [3]=0, [4]=false, [5]=78863f1b-c780-4826-96e9-76ae3ac1]
+[2025-10-25 01:51:21] [DEBUG] 从磁盘加载目录项完成：/，共1项
+[2025-10-25 01:51:21] [DEBUG] 解析目录项：长度=56, 内容=新建文件.txt|FILE|2|0|false|78863f1b-c780-4826-96e9-76ae3ac1, 分隔符=|
+[2025-10-25 01:51:21] [DEBUG] 分割后数组：长度=6, 内容=[[0]=新建文件.txt, [1]=FILE, [2]=2, [3]=0, [4]=false, [5]=78863f1b-c780-4826-96e9-76ae3ac1]
+[2025-10-25 01:51:21] [DEBUG] 从磁盘加载目录项完成：/，共1项
+[2025-10-25 01:51:21] [INFO] 列出目录成功：/，子条目数：1
+[2025-10-25 01:51:25] [INFO] FAT 释放块：blockId=2
+[2025-10-25 01:51:25] [INFO] 删除文件成功：/新建文件.txt
+[2025-10-25 01:51:25] [DEBUG] 解析目录项：长度=56, 内容=新建文件.txt|FILE|2|0|false|78863f1b-c780-4826-96e9-76ae3ac1, 分隔符=|
+[2025-10-25 01:51:25] [DEBUG] 分割后数组：长度=6, 内容=[[0]=新建文件.txt, [1]=FILE, [2]=2, [3]=0, [4]=false, [5]=78863f1b-c780-4826-96e9-76ae3ac1]
+[2025-10-25 01:51:25] [DEBUG] 从磁盘加载目录项完成：/，共1项
+[2025-10-25 01:51:25] [DEBUG] 解析目录项：长度=56, 内容=新建文件.txt|FILE|2|0|false|78863f1b-c780-4826-96e9-76ae3ac1, 分隔符=|
+[2025-10-25 01:51:25] [DEBUG] 分割后数组：长度=6, 内容=[[0]=新建文件.txt, [1]=FILE, [2]=2, [3]=0, [4]=false, [5]=78863f1b-c780-4826-96e9-76ae3ac1]
+[2025-10-25 01:51:25] [DEBUG] 从磁盘加载目录项完成：/，共1项
+[2025-10-25 01:51:25] [INFO] 列出目录成功：/，子条目数：0
+[2025-10-25 01:51:25] [INFO] 列出目录成功：/，子条目数：0
+[2025-10-25 01:51:27] [DEBUG] 准备创建文件：/新建文件.txt
+[2025-10-25 01:51:27] [DEBUG] 尝试创建文件：/新建文件.txt
+[2025-10-25 01:51:27] [DEBUG] 解析路径 - 父目录：/, 文件名：新建文件.txt
+[2025-10-25 01:51:27] [INFO] FAT 分配块：blockId=2（跳过坏块23、49）
+[2025-10-25 01:51:27] [DEBUG] 为文件分配起始块：2
+[2025-10-25 01:51:27] [DEBUG] 创建文件元数据：[文件] /新建文件.txt | 大小：0 B | 创建时间：Sat Oct 25 01:51:27 CST 2025 | 起始块：2 | UUID：7eba2646 | 状态：正常
+[2025-10-25 01:51:27] [DEBUG] 文件元数据已缓存：/新建文件.txt
+[2025-10-25 01:51:27] [DEBUG] 父目录修改时间已更新：/
+[2025-10-25 01:51:27] [DEBUG] 解析目录项：长度=56, 内容=新建文件.txt|FILE|2|0|false|78863f1b-c780-4826-96e9-76ae3ac1, 分隔符=|
+[2025-10-25 01:51:27] [DEBUG] 分割后数组：长度=6, 内容=[[0]=新建文件.txt, [1]=FILE, [2]=2, [3]=0, [4]=false, [5]=78863f1b-c780-4826-96e9-76ae3ac1]
+[2025-10-25 01:51:27] [DEBUG] 从磁盘加载目录项完成：/，共1项
+[2025-10-25 01:51:27] [DEBUG] 创建父目录对象：/
+[2025-10-25 01:51:27] [ERROR] 创建文件失败：未知异常
+org.jiejiejiang.filemanager.exception.FileSystemException: 目录项已存在：新建文件.txt（目录：/）
+	at org.jiejiejiang.filemanager.core.Directory.addEntry(Directory.java:97)
+	at org.jiejiejiang.filemanager.core.FileSystem.createFile(FileSystem.java:326)
+	at org.jiejiejiang.filemanager.gui.controller.MainController.lambda$19(MainController.java:439)
+	at java.base/java.util.Optional.ifPresent(Optional.java:178)
+	at org.jiejiejiang.filemanager.gui.controller.MainController.showNewFileDialog(MainController.java:431)
+	at org.jiejiejiang.filemanager.gui.controller.MainController.lambda$22(MainController.java:541)
+	at javafx.base@21/com.sun.javafx.event.CompositeEventHandler.dispatchBubblingEvent(CompositeEventHandler.java:86)
+	at javafx.base@21/com.sun.javafx.event.EventHandlerManager.dispatchBubblingEvent(EventHandlerManager.java:232)
+	at javafx.base@21/com.sun.javafx.event.EventHandlerManager.dispatchBubblingEvent(EventHandlerManager.java:189)
+	at javafx.base@21/com.sun.javafx.event.BasicEventDispatcher.dispatchEvent(BasicEventDispatcher.java:58)
+	at javafx.base@21/com.sun.javafx.event.EventDispatchChainImpl.dispatchEvent(EventDispatchChainImpl.java:114)
+	at javafx.base@21/com.sun.javafx.event.EventUtil.fireEventImpl(EventUtil.java:74)
+	at javafx.base@21/com.sun.javafx.event.EventUtil.fireEvent(EventUtil.java:49)
+	at javafx.base@21/javafx.event.Event.fireEvent(Event.java:198)
+	at javafx.controls@21/javafx.scene.control.MenuItem.fire(MenuItem.java:459)
+	at javafx.controls@21/com.sun.javafx.scene.control.ContextMenuContent$MenuItemContainer.doSelect(ContextMenuContent.java:1415)
+	at javafx.controls@21/com.sun.javafx.scene.control.ContextMenuContent$MenuItemContainer.lambda$createChildren$12(ContextMenuContent.java:1368)
+	at javafx.base@21/com.sun.javafx.event.CompositeEventHandler$NormalEventHandlerRecord.handleBubblingEvent(CompositeEventHandler.java:247)
+	at javafx.base@21/com.sun.javafx.event.CompositeEventHandler.dispatchBubblingEvent(CompositeEventHandler.java:80)
+	at javafx.base@21/com.sun.javafx.event.EventHandlerManager.dispatchBubblingEvent(EventHandlerManager.java:232)
+	at javafx.base@21/com.sun.javafx.event.EventHandlerManager.dispatchBubblingEvent(EventHandlerManager.java:189)
+	at javafx.base@21/com.sun.javafx.event.CompositeEventDispatcher.dispatchBubblingEvent(CompositeEventDispatcher.java:59)
+	at javafx.base@21/com.sun.javafx.event.BasicEventDispatcher.dispatchEvent(BasicEventDispatcher.java:58)
+	at javafx.base@21/com.sun.javafx.event.EventDispatchChainImpl.dispatchEvent(EventDispatchChainImpl.java:114)
+	at javafx.base@21/com.sun.javafx.event.BasicEventDispatcher.dispatchEvent(BasicEventDispatcher.java:56)
+	at javafx.base@21/com.sun.javafx.event.EventDispatchChainImpl.dispatchEvent(EventDispatchChainImpl.java:114)
+	at javafx.base@21/com.sun.javafx.event.BasicEventDispatcher.dispatchEvent(BasicEventDispatcher.java:56)
+	at javafx.base@21/com.sun.javafx.event.EventDispatchChainImpl.dispatchEvent(EventDispatchChainImpl.java:114)
+	at javafx.base@21/com.sun.javafx.event.BasicEventDispatcher.dispatchEvent(BasicEventDispatcher.java:56)
+	at javafx.base@21/com.sun.javafx.event.EventDispatchChainImpl.dispatchEvent(EventDispatchChainImpl.java:114)
+	at javafx.base@21/com.sun.javafx.event.EventUtil.fireEventImpl(EventUtil.java:74)
+	at javafx.base@21/com.sun.javafx.event.EventUtil.fireEvent(EventUtil.java:54)
+	at javafx.base@21/javafx.event.Event.fireEvent(Event.java:198)
+	at javafx.graphics@21/javafx.scene.Scene$MouseHandler.process(Scene.java:3984)
+	at javafx.graphics@21/javafx.scene.Scene.processMouseEvent(Scene.java:1890)
+	at javafx.graphics@21/javafx.scene.Scene$ScenePeerListener.mouseEvent(Scene.java:2708)
+	at javafx.graphics@21/com.sun.javafx.tk.quantum.GlassViewEventHandler$MouseEventNotification.run(GlassViewEventHandler.java:411)
+	at javafx.graphics@21/com.sun.javafx.tk.quantum.GlassViewEventHandler$MouseEventNotification.run(GlassViewEventHandler.java:301)
+	at java.base/java.security.AccessController.doPrivileged(AccessController.java:400)
+	at javafx.graphics@21/com.sun.javafx.tk.quantum.GlassViewEventHandler.lambda$handleMouseEvent$2(GlassViewEventHandler.java:450)
+	at javafx.graphics@21/com.sun.javafx.tk.quantum.QuantumToolkit.runWithoutRenderLock(QuantumToolkit.java:424)
+	at javafx.graphics@21/com.sun.javafx.tk.quantum.GlassViewEventHandler.handleMouseEvent(GlassViewEventHandler.java:449)
+	at javafx.graphics@21/com.sun.glass.ui.View.handleMouseEvent(View.java:551)
+	at javafx.graphics@21/com.sun.glass.ui.View.notifyMouse(View.java:937)
+	at javafx.graphics@21/com.sun.glass.ui.win.WinApplication._runLoop(Native Method)
+	at javafx.graphics@21/com.sun.glass.ui.win.WinApplication.lambda$runLoop$3(WinApplication.java:185)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+[2025-10-25 01:51:27] [ERROR] 创建文件失败：创建文件失败：目录项已存在：新建文件.txt（目录：/），路径：/新建文件.txt
+[2025-10-25 01:51:32] [DEBUG] 准备创建文件：/新建文件.txt
+[2025-10-25 01:51:32] [DEBUG] 尝试创建文件：/新建文件.txt
+[2025-10-25 01:51:32] [DEBUG] 解析路径 - 父目录：/, 文件名：新建文件.txt
+[2025-10-25 01:51:32] [DEBUG] 文件已在缓存中存在，检查删除状态：false
+[2025-10-25 01:51:32] [ERROR] 创建文件失败：文件已存在且未删除 → /新建文件.txt
+[2025-10-25 01:51:32] [ERROR] 创建文件失败：创建文件失败：文件已存在 → /新建文件.txt，路径：/新建文件.txt
+[2025-10-25 01:51:34] [INFO] OFT清理完成，关闭了 0 个文件
+[2025-10-25 01:51:34] [INFO] 开始保存FAT表到磁盘，总大小=128字节，使用块0和块1
+[2025-10-25 01:51:34] [DEBUG] FAT表块 0 已写入磁盘
+[2025-10-25 01:51:34] [DEBUG] FAT表块 1 已写入磁盘
+[2025-10-25 01:51:34] [INFO] FAT 表已持久化到磁盘，共使用2个块
+[2025-10-25 01:51:34] [INFO] 文件系统卸载成功
+[2025-10-25 01:51:34] [INFO] 应用关闭，文件系统已卸载
+[2025-10-25 02:03:10] [INFO] 已成功删除旧的磁盘文件：D:\Project\FileManager\data\disk.img
+[2025-10-25 02:03:10] [INFO] FAT 初始化：块 0 标记为FAT存储区
+[2025-10-25 02:03:10] [INFO] FAT 初始化：块 1 标记为FAT存储区
+[2025-10-25 02:03:10] [INFO] FAT 初始化：块 23 标记为坏块
+[2025-10-25 02:03:10] [INFO] FAT 初始化：块 49 标记为坏块
+[2025-10-25 02:03:10] [INFO] FAT 初始化完成：总块数=128，FAT表大小=128，数据分配从块2开始
+[2025-10-25 02:03:10] [INFO] 已打开文件表（OFT）初始化完成，容量：5
+[2025-10-25 02:03:10] [DEBUG] 文件系统挂载前已清空全局缓存
+[2025-10-25 02:03:10] [INFO] 文件系统挂载成功：块大小=64字节，总块数=128
+[2025-10-25 02:03:10] [INFO] 列出目录成功：/，子条目数：0
+[2025-10-25 02:03:11] [INFO] 应用启动成功
+[2025-10-25 02:03:14] [INFO] 列出目录成功：/，子条目数：0
+[2025-10-25 02:03:16] [DEBUG] 准备创建文件：/新建文件.txt
+[2025-10-25 02:03:16] [DEBUG] 尝试创建文件：/新建文件.txt
+[2025-10-25 02:03:16] [DEBUG] 解析路径 - 父目录：/, 文件名：新建文件.txt
+[2025-10-25 02:03:16] [INFO] FAT 分配块：blockId=2（跳过坏块23、49）
+[2025-10-25 02:03:16] [DEBUG] 为文件分配起始块：2
+[2025-10-25 02:03:16] [DEBUG] 创建文件元数据：[文件] /新建文件.txt | 大小：0 B | 创建时间：Sat Oct 25 02:03:16 CST 2025 | 起始块：2 | UUID：f6c95509 | 状态：正常
+[2025-10-25 02:03:16] [DEBUG] 文件元数据已缓存：/新建文件.txt
+[2025-10-25 02:03:16] [DEBUG] 父目录修改时间已更新：/
+[2025-10-25 02:03:16] [DEBUG] 创建父目录对象：/
+[2025-10-25 02:03:16] [DEBUG] 目录添加项成功：新建文件.txt → /
+[2025-10-25 02:03:16] [DEBUG] 文件已添加到父目录：新建文件.txt → /
+[2025-10-25 02:03:16] [INFO] FAT 分配块：blockId=3（跳过坏块23、49）
+[2025-10-25 02:03:16] [INFO] FAT 分配块：blockId=4（跳过坏块23、49）
+[2025-10-25 02:03:16] [DEBUG] FAT更新块链：3 → 4
+[2025-10-25 02:03:16] [DEBUG] FAT更新块链：4 → END_OF_FILE
+[2025-10-25 02:03:16] [DEBUG] 目录项同步到磁盘完成：/，块数：1
+[2025-10-25 02:03:16] [DEBUG] 父目录已同步到磁盘：/
+[2025-10-25 02:03:16] [INFO] 创建文件成功：[文件] /新建文件.txt | 大小：0 B | 创建时间：Sat Oct 25 02:03:16 CST 2025 | 起始块：2 | UUID：f6c95509 | 状态：正常
+[2025-10-25 02:03:16] [INFO] 文件创建成功：/新建文件.txt
+[2025-10-25 02:03:16] [DEBUG] 创建文件后刷新目录：/
+[2025-10-25 02:03:16] [DEBUG] 解析目录项：长度=56, 内容=新建文件.txt|FILE|2|0|false|f6c95509-0b8e-4d66-a937-6d0479d2, 分隔符=|
+[2025-10-25 02:03:16] [DEBUG] 分割后数组：长度=6, 内容=[[0]=新建文件.txt, [1]=FILE, [2]=2, [3]=0, [4]=false, [5]=f6c95509-0b8e-4d66-a937-6d0479d2]
+[2025-10-25 02:03:16] [DEBUG] 从磁盘加载目录项完成：/，共1项
+[2025-10-25 02:03:16] [DEBUG] 解析目录项：长度=56, 内容=新建文件.txt|FILE|2|0|false|f6c95509-0b8e-4d66-a937-6d0479d2, 分隔符=|
+[2025-10-25 02:03:16] [DEBUG] 分割后数组：长度=6, 内容=[[0]=新建文件.txt, [1]=FILE, [2]=2, [3]=0, [4]=false, [5]=f6c95509-0b8e-4d66-a937-6d0479d2]
+[2025-10-25 02:03:16] [DEBUG] 从磁盘加载目录项完成：/，共1项
+[2025-10-25 02:03:16] [INFO] 列出目录成功：/，子条目数：1
+[2025-10-25 02:03:23] [INFO] 写入文件成功：/新建文件.txt，大小：3 B
+[2025-10-25 02:03:23] [DEBUG] 解析目录项：长度=56, 内容=新建文件.txt|FILE|2|0|false|f6c95509-0b8e-4d66-a937-6d0479d2, 分隔符=|
+[2025-10-25 02:03:23] [DEBUG] 分割后数组：长度=6, 内容=[[0]=新建文件.txt, [1]=FILE, [2]=2, [3]=0, [4]=false, [5]=f6c95509-0b8e-4d66-a937-6d0479d2]
+[2025-10-25 02:03:23] [DEBUG] 从磁盘加载目录项完成：/，共1项
+[2025-10-25 02:03:23] [DEBUG] 解析目录项：长度=56, 内容=新建文件.txt|FILE|2|0|false|f6c95509-0b8e-4d66-a937-6d0479d2, 分隔符=|
+[2025-10-25 02:03:23] [DEBUG] 分割后数组：长度=6, 内容=[[0]=新建文件.txt, [1]=FILE, [2]=2, [3]=0, [4]=false, [5]=f6c95509-0b8e-4d66-a937-6d0479d2]
+[2025-10-25 02:03:23] [DEBUG] 从磁盘加载目录项完成：/，共1项
+[2025-10-25 02:03:23] [INFO] 列出目录成功：/，子条目数：1
+[2025-10-25 02:03:27] [INFO] FAT 释放块：blockId=2
+[2025-10-25 02:03:27] [DEBUG] 解析目录项：长度=56, 内容=新建文件.txt|FILE|2|0|false|f6c95509-0b8e-4d66-a937-6d0479d2, 分隔符=|
+[2025-10-25 02:03:27] [DEBUG] 分割后数组：长度=6, 内容=[[0]=新建文件.txt, [1]=FILE, [2]=2, [3]=0, [4]=false, [5]=f6c95509-0b8e-4d66-a937-6d0479d2]
+[2025-10-25 02:03:27] [DEBUG] 从磁盘加载目录项完成：/，共1项
+[2025-10-25 02:03:27] [DEBUG] 尝试删除目录项：新建文件.txt，目录：/
+[2025-10-25 02:03:27] [DEBUG] 已标记目录项为已删除：新建文件.txt
+[2025-10-25 02:03:27] [DEBUG] 已从目录本地缓存移除条目：新建文件.txt
+[2025-10-25 02:03:27] [DEBUG] 从FileSystem缓存中移除条目：/新建文件.txt
+[2025-10-25 02:03:27] [DEBUG] 已请求从FileSystem全局缓存移除条目：/新建文件.txt
+[2025-10-25 02:03:27] [INFO] 目录删除项成功：新建文件.txt → /
+[2025-10-25 02:03:27] [INFO] 删除文件成功：/新建文件.txt
+[2025-10-25 02:03:27] [INFO] 列出目录成功：/，子条目数：0
+[2025-10-25 02:03:27] [INFO] 列出目录成功：/，子条目数：0
+[2025-10-25 02:03:29] [DEBUG] 准备创建文件：/新建文件.txt
+[2025-10-25 02:03:29] [DEBUG] 尝试创建文件：/新建文件.txt
+[2025-10-25 02:03:29] [DEBUG] 解析路径 - 父目录：/, 文件名：新建文件.txt
+[2025-10-25 02:03:29] [INFO] FAT 分配块：blockId=2（跳过坏块23、49）
+[2025-10-25 02:03:29] [DEBUG] 为文件分配起始块：2
+[2025-10-25 02:03:29] [DEBUG] 创建文件元数据：[文件] /新建文件.txt | 大小：0 B | 创建时间：Sat Oct 25 02:03:29 CST 2025 | 起始块：2 | UUID：8cded136 | 状态：正常
+[2025-10-25 02:03:29] [DEBUG] 文件元数据已缓存：/新建文件.txt
+[2025-10-25 02:03:29] [DEBUG] 父目录修改时间已更新：/
+[2025-10-25 02:03:29] [DEBUG] 创建父目录对象：/
+[2025-10-25 02:03:29] [DEBUG] 目录添加项成功：新建文件.txt → /
+[2025-10-25 02:03:29] [DEBUG] 文件已添加到父目录：新建文件.txt → /
+[2025-10-25 02:03:29] [INFO] FAT 分配块：blockId=3（跳过坏块23、49）
+[2025-10-25 02:03:29] [INFO] FAT 分配块：blockId=5（跳过坏块23、49）
+[2025-10-25 02:03:29] [DEBUG] FAT更新块链：3 → 5
+[2025-10-25 02:03:29] [DEBUG] FAT更新块链：5 → END_OF_FILE
+[2025-10-25 02:03:29] [DEBUG] 目录项同步到磁盘完成：/，块数：1
+[2025-10-25 02:03:29] [DEBUG] 父目录已同步到磁盘：/
+[2025-10-25 02:03:29] [INFO] 创建文件成功：[文件] /新建文件.txt | 大小：0 B | 创建时间：Sat Oct 25 02:03:29 CST 2025 | 起始块：2 | UUID：8cded136 | 状态：正常
+[2025-10-25 02:03:29] [INFO] 文件创建成功：/新建文件.txt
+[2025-10-25 02:03:29] [DEBUG] 创建文件后刷新目录：/
+[2025-10-25 02:03:29] [DEBUG] 解析目录项：长度=56, 内容=新建文件.txt|FILE|2|0|false|8cded136-fe8e-4184-9a9d-2f0a6034, 分隔符=|
+[2025-10-25 02:03:29] [DEBUG] 分割后数组：长度=6, 内容=[[0]=新建文件.txt, [1]=FILE, [2]=2, [3]=0, [4]=false, [5]=8cded136-fe8e-4184-9a9d-2f0a6034]
+[2025-10-25 02:03:29] [DEBUG] 从磁盘加载目录项完成：/，共1项
+[2025-10-25 02:03:29] [DEBUG] 解析目录项：长度=56, 内容=新建文件.txt|FILE|2|0|false|8cded136-fe8e-4184-9a9d-2f0a6034, 分隔符=|
+[2025-10-25 02:03:29] [DEBUG] 分割后数组：长度=6, 内容=[[0]=新建文件.txt, [1]=FILE, [2]=2, [3]=0, [4]=false, [5]=8cded136-fe8e-4184-9a9d-2f0a6034]
+[2025-10-25 02:03:29] [DEBUG] 从磁盘加载目录项完成：/，共1项
+[2025-10-25 02:03:29] [INFO] 列出目录成功：/，子条目数：1
+[2025-10-25 02:03:36] [DEBUG] 解析目录项：长度=56, 内容=新建文件.txt|FILE|2|0|false|8cded136-fe8e-4184-9a9d-2f0a6034, 分隔符=|
+[2025-10-25 02:03:36] [DEBUG] 分割后数组：长度=6, 内容=[[0]=新建文件.txt, [1]=FILE, [2]=2, [3]=0, [4]=false, [5]=8cded136-fe8e-4184-9a9d-2f0a6034]
+[2025-10-25 02:03:36] [DEBUG] 从磁盘加载目录项完成：/，共1项
+[2025-10-25 02:03:36] [DEBUG] 目录添加项成功：新建文件夹 → /
+[2025-10-25 02:03:36] [INFO] FAT 分配块：blockId=6（跳过坏块23、49）
+[2025-10-25 02:03:36] [INFO] FAT 分配块：blockId=7（跳过坏块23、49）
+[2025-10-25 02:03:36] [DEBUG] FAT更新块链：6 → 7
+[2025-10-25 02:03:36] [DEBUG] FAT更新块链：7 → END_OF_FILE
+[2025-10-25 02:03:36] [INFO] FAT 释放块：blockId=3
+[2025-10-25 02:03:36] [INFO] FAT 释放块：blockId=5
+[2025-10-25 02:03:36] [DEBUG] 目录项同步到磁盘完成：/，块数：1
+[2025-10-25 02:03:36] [INFO] 创建目录成功：[目录] /新建文件夹 | 大小：0 B | 创建时间：Sat Oct 25 02:03:36 CST 2025 | 起始块：未分配 | UUID：8c412664 | 状态：正常
+[2025-10-25 02:03:36] [DEBUG] 解析目录项：长度=56, 内容=新建文件.txt|FILE|2|0|false|8cded136-fe8e-4184-9a9d-2f0a6034, 分隔符=|
+[2025-10-25 02:03:36] [DEBUG] 分割后数组：长度=6, 内容=[[0]=新建文件.txt, [1]=FILE, [2]=2, [3]=0, [4]=false, [5]=8cded136-fe8e-4184-9a9d-2f0a6034]
+[2025-10-25 02:03:36] [DEBUG] 从磁盘加载目录项完成：/，共1项
+[2025-10-25 02:03:36] [DEBUG] 解析目录项：长度=56, 内容=新建文件.txt|FILE|2|0|false|8cded136-fe8e-4184-9a9d-2f0a6034, 分隔符=|
+[2025-10-25 02:03:36] [DEBUG] 分割后数组：长度=6, 内容=[[0]=新建文件.txt, [1]=FILE, [2]=2, [3]=0, [4]=false, [5]=8cded136-fe8e-4184-9a9d-2f0a6034]
+[2025-10-25 02:03:36] [DEBUG] 从磁盘加载目录项完成：/，共1项
+[2025-10-25 02:03:36] [INFO] 列出目录成功：/，子条目数：2
+[2025-10-25 02:03:36] [INFO] 列出目录成功：/，子条目数：2
+[2025-10-25 02:03:37] [INFO] 列出目录成功：/新建文件夹，子条目数：0
+[2025-10-25 02:03:38] [DEBUG] 准备创建文件：/新建文件夹/新建文件.txt
+[2025-10-25 02:03:38] [DEBUG] 尝试创建文件：/新建文件夹/新建文件.txt
+[2025-10-25 02:03:38] [DEBUG] 解析路径 - 父目录：/新建文件夹, 文件名：新建文件.txt
+[2025-10-25 02:03:38] [INFO] FAT 分配块：blockId=3（跳过坏块23、49）
+[2025-10-25 02:03:38] [DEBUG] 为文件分配起始块：3
+[2025-10-25 02:03:38] [DEBUG] 创建文件元数据：[文件] /新建文件夹/新建文件.txt | 大小：0 B | 创建时间：Sat Oct 25 02:03:38 CST 2025 | 起始块：3 | UUID：f2d665db | 状态：正常
+[2025-10-25 02:03:38] [DEBUG] 文件元数据已缓存：/新建文件夹/新建文件.txt
+[2025-10-25 02:03:38] [DEBUG] 父目录修改时间已更新：/新建文件夹
+[2025-10-25 02:03:38] [DEBUG] 创建父目录对象：/新建文件夹
+[2025-10-25 02:03:38] [DEBUG] 目录添加项成功：新建文件.txt → /新建文件夹
+[2025-10-25 02:03:38] [DEBUG] 文件已添加到父目录：新建文件.txt → /新建文件夹
+[2025-10-25 02:03:38] [INFO] FAT 分配块：blockId=5（跳过坏块23、49）
+[2025-10-25 02:03:38] [INFO] FAT 分配块：blockId=8（跳过坏块23、49）
+[2025-10-25 02:03:38] [DEBUG] FAT更新块链：5 → 8
+[2025-10-25 02:03:38] [DEBUG] FAT更新块链：8 → END_OF_FILE
+[2025-10-25 02:03:38] [DEBUG] 目录项同步到磁盘完成：/新建文件夹，块数：1
+[2025-10-25 02:03:38] [DEBUG] 父目录已同步到磁盘：/新建文件夹
+[2025-10-25 02:03:38] [INFO] 创建文件成功：[文件] /新建文件夹/新建文件.txt | 大小：0 B | 创建时间：Sat Oct 25 02:03:38 CST 2025 | 起始块：3 | UUID：f2d665db | 状态：正常
+[2025-10-25 02:03:38] [INFO] 文件创建成功：/新建文件夹/新建文件.txt
+[2025-10-25 02:03:38] [DEBUG] 创建文件后刷新目录：/新建文件夹
+[2025-10-25 02:03:38] [DEBUG] 解析目录项：长度=56, 内容=新建文件.txt|FILE|3|0|false|f2d665db-ccc8-4ddb-9c71-c0aed52d, 分隔符=|
+[2025-10-25 02:03:38] [DEBUG] 分割后数组：长度=6, 内容=[[0]=新建文件.txt, [1]=FILE, [2]=3, [3]=0, [4]=false, [5]=f2d665db-ccc8-4ddb-9c71-c0aed52d]
+[2025-10-25 02:03:38] [DEBUG] 从磁盘加载目录项完成：/新建文件夹，共1项
+[2025-10-25 02:03:38] [DEBUG] 解析目录项：长度=56, 内容=新建文件.txt|FILE|3|0|false|f2d665db-ccc8-4ddb-9c71-c0aed52d, 分隔符=|
+[2025-10-25 02:03:38] [DEBUG] 分割后数组：长度=6, 内容=[[0]=新建文件.txt, [1]=FILE, [2]=3, [3]=0, [4]=false, [5]=f2d665db-ccc8-4ddb-9c71-c0aed52d]
+[2025-10-25 02:03:38] [DEBUG] 从磁盘加载目录项完成：/新建文件夹，共1项
+[2025-10-25 02:03:38] [INFO] 列出目录成功：/新建文件夹，子条目数：1
+[2025-10-25 02:03:42] [INFO] 写入文件成功：/新建文件夹/新建文件.txt，大小：3 B
+[2025-10-25 02:03:42] [DEBUG] 解析目录项：长度=56, 内容=新建文件.txt|FILE|3|0|false|f2d665db-ccc8-4ddb-9c71-c0aed52d, 分隔符=|
+[2025-10-25 02:03:42] [DEBUG] 分割后数组：长度=6, 内容=[[0]=新建文件.txt, [1]=FILE, [2]=3, [3]=0, [4]=false, [5]=f2d665db-ccc8-4ddb-9c71-c0aed52d]
+[2025-10-25 02:03:42] [DEBUG] 从磁盘加载目录项完成：/新建文件夹，共1项
+[2025-10-25 02:03:42] [DEBUG] 解析目录项：长度=56, 内容=新建文件.txt|FILE|3|0|false|f2d665db-ccc8-4ddb-9c71-c0aed52d, 分隔符=|
+[2025-10-25 02:03:42] [DEBUG] 分割后数组：长度=6, 内容=[[0]=新建文件.txt, [1]=FILE, [2]=3, [3]=0, [4]=false, [5]=f2d665db-ccc8-4ddb-9c71-c0aed52d]
+[2025-10-25 02:03:42] [DEBUG] 从磁盘加载目录项完成：/新建文件夹，共1项
+[2025-10-25 02:03:42] [INFO] 列出目录成功：/新建文件夹，子条目数：1
+[2025-10-25 02:03:44] [DEBUG] 解析目录项：长度=56, 内容=新建文件.txt|FILE|2|0|false|8cded136-fe8e-4184-9a9d-2f0a6034, 分隔符=|
+[2025-10-25 02:03:44] [DEBUG] 分割后数组：长度=6, 内容=[[0]=新建文件.txt, [1]=FILE, [2]=2, [3]=0, [4]=false, [5]=8cded136-fe8e-4184-9a9d-2f0a6034]
+[2025-10-25 02:03:44] [DEBUG] 从磁盘加载目录项完成：/，共1项
+[2025-10-25 02:03:44] [DEBUG] 解析目录项：长度=56, 内容=新建文件.txt|FILE|2|0|false|8cded136-fe8e-4184-9a9d-2f0a6034, 分隔符=|
+[2025-10-25 02:03:44] [DEBUG] 分割后数组：长度=6, 内容=[[0]=新建文件.txt, [1]=FILE, [2]=2, [3]=0, [4]=false, [5]=8cded136-fe8e-4184-9a9d-2f0a6034]
+[2025-10-25 02:03:44] [DEBUG] 从磁盘加载目录项完成：/，共1项
+[2025-10-25 02:03:44] [INFO] 列出目录成功：/，子条目数：2
+[2025-10-25 02:03:47] [INFO] FAT 释放块：blockId=3
+[2025-10-25 02:03:47] [DEBUG] 解析目录项：长度=56, 内容=新建文件.txt|FILE|3|0|false|f2d665db-ccc8-4ddb-9c71-c0aed52d, 分隔符=|
+[2025-10-25 02:03:47] [DEBUG] 分割后数组：长度=6, 内容=[[0]=新建文件.txt, [1]=FILE, [2]=3, [3]=0, [4]=false, [5]=f2d665db-ccc8-4ddb-9c71-c0aed52d]
+[2025-10-25 02:03:47] [DEBUG] 从磁盘加载目录项完成：/新建文件夹，共1项
+[2025-10-25 02:03:47] [DEBUG] 尝试删除目录项：新建文件.txt，目录：/新建文件夹
+[2025-10-25 02:03:47] [DEBUG] 已标记目录项为已删除：新建文件.txt
+[2025-10-25 02:03:47] [DEBUG] 已从目录本地缓存移除条目：新建文件.txt
+[2025-10-25 02:03:47] [DEBUG] 从FileSystem缓存中移除条目：/新建文件夹/新建文件.txt
+[2025-10-25 02:03:47] [DEBUG] 已请求从FileSystem全局缓存移除条目：/新建文件夹/新建文件.txt
+[2025-10-25 02:03:47] [INFO] 目录删除项成功：新建文件.txt → /新建文件夹
+[2025-10-25 02:03:47] [INFO] 删除文件成功：/新建文件夹/新建文件.txt
+[2025-10-25 02:03:47] [DEBUG] 解析目录项：长度=56, 内容=新建文件.txt|FILE|2|0|false|8cded136-fe8e-4184-9a9d-2f0a6034, 分隔符=|
+[2025-10-25 02:03:47] [DEBUG] 分割后数组：长度=6, 内容=[[0]=新建文件.txt, [1]=FILE, [2]=2, [3]=0, [4]=false, [5]=8cded136-fe8e-4184-9a9d-2f0a6034]
+[2025-10-25 02:03:47] [DEBUG] 从磁盘加载目录项完成：/，共1项
+[2025-10-25 02:03:47] [DEBUG] 尝试删除目录项：新建文件夹，目录：/
+[2025-10-25 02:03:47] [WARN] 未找到要删除的目录项：新建文件夹，目录：/
+[2025-10-25 02:03:47] [DEBUG] 从FileSystem缓存中移除条目：/新建文件夹
+[2025-10-25 02:03:47] [INFO] 递归删除目录成功：/新建文件夹
+[2025-10-25 02:03:47] [DEBUG] 解析目录项：长度=56, 内容=新建文件.txt|FILE|2|0|false|8cded136-fe8e-4184-9a9d-2f0a6034, 分隔符=|
+[2025-10-25 02:03:47] [DEBUG] 分割后数组：长度=6, 内容=[[0]=新建文件.txt, [1]=FILE, [2]=2, [3]=0, [4]=false, [5]=8cded136-fe8e-4184-9a9d-2f0a6034]
+[2025-10-25 02:03:47] [DEBUG] 从磁盘加载目录项完成：/，共1项
+[2025-10-25 02:03:47] [DEBUG] 解析目录项：长度=56, 内容=新建文件.txt|FILE|2|0|false|8cded136-fe8e-4184-9a9d-2f0a6034, 分隔符=|
+[2025-10-25 02:03:47] [DEBUG] 分割后数组：长度=6, 内容=[[0]=新建文件.txt, [1]=FILE, [2]=2, [3]=0, [4]=false, [5]=8cded136-fe8e-4184-9a9d-2f0a6034]
+[2025-10-25 02:03:47] [DEBUG] 从磁盘加载目录项完成：/，共1项
+[2025-10-25 02:03:47] [INFO] 列出目录成功：/，子条目数：1
+[2025-10-25 02:03:47] [INFO] 列出目录成功：/，子条目数：1
+[2025-10-25 02:03:49] [DEBUG] 解析目录项：长度=56, 内容=新建文件.txt|FILE|2|0|false|8cded136-fe8e-4184-9a9d-2f0a6034, 分隔符=|
+[2025-10-25 02:03:49] [DEBUG] 分割后数组：长度=6, 内容=[[0]=新建文件.txt, [1]=FILE, [2]=2, [3]=0, [4]=false, [5]=8cded136-fe8e-4184-9a9d-2f0a6034]
+[2025-10-25 02:03:49] [DEBUG] 从磁盘加载目录项完成：/，共1项
+[2025-10-25 02:03:49] [DEBUG] 目录添加项成功：新建文件夹 → /
+[2025-10-25 02:03:49] [INFO] FAT 分配块：blockId=3（跳过坏块23、49）
+[2025-10-25 02:03:49] [INFO] FAT 分配块：blockId=5（跳过坏块23、49）
+[2025-10-25 02:03:49] [DEBUG] FAT更新块链：3 → 5
+[2025-10-25 02:03:49] [DEBUG] FAT更新块链：5 → END_OF_FILE
+[2025-10-25 02:03:49] [INFO] FAT 释放块：blockId=6
+[2025-10-25 02:03:49] [INFO] FAT 释放块：blockId=7
+[2025-10-25 02:03:49] [DEBUG] 目录项同步到磁盘完成：/，块数：1
+[2025-10-25 02:03:49] [INFO] 创建目录成功：[目录] /新建文件夹 | 大小：0 B | 创建时间：Sat Oct 25 02:03:49 CST 2025 | 起始块：未分配 | UUID：a10630f5 | 状态：正常
+[2025-10-25 02:03:49] [DEBUG] 解析目录项：长度=56, 内容=新建文件.txt|FILE|2|0|false|8cded136-fe8e-4184-9a9d-2f0a6034, 分隔符=|
+[2025-10-25 02:03:49] [DEBUG] 分割后数组：长度=6, 内容=[[0]=新建文件.txt, [1]=FILE, [2]=2, [3]=0, [4]=false, [5]=8cded136-fe8e-4184-9a9d-2f0a6034]
+[2025-10-25 02:03:49] [DEBUG] 解析目录项：长度=56, 内容=新建文件.txt|FILE|3|0|false|f2d665db-ccc8-4ddb-9c71-c0aed52d, 分隔符=|
+[2025-10-25 02:03:49] [DEBUG] 分割后数组：长度=6, 内容=[[0]=新建文件.txt, [1]=FILE, [2]=3, [3]=0, [4]=false, [5]=f2d665db-ccc8-4ddb-9c71-c0aed52d]
+[2025-10-25 02:03:49] [WARN] 发现重复的目录项（已跳过）：新建文件.txt，目录：/
+[2025-10-25 02:03:49] [DEBUG] 从磁盘加载目录项完成：/，共1项
+[2025-10-25 02:03:49] [DEBUG] 解析目录项：长度=56, 内容=新建文件.txt|FILE|2|0|false|8cded136-fe8e-4184-9a9d-2f0a6034, 分隔符=|
+[2025-10-25 02:03:49] [DEBUG] 分割后数组：长度=6, 内容=[[0]=新建文件.txt, [1]=FILE, [2]=2, [3]=0, [4]=false, [5]=8cded136-fe8e-4184-9a9d-2f0a6034]
+[2025-10-25 02:03:49] [DEBUG] 解析目录项：长度=56, 内容=新建文件.txt|FILE|3|0|false|f2d665db-ccc8-4ddb-9c71-c0aed52d, 分隔符=|
+[2025-10-25 02:03:49] [DEBUG] 分割后数组：长度=6, 内容=[[0]=新建文件.txt, [1]=FILE, [2]=3, [3]=0, [4]=false, [5]=f2d665db-ccc8-4ddb-9c71-c0aed52d]
+[2025-10-25 02:03:49] [WARN] 发现重复的目录项（已跳过）：新建文件.txt，目录：/
+[2025-10-25 02:03:49] [DEBUG] 从磁盘加载目录项完成：/，共1项
+[2025-10-25 02:03:49] [INFO] 列出目录成功：/，子条目数：2
+[2025-10-25 02:03:49] [INFO] 列出目录成功：/，子条目数：2
+[2025-10-25 02:03:50] [INFO] 列出目录成功：/新建文件夹，子条目数：0
+[2025-10-25 02:03:52] [DEBUG] 准备创建文件：/新建文件夹/新建文件.txt
+[2025-10-25 02:03:52] [DEBUG] 尝试创建文件：/新建文件夹/新建文件.txt
+[2025-10-25 02:03:52] [DEBUG] 解析路径 - 父目录：/新建文件夹, 文件名：新建文件.txt
+[2025-10-25 02:03:52] [INFO] FAT 分配块：blockId=6（跳过坏块23、49）
+[2025-10-25 02:03:52] [DEBUG] 为文件分配起始块：6
+[2025-10-25 02:03:52] [DEBUG] 创建文件元数据：[文件] /新建文件夹/新建文件.txt | 大小：0 B | 创建时间：Sat Oct 25 02:03:52 CST 2025 | 起始块：6 | UUID：8b511c37 | 状态：正常
+[2025-10-25 02:03:52] [DEBUG] 文件元数据已缓存：/新建文件夹/新建文件.txt
+[2025-10-25 02:03:52] [DEBUG] 父目录修改时间已更新：/新建文件夹
+[2025-10-25 02:03:52] [DEBUG] 创建父目录对象：/新建文件夹
+[2025-10-25 02:03:52] [DEBUG] 目录添加项成功：新建文件.txt → /新建文件夹
+[2025-10-25 02:03:52] [DEBUG] 文件已添加到父目录：新建文件.txt → /新建文件夹
+[2025-10-25 02:03:52] [INFO] FAT 分配块：blockId=7（跳过坏块23、49）
+[2025-10-25 02:03:52] [INFO] FAT 分配块：blockId=9（跳过坏块23、49）
+[2025-10-25 02:03:52] [DEBUG] FAT更新块链：7 → 9
+[2025-10-25 02:03:52] [DEBUG] FAT更新块链：9 → END_OF_FILE
+[2025-10-25 02:03:52] [DEBUG] 目录项同步到磁盘完成：/新建文件夹，块数：1
+[2025-10-25 02:03:52] [DEBUG] 父目录已同步到磁盘：/新建文件夹
+[2025-10-25 02:03:52] [INFO] 创建文件成功：[文件] /新建文件夹/新建文件.txt | 大小：0 B | 创建时间：Sat Oct 25 02:03:52 CST 2025 | 起始块：6 | UUID：8b511c37 | 状态：正常
+[2025-10-25 02:03:52] [INFO] 文件创建成功：/新建文件夹/新建文件.txt
+[2025-10-25 02:03:52] [DEBUG] 创建文件后刷新目录：/新建文件夹
+[2025-10-25 02:03:52] [DEBUG] 解析目录项：长度=56, 内容=新建文件.txt|FILE|6|0|false|8b511c37-b3f4-4abb-ba9f-c1ba84e6, 分隔符=|
+[2025-10-25 02:03:52] [DEBUG] 分割后数组：长度=6, 内容=[[0]=新建文件.txt, [1]=FILE, [2]=6, [3]=0, [4]=false, [5]=8b511c37-b3f4-4abb-ba9f-c1ba84e6]
+[2025-10-25 02:03:52] [DEBUG] 从磁盘加载目录项完成：/新建文件夹，共1项
+[2025-10-25 02:03:52] [DEBUG] 解析目录项：长度=56, 内容=新建文件.txt|FILE|6|0|false|8b511c37-b3f4-4abb-ba9f-c1ba84e6, 分隔符=|
+[2025-10-25 02:03:52] [DEBUG] 分割后数组：长度=6, 内容=[[0]=新建文件.txt, [1]=FILE, [2]=6, [3]=0, [4]=false, [5]=8b511c37-b3f4-4abb-ba9f-c1ba84e6]
+[2025-10-25 02:03:52] [DEBUG] 从磁盘加载目录项完成：/新建文件夹，共1项
+[2025-10-25 02:03:52] [INFO] 列出目录成功：/新建文件夹，子条目数：1
+[2025-10-25 02:03:56] [INFO] OFT清理完成，关闭了 0 个文件
+[2025-10-25 02:03:56] [INFO] 开始保存FAT表到磁盘，总大小=128字节，使用块0和块1
+[2025-10-25 02:03:56] [DEBUG] FAT表块 0 已写入磁盘
+[2025-10-25 02:03:56] [DEBUG] FAT表块 1 已写入磁盘
+[2025-10-25 02:03:56] [INFO] FAT 表已持久化到磁盘，共使用2个块
+[2025-10-25 02:03:56] [INFO] 文件系统卸载成功
+[2025-10-25 02:03:56] [INFO] 应用关闭，文件系统已卸载
+[2025-10-25 02:05:52] [INFO] 已成功删除旧的磁盘文件：D:\Project\FileManager\data\disk.img
+[2025-10-25 02:05:52] [INFO] FAT 初始化：块 0 标记为FAT存储区
+[2025-10-25 02:05:52] [INFO] FAT 初始化：块 1 标记为FAT存储区
+[2025-10-25 02:05:52] [INFO] FAT 初始化：块 23 标记为坏块
+[2025-10-25 02:05:52] [INFO] FAT 初始化：块 49 标记为坏块
+[2025-10-25 02:05:52] [INFO] FAT 初始化完成：总块数=128，FAT表大小=128，数据分配从块2开始
+[2025-10-25 02:05:52] [INFO] 已打开文件表（OFT）初始化完成，容量：5
+[2025-10-25 02:05:52] [DEBUG] 文件系统挂载前已清空全局缓存
+[2025-10-25 02:05:52] [INFO] 文件系统挂载成功：块大小=64字节，总块数=128
+[2025-10-25 02:05:52] [INFO] 列出目录成功：/，子条目数：0
+[2025-10-25 02:05:53] [INFO] 应用启动成功
+[2025-10-25 02:05:58] [INFO] 列出目录成功：/，子条目数：0
+[2025-10-25 02:06:01] [DEBUG] 准备创建文件：/新建文件.txt
+[2025-10-25 02:06:01] [DEBUG] 尝试创建文件：/新建文件.txt
+[2025-10-25 02:06:01] [DEBUG] 解析路径 - 父目录：/, 文件名：新建文件.txt
+[2025-10-25 02:06:01] [INFO] FAT 分配块：blockId=2（跳过坏块23、49）
+[2025-10-25 02:06:01] [DEBUG] 为文件分配起始块：2
+[2025-10-25 02:06:01] [DEBUG] 创建文件元数据：[文件] /新建文件.txt | 大小：0 B | 创建时间：Sat Oct 25 02:06:01 CST 2025 | 起始块：2 | UUID：b6e419a2 | 状态：正常
+[2025-10-25 02:06:01] [DEBUG] 文件元数据已缓存：/新建文件.txt
+[2025-10-25 02:06:01] [DEBUG] 父目录修改时间已更新：/
+[2025-10-25 02:06:01] [DEBUG] 创建父目录对象：/
+[2025-10-25 02:06:01] [DEBUG] 目录添加项成功：新建文件.txt → /
+[2025-10-25 02:06:01] [DEBUG] 文件已添加到父目录：新建文件.txt → /
+[2025-10-25 02:06:01] [INFO] FAT 分配块：blockId=3（跳过坏块23、49）
+[2025-10-25 02:06:01] [INFO] FAT 分配块：blockId=4（跳过坏块23、49）
+[2025-10-25 02:06:01] [DEBUG] FAT更新块链：3 → 4
+[2025-10-25 02:06:01] [DEBUG] FAT更新块链：4 → END_OF_FILE
+[2025-10-25 02:06:01] [DEBUG] 目录项同步到磁盘完成：/，块数：1
+[2025-10-25 02:06:01] [DEBUG] 父目录已同步到磁盘：/
+[2025-10-25 02:06:01] [INFO] 创建文件成功：[文件] /新建文件.txt | 大小：0 B | 创建时间：Sat Oct 25 02:06:01 CST 2025 | 起始块：2 | UUID：b6e419a2 | 状态：正常
+[2025-10-25 02:06:01] [INFO] 文件创建成功：/新建文件.txt
+[2025-10-25 02:06:01] [DEBUG] 创建文件后刷新目录：/
+[2025-10-25 02:06:01] [DEBUG] 解析目录项：长度=56, 内容=新建文件.txt|FILE|2|0|false|b6e419a2-2293-413d-9175-fe515174, 分隔符=|
+[2025-10-25 02:06:01] [DEBUG] 分割后数组：长度=6, 内容=[[0]=新建文件.txt, [1]=FILE, [2]=2, [3]=0, [4]=false, [5]=b6e419a2-2293-413d-9175-fe515174]
+[2025-10-25 02:06:01] [DEBUG] 从磁盘加载目录项完成：/，共1项
+[2025-10-25 02:06:01] [DEBUG] 解析目录项：长度=56, 内容=新建文件.txt|FILE|2|0|false|b6e419a2-2293-413d-9175-fe515174, 分隔符=|
+[2025-10-25 02:06:01] [DEBUG] 分割后数组：长度=6, 内容=[[0]=新建文件.txt, [1]=FILE, [2]=2, [3]=0, [4]=false, [5]=b6e419a2-2293-413d-9175-fe515174]
+[2025-10-25 02:06:01] [DEBUG] 从磁盘加载目录项完成：/，共1项
+[2025-10-25 02:06:01] [INFO] 列出目录成功：/，子条目数：1
+[2025-10-25 02:06:05] [DEBUG] 准备创建文件：/新建文件.cpp
+[2025-10-25 02:06:05] [DEBUG] 尝试创建文件：/新建文件.cpp
+[2025-10-25 02:06:05] [DEBUG] 解析路径 - 父目录：/, 文件名：新建文件.cpp
+[2025-10-25 02:06:05] [INFO] FAT 分配块：blockId=5（跳过坏块23、49）
+[2025-10-25 02:06:05] [DEBUG] 为文件分配起始块：5
+[2025-10-25 02:06:05] [DEBUG] 创建文件元数据：[文件] /新建文件.cpp | 大小：0 B | 创建时间：Sat Oct 25 02:06:05 CST 2025 | 起始块：5 | UUID：1fc1acb4 | 状态：正常
+[2025-10-25 02:06:05] [DEBUG] 文件元数据已缓存：/新建文件.cpp
+[2025-10-25 02:06:05] [DEBUG] 父目录修改时间已更新：/
+[2025-10-25 02:06:05] [DEBUG] 解析目录项：长度=56, 内容=新建文件.txt|FILE|2|0|false|b6e419a2-2293-413d-9175-fe515174, 分隔符=|
+[2025-10-25 02:06:05] [DEBUG] 分割后数组：长度=6, 内容=[[0]=新建文件.txt, [1]=FILE, [2]=2, [3]=0, [4]=false, [5]=b6e419a2-2293-413d-9175-fe515174]
+[2025-10-25 02:06:05] [DEBUG] 从磁盘加载目录项完成：/，共1项
+[2025-10-25 02:06:05] [DEBUG] 创建父目录对象：/
+[2025-10-25 02:06:05] [DEBUG] 目录添加项成功：新建文件.cpp → /
+[2025-10-25 02:06:05] [DEBUG] 文件已添加到父目录：新建文件.cpp → /
+[2025-10-25 02:06:05] [INFO] FAT 分配块：blockId=6（跳过坏块23、49）
+[2025-10-25 02:06:05] [INFO] FAT 分配块：blockId=7（跳过坏块23、49）
+[2025-10-25 02:06:05] [DEBUG] FAT更新块链：6 → 7
+[2025-10-25 02:06:05] [DEBUG] FAT更新块链：7 → END_OF_FILE
+[2025-10-25 02:06:05] [INFO] FAT 释放块：blockId=3
+[2025-10-25 02:06:05] [INFO] FAT 释放块：blockId=4
+[2025-10-25 02:06:05] [DEBUG] 目录项同步到磁盘完成：/，块数：1
+[2025-10-25 02:06:05] [DEBUG] 父目录已同步到磁盘：/
+[2025-10-25 02:06:05] [INFO] 创建文件成功：[文件] /新建文件.cpp | 大小：0 B | 创建时间：Sat Oct 25 02:06:05 CST 2025 | 起始块：5 | UUID：1fc1acb4 | 状态：正常
+[2025-10-25 02:06:05] [INFO] 文件创建成功：/新建文件.cpp
+[2025-10-25 02:06:05] [DEBUG] 创建文件后刷新目录：/
+[2025-10-25 02:06:05] [DEBUG] 解析目录项：长度=56, 内容=新建文件.txt|FILE|2|0|false|b6e419a2-2293-413d-9175-fe515174, 分隔符=|
+[2025-10-25 02:06:05] [DEBUG] 分割后数组：长度=6, 内容=[[0]=新建文件.txt, [1]=FILE, [2]=2, [3]=0, [4]=false, [5]=b6e419a2-2293-413d-9175-fe515174]
+[2025-10-25 02:06:05] [DEBUG] 从磁盘加载目录项完成：/，共1项
+[2025-10-25 02:06:05] [DEBUG] 解析目录项：长度=56, 内容=新建文件.txt|FILE|2|0|false|b6e419a2-2293-413d-9175-fe515174, 分隔符=|
+[2025-10-25 02:06:05] [DEBUG] 分割后数组：长度=6, 内容=[[0]=新建文件.txt, [1]=FILE, [2]=2, [3]=0, [4]=false, [5]=b6e419a2-2293-413d-9175-fe515174]
+[2025-10-25 02:06:05] [DEBUG] 从磁盘加载目录项完成：/，共1项
+[2025-10-25 02:06:05] [INFO] 列出目录成功：/，子条目数：2
+[2025-10-25 02:06:10] [INFO] 写入文件成功：/新建文件.cpp，大小：3 B
+[2025-10-25 02:06:10] [DEBUG] 解析目录项：长度=56, 内容=新建文件.txt|FILE|2|0|false|b6e419a2-2293-413d-9175-fe515174, 分隔符=|
+[2025-10-25 02:06:10] [DEBUG] 分割后数组：长度=6, 内容=[[0]=新建文件.txt, [1]=FILE, [2]=2, [3]=0, [4]=false, [5]=b6e419a2-2293-413d-9175-fe515174]
+[2025-10-25 02:06:10] [DEBUG] 从磁盘加载目录项完成：/，共1项
+[2025-10-25 02:06:10] [DEBUG] 解析目录项：长度=56, 内容=新建文件.txt|FILE|2|0|false|b6e419a2-2293-413d-9175-fe515174, 分隔符=|
+[2025-10-25 02:06:10] [DEBUG] 分割后数组：长度=6, 内容=[[0]=新建文件.txt, [1]=FILE, [2]=2, [3]=0, [4]=false, [5]=b6e419a2-2293-413d-9175-fe515174]
+[2025-10-25 02:06:10] [DEBUG] 从磁盘加载目录项完成：/，共1项
+[2025-10-25 02:06:10] [INFO] 列出目录成功：/，子条目数：2
+[2025-10-25 02:06:15] [INFO] FAT 释放块：blockId=5
+[2025-10-25 02:06:15] [DEBUG] 解析目录项：长度=56, 内容=新建文件.txt|FILE|2|0|false|b6e419a2-2293-413d-9175-fe515174, 分隔符=|
+[2025-10-25 02:06:15] [DEBUG] 分割后数组：长度=6, 内容=[[0]=新建文件.txt, [1]=FILE, [2]=2, [3]=0, [4]=false, [5]=b6e419a2-2293-413d-9175-fe515174]
+[2025-10-25 02:06:15] [DEBUG] 从磁盘加载目录项完成：/，共1项
+[2025-10-25 02:06:15] [DEBUG] 尝试删除目录项：新建文件.cpp，目录：/
+[2025-10-25 02:06:15] [WARN] 未找到要删除的目录项：新建文件.cpp，目录：/
+[2025-10-25 02:06:15] [INFO] 删除文件成功：/新建文件.cpp
+[2025-10-25 02:06:15] [DEBUG] 解析目录项：长度=56, 内容=新建文件.txt|FILE|2|0|false|b6e419a2-2293-413d-9175-fe515174, 分隔符=|
+[2025-10-25 02:06:15] [DEBUG] 分割后数组：长度=6, 内容=[[0]=新建文件.txt, [1]=FILE, [2]=2, [3]=0, [4]=false, [5]=b6e419a2-2293-413d-9175-fe515174]
+[2025-10-25 02:06:15] [DEBUG] 从磁盘加载目录项完成：/，共1项
+[2025-10-25 02:06:15] [DEBUG] 解析目录项：长度=56, 内容=新建文件.txt|FILE|2|0|false|b6e419a2-2293-413d-9175-fe515174, 分隔符=|
+[2025-10-25 02:06:15] [DEBUG] 分割后数组：长度=6, 内容=[[0]=新建文件.txt, [1]=FILE, [2]=2, [3]=0, [4]=false, [5]=b6e419a2-2293-413d-9175-fe515174]
+[2025-10-25 02:06:15] [DEBUG] 从磁盘加载目录项完成：/，共1项
+[2025-10-25 02:06:15] [INFO] 列出目录成功：/，子条目数：1
+[2025-10-25 02:06:15] [INFO] 列出目录成功：/，子条目数：1
+[2025-10-25 02:06:18] [DEBUG] 准备创建文件：/新建文件.cpp
+[2025-10-25 02:06:18] [DEBUG] 尝试创建文件：/新建文件.cpp
+[2025-10-25 02:06:18] [DEBUG] 解析路径 - 父目录：/, 文件名：新建文件.cpp
+[2025-10-25 02:06:18] [INFO] FAT 分配块：blockId=3（跳过坏块23、49）
+[2025-10-25 02:06:18] [DEBUG] 为文件分配起始块：3
+[2025-10-25 02:06:18] [DEBUG] 创建文件元数据：[文件] /新建文件.cpp | 大小：0 B | 创建时间：Sat Oct 25 02:06:18 CST 2025 | 起始块：3 | UUID：725737e2 | 状态：正常
+[2025-10-25 02:06:18] [DEBUG] 文件元数据已缓存：/新建文件.cpp
+[2025-10-25 02:06:18] [DEBUG] 父目录修改时间已更新：/
+[2025-10-25 02:06:18] [DEBUG] 解析目录项：长度=56, 内容=新建文件.txt|FILE|2|0|false|b6e419a2-2293-413d-9175-fe515174, 分隔符=|
+[2025-10-25 02:06:18] [DEBUG] 分割后数组：长度=6, 内容=[[0]=新建文件.txt, [1]=FILE, [2]=2, [3]=0, [4]=false, [5]=b6e419a2-2293-413d-9175-fe515174]
+[2025-10-25 02:06:18] [DEBUG] 从磁盘加载目录项完成：/，共1项
+[2025-10-25 02:06:18] [DEBUG] 创建父目录对象：/
+[2025-10-25 02:06:18] [DEBUG] 目录添加项成功：新建文件.cpp → /
+[2025-10-25 02:06:18] [DEBUG] 文件已添加到父目录：新建文件.cpp → /
+[2025-10-25 02:06:18] [INFO] FAT 分配块：blockId=4（跳过坏块23、49）
+[2025-10-25 02:06:18] [INFO] FAT 分配块：blockId=5（跳过坏块23、49）
+[2025-10-25 02:06:18] [DEBUG] FAT更新块链：4 → 5
+[2025-10-25 02:06:18] [DEBUG] FAT更新块链：5 → END_OF_FILE
+[2025-10-25 02:06:18] [INFO] FAT 释放块：blockId=6
+[2025-10-25 02:06:18] [INFO] FAT 释放块：blockId=7
+[2025-10-25 02:06:18] [DEBUG] 目录项同步到磁盘完成：/，块数：1
+[2025-10-25 02:06:18] [DEBUG] 父目录已同步到磁盘：/
+[2025-10-25 02:06:18] [INFO] 创建文件成功：[文件] /新建文件.cpp | 大小：0 B | 创建时间：Sat Oct 25 02:06:18 CST 2025 | 起始块：3 | UUID：725737e2 | 状态：正常
+[2025-10-25 02:06:18] [INFO] 文件创建成功：/新建文件.cpp
+[2025-10-25 02:06:18] [DEBUG] 创建文件后刷新目录：/
+[2025-10-25 02:06:18] [DEBUG] 解析目录项：长度=56, 内容=新建文件.txt|FILE|2|0|false|b6e419a2-2293-413d-9175-fe515174, 分隔符=|
+[2025-10-25 02:06:18] [DEBUG] 分割后数组：长度=6, 内容=[[0]=新建文件.txt, [1]=FILE, [2]=2, [3]=0, [4]=false, [5]=b6e419a2-2293-413d-9175-fe515174]
+[2025-10-25 02:06:18] [DEBUG] 解析目录项：长度=3, 内容=666, 分隔符=|
+[2025-10-25 02:06:18] [DEBUG] 分割后数组：长度=1, 内容=[[0]=666]
+[2025-10-25 02:06:18] [WARN] 无效的目录项格式：666, 分割后长度=1
+[2025-10-25 02:06:18] [DEBUG] 从磁盘加载目录项完成：/，共1项
+[2025-10-25 02:06:18] [DEBUG] 解析目录项：长度=56, 内容=新建文件.txt|FILE|2|0|false|b6e419a2-2293-413d-9175-fe515174, 分隔符=|
+[2025-10-25 02:06:18] [DEBUG] 分割后数组：长度=6, 内容=[[0]=新建文件.txt, [1]=FILE, [2]=2, [3]=0, [4]=false, [5]=b6e419a2-2293-413d-9175-fe515174]
+[2025-10-25 02:06:18] [DEBUG] 解析目录项：长度=3, 内容=666, 分隔符=|
+[2025-10-25 02:06:18] [DEBUG] 分割后数组：长度=1, 内容=[[0]=666]
+[2025-10-25 02:06:18] [WARN] 无效的目录项格式：666, 分割后长度=1
+[2025-10-25 02:06:18] [DEBUG] 从磁盘加载目录项完成：/，共1项
+[2025-10-25 02:06:18] [INFO] 列出目录成功：/，子条目数：2
+[2025-10-25 02:06:23] [INFO] FAT 释放块：blockId=3
+[2025-10-25 02:06:23] [DEBUG] 解析目录项：长度=56, 内容=新建文件.txt|FILE|2|0|false|b6e419a2-2293-413d-9175-fe515174, 分隔符=|
+[2025-10-25 02:06:23] [DEBUG] 分割后数组：长度=6, 内容=[[0]=新建文件.txt, [1]=FILE, [2]=2, [3]=0, [4]=false, [5]=b6e419a2-2293-413d-9175-fe515174]
+[2025-10-25 02:06:23] [DEBUG] 解析目录项：长度=3, 内容=666, 分隔符=|
+[2025-10-25 02:06:23] [DEBUG] 分割后数组：长度=1, 内容=[[0]=666]
+[2025-10-25 02:06:23] [WARN] 无效的目录项格式：666, 分割后长度=1
+[2025-10-25 02:06:23] [DEBUG] 从磁盘加载目录项完成：/，共1项
+[2025-10-25 02:06:23] [DEBUG] 尝试删除目录项：新建文件.cpp，目录：/
+[2025-10-25 02:06:23] [WARN] 未找到要删除的目录项：新建文件.cpp，目录：/
+[2025-10-25 02:06:23] [INFO] 删除文件成功：/新建文件.cpp
+[2025-10-25 02:06:23] [DEBUG] 解析目录项：长度=56, 内容=新建文件.txt|FILE|2|0|false|b6e419a2-2293-413d-9175-fe515174, 分隔符=|
+[2025-10-25 02:06:23] [DEBUG] 分割后数组：长度=6, 内容=[[0]=新建文件.txt, [1]=FILE, [2]=2, [3]=0, [4]=false, [5]=b6e419a2-2293-413d-9175-fe515174]
+[2025-10-25 02:06:23] [DEBUG] 解析目录项：长度=3, 内容=666, 分隔符=|
+[2025-10-25 02:06:23] [DEBUG] 分割后数组：长度=1, 内容=[[0]=666]
+[2025-10-25 02:06:23] [WARN] 无效的目录项格式：666, 分割后长度=1
+[2025-10-25 02:06:23] [DEBUG] 从磁盘加载目录项完成：/，共1项
+[2025-10-25 02:06:23] [DEBUG] 解析目录项：长度=56, 内容=新建文件.txt|FILE|2|0|false|b6e419a2-2293-413d-9175-fe515174, 分隔符=|
+[2025-10-25 02:06:23] [DEBUG] 分割后数组：长度=6, 内容=[[0]=新建文件.txt, [1]=FILE, [2]=2, [3]=0, [4]=false, [5]=b6e419a2-2293-413d-9175-fe515174]
+[2025-10-25 02:06:23] [DEBUG] 解析目录项：长度=3, 内容=666, 分隔符=|
+[2025-10-25 02:06:23] [DEBUG] 分割后数组：长度=1, 内容=[[0]=666]
+[2025-10-25 02:06:23] [WARN] 无效的目录项格式：666, 分割后长度=1
+[2025-10-25 02:06:23] [DEBUG] 从磁盘加载目录项完成：/，共1项
+[2025-10-25 02:06:23] [INFO] 列出目录成功：/，子条目数：1
+[2025-10-25 02:06:23] [INFO] 列出目录成功：/，子条目数：1
+[2025-10-25 02:06:41] [INFO] OFT清理完成，关闭了 0 个文件
+[2025-10-25 02:06:41] [INFO] 开始保存FAT表到磁盘，总大小=128字节，使用块0和块1
+[2025-10-25 02:06:41] [DEBUG] FAT表块 0 已写入磁盘
+[2025-10-25 02:06:41] [DEBUG] FAT表块 1 已写入磁盘
+[2025-10-25 02:06:41] [INFO] FAT 表已持久化到磁盘，共使用2个块
+[2025-10-25 02:06:41] [INFO] 文件系统卸载成功
+[2025-10-25 02:06:41] [INFO] 应用关闭，文件系统已卸载

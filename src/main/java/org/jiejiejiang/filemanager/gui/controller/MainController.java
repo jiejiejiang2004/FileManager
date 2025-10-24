@@ -8,37 +8,32 @@ import java.util.Date;
 import java.util.List;
 
 import org.jiejiejiang.filemanager.core.Directory;
+import org.jiejiejiang.filemanager.core.FAT;
 import org.jiejiejiang.filemanager.core.FileEntry;
 import org.jiejiejiang.filemanager.core.FileSystem;
-import org.jiejiejiang.filemanager.core.FAT;
 import org.jiejiejiang.filemanager.exception.FileSystemException;
 import org.jiejiejiang.filemanager.util.LogUtil;
 
 import javafx.application.Platform;
-import javafx.beans.value.ChangeListener;
 import javafx.fxml.FXML;
-import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
-import javafx.scene.control.ComboBox;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
 import javafx.scene.control.TableRow;
+import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextInputDialog;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.MouseButton;
-import javafx.scene.layout.GridPane;
-import javafx.scene.paint.Color;
 
 public class MainController {
 
@@ -262,132 +257,91 @@ public class MainController {
     }
     
     /**
-     * 显示修改文件大小对话框
+     * 显示文本编辑器对话框，允许修改文件内容（大小由内容长度决定）
      */
-    private void showModifyFileSizeDialog(FileEntry fileEntry) {
-        // 确保是文件
+    private void showEditFileContentDialog(FileEntry fileEntry) {
+        // 仅允许编辑文件
         if (fileEntry.getType() != FileEntry.EntryType.FILE) {
-            showWarning("提示", "只能修改文件大小");
+            showWarning("提示", "只能编辑文件内容");
             return;
         }
-        
-        // 创建自定义对话框
+
+        // 计算完整路径
+        String parentPath = currentDirectory.getDirEntry().getFullPath();
+        String fullPath = parentPath.endsWith("/") ? parentPath + fileEntry.getName() : parentPath + "/" + fileEntry.getName();
+
+        // 创建对话框
         Dialog<ButtonType> dialog = new Dialog<>();
-        dialog.setTitle("修改文件大小");
-        dialog.setHeaderText("修改文件：" + fileEntry.getName());
-        
-        // 设置按钮
-        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
-        
-        // 创建内容面板
-        GridPane grid = new GridPane();
-        grid.setHgap(10);
-        grid.setVgap(10);
-        grid.setPadding(new Insets(20, 150, 10, 10));
-        
-        // 添加大小输入框
-        TextField sizeField = new TextField(String.valueOf(fileEntry.getSize()));
-        
-        // 添加单位选择下拉框
-        ComboBox<String> unitComboBox = new ComboBox<>();
-        unitComboBox.getItems().addAll("B", "KB", "MB", "GB", "TB");
-        unitComboBox.setValue("B");
-        
-        // 添加说明标签
-        Label infoLabel = new Label("最大支持 1 TB 的文件大小");
-        infoLabel.setTextFill(Color.GRAY);
-        
-        // 添加错误提示标签
-        Label errorLabel = new Label("");
-        errorLabel.setTextFill(Color.RED);
-        
-        // 添加到网格面板
-        grid.add(new Label("文件大小："), 0, 0);
-        grid.add(sizeField, 1, 0);
-        grid.add(unitComboBox, 2, 0);
-        grid.add(infoLabel, 1, 1, 2, 1);
-        grid.add(errorLabel, 1, 2, 2, 1);
-        
-        dialog.getDialogPane().setContent(grid);
-        
-        // 验证输入并更新错误标签
-        Node okButton = dialog.getDialogPane().lookupButton(ButtonType.OK);
-        okButton.setDisable(true); // 初始禁用确定按钮
-        
-        // 添加输入验证
-        ChangeListener<String> validationListener = (observable, oldValue, newValue) -> {
-            try {
-                errorLabel.setText("");
-                
-                // 检查是否为有效数字
-                long size = Long.parseLong(newValue);
-                if (size < 0) {
-                    errorLabel.setText("文件大小不能为负数");
-                    okButton.setDisable(true);
-                    return;
-                }
-                
-                // 转换为字节并检查上限（1TB）
-                String unit = unitComboBox.getValue();
-                long bytes = convertToBytes(size, unit);
-                
-                // 1TB = 1024^4 字节 = 1099511627776 字节
-                if (bytes > 1099511627776L) {
-                    errorLabel.setText("文件大小超过上限（1TB）");
-                    okButton.setDisable(true);
-                    return;
-                }
-                
-                // 验证通过
-                okButton.setDisable(false);
-            } catch (NumberFormatException e) {
-                errorLabel.setText("请输入有效的数字");
-                okButton.setDisable(true);
+        dialog.setTitle("编辑文件内容");
+        dialog.setHeaderText("文件：" + fileEntry.getName());
+
+        // 仅需要保存功能（加上取消以便关闭）
+        ButtonType SAVE_BUTTON = new ButtonType("保存", javafx.scene.control.ButtonBar.ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().addAll(SAVE_BUTTON, ButtonType.CANCEL);
+
+        // 文本编辑器
+        javafx.scene.control.TextArea editor = new javafx.scene.control.TextArea();
+        editor.setWrapText(true);
+        editor.setPrefRowCount(20);
+        editor.setPrefColumnCount(60);
+
+        // 读取现有内容
+        try {
+            byte[] content = fileSystem.readFile(fullPath);
+            String text = new String(content, java.nio.charset.StandardCharsets.UTF_8);
+            editor.setText(text);
+        } catch (FileSystemException e) {
+            showError("读取文件失败", e.getMessage());
+            editor.setText("");
+        }
+
+        dialog.getDialogPane().setContent(editor);
+
+        // 绑定 Ctrl+S 触发保存按钮
+        dialog.setOnShown(ev -> {
+            var scene = dialog.getDialogPane().getScene();
+            if (scene != null) {
+                var saveNode = dialog.getDialogPane().lookupButton(SAVE_BUTTON);
+                scene.getAccelerators().put(
+                    new javafx.scene.input.KeyCodeCombination(
+                        javafx.scene.input.KeyCode.S,
+                        javafx.scene.input.KeyCombination.CONTROL_DOWN
+                    ),
+                    () -> { if (saveNode != null && !saveNode.isDisabled()) ((javafx.scene.control.Button) saveNode).fire(); }
+                );
             }
-        };
-        
-        // 添加监听
-        sizeField.textProperty().addListener(validationListener);
-        unitComboBox.valueProperty().addListener((observable, oldValue, newValue) -> {
-            // 当单位改变时，重新验证
-            validationListener.changed(null, null, sizeField.getText());
         });
-        
-        // 显示对话框并处理结果
+
+        // 显示并处理保存
         dialog.showAndWait().ifPresent(result -> {
-            if (result == ButtonType.OK) {
+            if (result == SAVE_BUTTON) {
                 try {
-                    long size = Long.parseLong(sizeField.getText());
-                    String unit = unitComboBox.getValue();
-                    long bytes = convertToBytes(size, unit);
-                    
-                    // 调用文件系统修改文件大小
-                    String parentPath = currentDirectory.getDirEntry().getFullPath();
-                    String fullPath = parentPath.endsWith("/") ? parentPath + fileEntry.getName() : parentPath + "/" + fileEntry.getName();
-                    fileSystem.resizeFile(fullPath, bytes);
-                    
-                    // 延迟一小段时间后再刷新UI，确保文件系统操作完全完成
-                    // 让FileSystem内部处理缓存更新，不在此处手动刷新
+                    // 保存前存在性检测
+                    FileEntry current = fileSystem.getEntry(fullPath);
+                    if (current == null || current.isDeleted() || current.getType() != FileEntry.EntryType.FILE) {
+                        showError("保存失败", "文件不存在或类型错误：" + fullPath);
+                        return;
+                    }
+
+                    // 写入内容（大小由文本长度决定）
+                    byte[] newContent = editor.getText().getBytes(java.nio.charset.StandardCharsets.UTF_8);
+                    fileSystem.writeFile(fullPath, newContent);
+
+                    // 刷新 UI 与 FAT
                     Platform.runLater(() -> {
-                        // 重新加载目录，让TableView完全重建，避免属性绑定问题
                         loadDirectory(currentDirectory.getDirEntry().getFullPath());
-                        // 刷新 FAT 视图
                         refreshFatView();
-                        // 显示成功提示
                         Alert success = new Alert(Alert.AlertType.INFORMATION);
                         success.setTitle("成功");
                         success.setHeaderText(null);
-                        success.setContentText("文件大小修改成功！");
+                        success.setContentText("保存成功！");
                         success.showAndWait();
                     });
-                    
-                } catch (NumberFormatException | FileSystemException e) {
-                    // 关键修复：即使出现异常也要刷新UI，确保移除不存在的文件
+                } catch (FileSystemException e) {
                     Platform.runLater(() -> {
                         loadDirectory(currentDirectory.getDirEntry().getFullPath());
-                        // 刷新 FAT 视图
                         refreshFatView();
-                        showError("修改文件大小失败", e.getMessage());
+                        showError("保存失败", e.getMessage());
                     });
                 }
             }
@@ -652,7 +606,7 @@ public class MainController {
                 if (isDoubleClick && !clickedOnEmpty && clickedEntry != null) {
                     // 快速双击：执行打开逻辑
                     if (clickedEntry.getType() == FileEntry.EntryType.FILE) {
-                        showModifyFileSizeDialog(clickedEntry);
+                        showEditFileContentDialog(clickedEntry);
                     } else if (clickedEntry.getType() == FileEntry.EntryType.DIRECTORY) {
                         String parentPath = currentDirectory.getDirEntry().getFullPath();
                         String path = parentPath.endsWith("/") ? parentPath + clickedEntry.getName() : parentPath + "/" + clickedEntry.getName();
