@@ -372,7 +372,18 @@ public class FileSystem {
             // 4. 更新父目录的修改时间
             FileEntry parentDir = getEntry(file.getParentPath());
             updateDirModifyTime(parentDir);
-            // 5. 从entryCache中完全移除已删除的文件，确保后续创建同名文件时不会受到影响
+            
+            // 5. 同步移除父目录中的该文件并写回磁盘，避免目录项残留阻碍同名重建
+            try {
+                Directory parentDirectory = getDirectory(file.getParentPath());
+                parentDirectory.removeEntry(file.getName());
+                parentDirectory.syncToDisk();
+            } catch (FileSystemException e) {
+                LogUtil.error("删除文件后同步父目录失败：" + e.getMessage(), e);
+                throw e;
+            }
+            
+            // 6. 从entryCache中完全移除已删除的文件，确保后续创建同名文件时不会受到影响
             entryCache.remove(fullPath);
 
             LogUtil.info("删除文件成功：" + fullPath);
