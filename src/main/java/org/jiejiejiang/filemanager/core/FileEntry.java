@@ -1,12 +1,10 @@
 package org.jiejiejiang.filemanager.core;
 
-import org.jiejiejiang.filemanager.util.FileSizeUtil;
-
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.Date;
 import java.util.Objects;
 import java.util.UUID;
+
+import org.jiejiejiang.filemanager.util.FileSizeUtil;
 
 /**
  * 文件/目录元数据实体（类比 inode）
@@ -29,6 +27,8 @@ public class FileEntry {
     private Date modifyTime;            // 修改时间
     private boolean isDeleted;          // 是否被删除（标记删除，避免立即释放空间）
     private final String uuid;          // 唯一标识符，用于精确区分文件/目录
+    // 新增：只读属性
+    private boolean readOnly;           // 是否只读（true=只读，false=读写）
 
     // ======================== 构造器 ========================
     /**
@@ -67,6 +67,7 @@ public class FileEntry {
         this.uuid = UUID.randomUUID().toString(); // 生成唯一标识符
 
         this.size = (type == EntryType.DIRECTORY) ? 0 : 0;
+        this.readOnly = false; // 默认读写
     }
 
     // 用于从磁盘加载时恢复UUID的构造器
@@ -102,6 +103,7 @@ public class FileEntry {
         this.uuid = uuid; // 使用提供的UUID
 
         this.size = (type == EntryType.DIRECTORY) ? 0 : 0;
+        this.readOnly = false; // 默认读写
     }
 
     // ======================== 核心方法 ========================
@@ -109,22 +111,22 @@ public class FileEntry {
      * 获取完整路径（父路径 + 名称，处理根目录特殊情况）
      * @return 完整路径（如 "/home/docs" 或 "/test.txt"）
      */
-    public String getFullPath() {
-        // 根目录的父路径是 "/"，名称为空（若有根目录Entry），此处简化处理非根目录场景
-        if (parentPath.equals("/")) {
-            return "/" + name;
-        }
-        // 非根目录：父路径 + "/" + 名称（避免重复分隔符，如 "/home/" + "docs" → "/home/docs"）
-        return parentPath.endsWith("/") ? parentPath + name : parentPath + "/" + name;
-    }
+    // public String getFullPath() {
+    //     // 根目录的父路径是 "/"，名称为空（若有根目录Entry），此处简化处理非根目录场景
+    //     if (parentPath.equals("/")) {
+    //         return "/" + name;
+    //     }
+    //     // 非根目录：父路径 + "/" + 名称（避免重复分隔符，如 "/home/" + "docs" → "/home/docs"）
+    //     return parentPath.endsWith("/") ? parentPath + name : parentPath + "/" + name;
+    // }
 
-    /**
-     * 标记文件/目录为已删除
-     */
-    public void markAsDeleted() {
-        this.isDeleted = true;  // 明确设置为true
-        this.modifyTime = new Date();  // 更新修改时间
-    }
+    // /**
+    //  * 标记文件/目录为已删除
+    //  */
+    // public void markAsDeleted() {
+    //     this.isDeleted = true;  // 明确设置为true
+    //     this.modifyTime = new Date();  // 更新修改时间
+    // }
 
     /**
      * 更新文件大小（仅文件可用，目录大小不可修改）
@@ -142,14 +144,14 @@ public class FileEntry {
         this.modifyTime = new Date();
     }
 
-    // ======================== 辅助方法（格式化输出） ========================
-    /**
-     * 获取格式化后的文件大小（如 "1.50 KB"）
-     * @return 人类可读的大小字符串
-     */
-    public String getFormattedSize() {
-        return FileSizeUtil.format(size);
-    }
+    // // ======================== 辅助方法（格式化输出） ========================
+    // /**
+    //  * 获取格式化后的文件大小（如 "1.50 KB"）
+    //  * @return 人类可读的大小字符串
+    //  */
+    // public String getFormattedSize() {
+    //     return FileSizeUtil.format(size);
+    // }
 
     // ======================== 重写方法 ========================
     @Override
@@ -169,14 +171,15 @@ public class FileEntry {
     @Override
     public String toString() {
         return String.format(
-                "[%s] %s | 大小：%s | 创建时间：%s | 起始块：%s | UUID：%s | 状态：%s",
+                "[%s] %s | 大小：%s | 创建时间：%s | 起始块：%s | UUID：%s | 状态：%s | 只读：%s",
                 type == EntryType.FILE ? "文件" : "目录",
                 getFullPath(),
                 getFormattedSize(),
                 createTime,
                 startBlockId == -1 ? "未分配" : String.valueOf(startBlockId),
                 uuid.substring(0, 8), // 只显示UUID的前8位，便于阅读
-                isDeleted ? "已删除" : "正常"
+                isDeleted ? "已删除" : "正常",
+                readOnly ? "是" : "否"
         );
     }
 
@@ -198,12 +201,11 @@ public class FileEntry {
     }
 
     public int getStartBlockId() {
-//        System.out.println(startBlockId);
         return startBlockId;
     }
 
     public Date getCreateTime() {
-        return new Date(createTime.getTime()); // 返回副本，避免外部修改
+        return new Date(createTime.getTime());
     }
 
     public Date getModifyTime() {
@@ -216,6 +218,15 @@ public class FileEntry {
 
     public String getUuid() {
         return uuid;
+    }
+
+    public boolean isReadOnly() {
+        return readOnly;
+    }
+
+    public void setReadOnly(boolean readOnly) {
+        this.readOnly = readOnly;
+        this.modifyTime = new Date();
     }
 
     public void setStartBlockId(int newBlockId) {
@@ -243,16 +254,22 @@ public class FileEntry {
         this.modifyTime = new Date(); // 同步更新修改时间
     }
 
-    // FileEntry.java
-    /**
-     * 更新修改时间
-     * @param time 新的修改时间
-     */
-    public void setModifyTime(LocalDateTime time) {
-        if (time == null) {
-            throw new IllegalArgumentException("修改时间不能为null");
+    public void markAsDeleted() {
+        this.isDeleted = true;
+        this.modifyTime = new Date();
+    }
+
+    public String getFullPath() {
+        if ("/".equals(parentPath)) {
+            return parentPath.endsWith("/") ? parentPath + name : parentPath + "/" + name;
         }
-        // 转换LocalDateTime为Date
-        this.modifyTime = Date.from(time.atZone(ZoneId.systemDefault()).toInstant());
+        return parentPath.endsWith("/") ? parentPath + name : parentPath + "/" + name;
+    }
+
+    public String getFormattedSize() {
+        if (type == EntryType.DIRECTORY) {
+            return "-";
+        }
+        return FileSizeUtil.format(size);
     }
 }

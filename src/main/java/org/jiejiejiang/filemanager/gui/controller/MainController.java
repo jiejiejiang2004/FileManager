@@ -265,26 +265,32 @@ public class MainController {
             showWarning("提示", "只能编辑文件内容");
             return;
         }
-
+    
+        // 只读文件禁止打开与保存
+        if (fileEntry.isReadOnly()) {
+            showWarning("提示", "该文件为只读，不能打开或保存内容");
+            return;
+        }
+    
         // 计算完整路径
         String parentPath = currentDirectory.getDirEntry().getFullPath();
         String fullPath = parentPath.endsWith("/") ? parentPath + fileEntry.getName() : parentPath + "/" + fileEntry.getName();
-
+    
         // 创建对话框
         Dialog<ButtonType> dialog = new Dialog<>();
         dialog.setTitle("编辑文件内容");
         dialog.setHeaderText("文件：" + fileEntry.getName());
-
+    
         // 仅需要保存功能（加上取消以便关闭）
         ButtonType SAVE_BUTTON = new ButtonType("保存", javafx.scene.control.ButtonBar.ButtonData.OK_DONE);
         dialog.getDialogPane().getButtonTypes().addAll(SAVE_BUTTON, ButtonType.CANCEL);
-
+    
         // 文本编辑器
         javafx.scene.control.TextArea editor = new javafx.scene.control.TextArea();
         editor.setWrapText(true);
         editor.setPrefRowCount(20);
         editor.setPrefColumnCount(60);
-
+    
         // 读取现有内容
         try {
             byte[] content = fileSystem.readFile(fullPath);
@@ -294,9 +300,9 @@ public class MainController {
             showError("读取文件失败", e.getMessage());
             editor.setText("");
         }
-
+    
         dialog.getDialogPane().setContent(editor);
-
+    
         // 绑定 Ctrl+S 触发保存按钮
         dialog.setOnShown(ev -> {
             var scene = dialog.getDialogPane().getScene();
@@ -311,7 +317,7 @@ public class MainController {
                 );
             }
         });
-
+    
         // 显示并处理保存
         dialog.showAndWait().ifPresent(result -> {
             if (result == SAVE_BUTTON) {
@@ -322,11 +328,11 @@ public class MainController {
                         showError("保存失败", "文件不存在或类型错误：" + fullPath);
                         return;
                     }
-
+    
                     // 写入内容（大小由文本长度决定）
                     byte[] newContent = editor.getText().getBytes(java.nio.charset.StandardCharsets.UTF_8);
                     fileSystem.writeFile(fullPath, newContent);
-
+    
                     // 刷新 UI 与 FAT
                     Platform.runLater(() -> {
                         loadDirectory(currentDirectory.getDirEntry().getFullPath());
@@ -870,56 +876,78 @@ public class MainController {
             showWarning("警告", "请先选择一个文件或文件夹");
             return;
         }
-        
-        // 创建属性对话框
-        Alert propertiesDialog = new Alert(Alert.AlertType.INFORMATION);
-        propertiesDialog.setTitle("属性");
-        propertiesDialog.setHeaderText(selectedEntry.getName() + " 的属性");
-        
-        // 构建属性信息
-        StringBuilder properties = new StringBuilder();
-        properties.append("文件名: ").append(selectedEntry.getName()).append("\n");
-        
-        // 构建完整路径
+    
         String currentPath = (currentDirectory != null) ? currentDirectory.getDirEntry().getFullPath() : "/";
         String fullPath = currentPath.endsWith("/") ? currentPath + selectedEntry.getName() : currentPath + "/" + selectedEntry.getName();
-        properties.append("路径: ").append(fullPath).append("\n");
-        
-        // 文件大小
-        if (selectedEntry.getType() == FileEntry.EntryType.FILE) {
-            properties.append("类型: 文件\n");
-            properties.append("大小: ").append(selectedEntry.getSize()).append(" 字节");
-            if (selectedEntry.getSize() >= 1024) {
-                double sizeInKB = selectedEntry.getSize() / 1024.0;
-                if (sizeInKB >= 1024) {
-                    double sizeInMB = sizeInKB / 1024.0;
-                    properties.append(" (").append(String.format("%.2f MB", sizeInMB)).append(")");
-                } else {
-                    properties.append(" (").append(String.format("%.2f KB", sizeInKB)).append(")");
+    
+        Dialog<ButtonType> dialog = new Dialog<>();
+        dialog.setTitle("属性");
+        dialog.setHeaderText(selectedEntry.getName() + " 的属性");
+    
+        ButtonType SAVE_BUTTON = new ButtonType("保存", javafx.scene.control.ButtonBar.ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().addAll(SAVE_BUTTON, ButtonType.CANCEL);
+    
+        javafx.scene.layout.GridPane grid = new javafx.scene.layout.GridPane();
+        grid.setHgap(10);
+        grid.setVgap(8);
+        grid.setPadding(new javafx.geometry.Insets(10));
+    
+        javafx.scene.control.Label nameLabel = new javafx.scene.control.Label("文件名:");
+        javafx.scene.control.Label nameValue = new javafx.scene.control.Label(selectedEntry.getName());
+    
+        javafx.scene.control.Label pathLabel = new javafx.scene.control.Label("路径:");
+        javafx.scene.control.Label pathValue = new javafx.scene.control.Label(fullPath);
+    
+        javafx.scene.control.Label typeLabel = new javafx.scene.control.Label("类型:");
+        String typeText = selectedEntry.getType() == FileEntry.EntryType.FILE ? "文件" : "文件夹";
+        javafx.scene.control.Label typeValue = new javafx.scene.control.Label(typeText);
+    
+        javafx.scene.control.Label sizeLabel = new javafx.scene.control.Label("大小:");
+        String sizeText = selectedEntry.getType() == FileEntry.EntryType.FILE
+                ? String.format("%d 字节 (%.2f KB)", selectedEntry.getSize(), selectedEntry.getSize() / 1024.0)
+                : "-";
+        javafx.scene.control.Label sizeValue = new javafx.scene.control.Label(sizeText);
+    
+        javafx.scene.control.Label modifyLabel = new javafx.scene.control.Label("修改时间:");
+        java.time.LocalDateTime localDateTime = java.time.LocalDateTime.ofInstant(selectedEntry.getModifyTime().toInstant(), java.time.ZoneId.systemDefault());
+        String modifyText = localDateTime.format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        javafx.scene.control.Label modifyValue = new javafx.scene.control.Label(modifyText);
+    
+        javafx.scene.control.CheckBox readOnlyCheck = new javafx.scene.control.CheckBox("只读");
+        readOnlyCheck.setSelected(selectedEntry.isReadOnly());
+        // 目录的只读不影响编辑器逻辑，这里允许显示但不影响行为
+    
+        grid.addRow(0, nameLabel, nameValue);
+        grid.addRow(1, pathLabel, pathValue);
+        grid.addRow(2, typeLabel, typeValue);
+        grid.addRow(3, sizeLabel, sizeValue);
+        grid.addRow(4, modifyLabel, modifyValue);
+        grid.addRow(5, new javafx.scene.control.Label("属性:"), readOnlyCheck);
+    
+        dialog.getDialogPane().setContent(grid);
+    
+        dialog.showAndWait().ifPresent(result -> {
+            if (result == SAVE_BUTTON) {
+                try {
+                    boolean newReadOnly = readOnlyCheck.isSelected();
+                    selectedEntry.setReadOnly(newReadOnly);
+                    // 标记当前目录为脏并同步
+                    currentDirectory.markDirty();
+                    currentDirectory.syncToDisk();
+    
+                    // 刷新列表与FAT视图
+                    loadDirectory(currentDirectory.getDirEntry().getFullPath());
+                    refreshFatView();
+    
+                    Alert success = new Alert(Alert.AlertType.INFORMATION);
+                    success.setTitle("成功");
+                    success.setHeaderText(null);
+                    success.setContentText("属性已保存");
+                    success.showAndWait();
+                } catch (org.jiejiejiang.filemanager.exception.FileSystemException e) {
+                    showError("保存属性失败", e.getMessage());
                 }
             }
-        } else {
-            properties.append("类型: 文件夹\n");
-            properties.append("大小: --");
-        }
-        
-        // 修改时间
-        properties.append("\n修改时间: ");
-        if (selectedEntry.getModifyTime() != null) {
-            LocalDateTime modifyTime = selectedEntry.getModifyTime().toInstant()
-                    .atZone(ZoneId.systemDefault()).toLocalDateTime();
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-            properties.append(modifyTime.format(formatter));
-        } else {
-            properties.append("未知");
-        }
-        
-        propertiesDialog.setContentText(properties.toString());
-        
-        // 设置对话框按钮
-        propertiesDialog.getButtonTypes().setAll(ButtonType.OK);
-        
-        // 显示对话框
-        propertiesDialog.showAndWait();
+        });
     }
 }

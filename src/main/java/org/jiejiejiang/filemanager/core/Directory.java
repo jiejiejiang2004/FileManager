@@ -347,6 +347,7 @@ public class Directory {
                 String.valueOf(entry.getStartBlockId()),
                 String.valueOf(entry.getSize()),
                 String.valueOf(entry.isDeleted()),
+                String.valueOf(entry.isReadOnly()), // 新增只读字段
                 entry.getUuid()  // 添加UUID字段
         );
     }
@@ -356,67 +357,55 @@ public class Directory {
      */
     private FileEntry parseEntryString(String entryStr) {
         try {
-            // 添加调试信息，显示完整的entryStr和其长度
-            LogUtil.debug("解析目录项：长度=" + entryStr.length() + ", 内容=" + entryStr + ", 分隔符=" + ENTRY_SEPARATOR);
-            
-            // 修复：对特殊字符进行转义，避免split将|当作正则表达式的或操作符
-            String[] parts = entryStr.split(Pattern.quote(ENTRY_SEPARATOR));
-            
-            // 调试parts数组内容
-            StringBuilder partsDebug = new StringBuilder();
-            for (int i = 0; i < parts.length; i++) {
-                partsDebug.append("[").append(i).append("]=").append(parts[i]);
-                if (i < parts.length - 1) partsDebug.append(", ");
-            }
-            LogUtil.debug("分割后数组：长度=" + parts.length + ", 内容=[" + partsDebug + "]");
-            
-            if (parts.length != 6) { // 现在需要6个部分，因为添加了UUID
-                // 兼容旧格式（没有UUID的情况）
-                if (parts.length == 5) {
-                    LogUtil.debug("检测到旧格式目录项，将使用新的UUID");
-                    // 创建一个新的UUID
-                    String uuid = UUID.randomUUID().toString();
-                    
-                    // 创建临时FileEntry，使用新UUID构造器
-                    FileEntry entry = new FileEntry(parts[0], 
-                                                  FileEntry.EntryType.valueOf(parts[1]), 
-                                                  dirEntry.getFullPath(), 
-                                                  Integer.parseInt(parts[2]),
-                                                  uuid);
-                    
-                    // 恢复大小和删除状态
-                    if (entry.getType() == FileEntry.EntryType.FILE) {
-                        setEntrySize(entry, Long.parseLong(parts[3]));
-                    }
-                    if (Boolean.parseBoolean(parts[4])) {
-                        entry.markAsDeleted();
-                    }
-                    
-                    return entry;
-                }
-                
+            String[] parts = entryStr.split(java.util.regex.Pattern.quote(ENTRY_SEPARATOR));
+            boolean readOnly = false;
+            String uuid;
+            String name;
+            FileEntry.EntryType type;
+            int startBlockId;
+            long size;
+            boolean isDeleted;
+    
+            if (parts.length == 7) {
+                // 新格式：名称|类型|起始块ID|大小|是否删除|只读|UUID
+                name = parts[0];
+                type = FileEntry.EntryType.valueOf(parts[1]);
+                startBlockId = Integer.parseInt(parts[2]);
+                size = Long.parseLong(parts[3]);
+                isDeleted = Boolean.parseBoolean(parts[4]);
+                readOnly = Boolean.parseBoolean(parts[5]);
+                uuid = parts[6];
+            } else if (parts.length == 6) {
+                // 旧格式（无只读）：名称|类型|起始块ID|大小|是否删除|UUID
+                name = parts[0];
+                type = FileEntry.EntryType.valueOf(parts[1]);
+                startBlockId = Integer.parseInt(parts[2]);
+                size = Long.parseLong(parts[3]);
+                isDeleted = Boolean.parseBoolean(parts[4]);
+                readOnly = false;
+                uuid = parts[5];
+            } else if (parts.length == 5) {
+                // 更旧格式（无UUID、无只读）：名称|类型|起始块ID|大小|是否删除
+                name = parts[0];
+                type = FileEntry.EntryType.valueOf(parts[1]);
+                startBlockId = Integer.parseInt(parts[2]);
+                size = Long.parseLong(parts[3]);
+                isDeleted = Boolean.parseBoolean(parts[4]);
+                readOnly = false;
+                uuid = java.util.UUID.randomUUID().toString();
+            } else {
                 LogUtil.warn("无效的目录项格式：" + entryStr + ", 分割后长度=" + parts.length);
                 return null;
             }
-
-            String name = parts[0];
-            FileEntry.EntryType type = FileEntry.EntryType.valueOf(parts[1]);
-            int startBlockId = Integer.parseInt(parts[2]);
-            long size = Long.parseLong(parts[3]);
-            boolean isDeleted = Boolean.parseBoolean(parts[4]);
-            String uuid = parts[5]; // 获取UUID字段
-
-            // 创建FileEntry，使用包含UUID的构造器
+    
             FileEntry entry = new FileEntry(name, type, dirEntry.getFullPath(), startBlockId, uuid);
-
-            // 恢复大小和删除状态
             if (type == FileEntry.EntryType.FILE) {
                 setEntrySize(entry, size);
             }
             if (isDeleted) {
                 entry.markAsDeleted();
             }
-
+            entry.setReadOnly(readOnly);
             return entry;
         } catch (Exception e) {
             LogUtil.warn("解析目录项失败：" + entryStr, e);
@@ -484,6 +473,10 @@ public class Directory {
 
     public boolean isDirty() {
         return isDirty;
+    }
+
+    public void markDirty() {
+        this.isDirty = true;
     }
 
     // Directory.java
