@@ -543,11 +543,15 @@ public class MainController {
         
         emptyAreaContextMenu.getItems().addAll(newFileMenuItem, newDirMenuItem);
         
-        // 创建选中项右键菜单（删除）
+        // 创建选中项右键菜单（删除、属性）
         ContextMenu selectedItemContextMenu = new ContextMenu();
         MenuItem deleteMenuItem = new MenuItem("删除");
+        MenuItem propertiesMenuItem = new MenuItem("属性");
+        
         deleteMenuItem.setOnAction(e -> deleteSelectedEntry());
-        selectedItemContextMenu.getItems().add(deleteMenuItem);
+        propertiesMenuItem.setOnAction(e -> showFilePropertiesDialog());
+        
+        selectedItemContextMenu.getItems().addAll(deleteMenuItem, propertiesMenuItem);
         
         // 为文件表格设置右键菜单
         fileTableView.setOnContextMenuRequested(event -> {
@@ -855,5 +859,67 @@ public class MainController {
             int row = dirTreeView.getRow(current);
             if (row >= 0) dirTreeView.scrollTo(row);
         } catch (Exception ignore) {}
+    }
+    
+    /**
+     * 显示文件属性对话框
+     */
+    private void showFilePropertiesDialog() {
+        FileEntry selectedEntry = fileTableView.getSelectionModel().getSelectedItem();
+        if (selectedEntry == null) {
+            showWarning("警告", "请先选择一个文件或文件夹");
+            return;
+        }
+        
+        // 创建属性对话框
+        Alert propertiesDialog = new Alert(Alert.AlertType.INFORMATION);
+        propertiesDialog.setTitle("属性");
+        propertiesDialog.setHeaderText(selectedEntry.getName() + " 的属性");
+        
+        // 构建属性信息
+        StringBuilder properties = new StringBuilder();
+        properties.append("文件名: ").append(selectedEntry.getName()).append("\n");
+        
+        // 构建完整路径
+        String currentPath = (currentDirectory != null) ? currentDirectory.getDirEntry().getFullPath() : "/";
+        String fullPath = currentPath.endsWith("/") ? currentPath + selectedEntry.getName() : currentPath + "/" + selectedEntry.getName();
+        properties.append("路径: ").append(fullPath).append("\n");
+        
+        // 文件大小
+        if (selectedEntry.getType() == FileEntry.EntryType.FILE) {
+            properties.append("类型: 文件\n");
+            properties.append("大小: ").append(selectedEntry.getSize()).append(" 字节");
+            if (selectedEntry.getSize() >= 1024) {
+                double sizeInKB = selectedEntry.getSize() / 1024.0;
+                if (sizeInKB >= 1024) {
+                    double sizeInMB = sizeInKB / 1024.0;
+                    properties.append(" (").append(String.format("%.2f MB", sizeInMB)).append(")");
+                } else {
+                    properties.append(" (").append(String.format("%.2f KB", sizeInKB)).append(")");
+                }
+            }
+        } else {
+            properties.append("类型: 文件夹\n");
+            properties.append("大小: --");
+        }
+        
+        // 修改时间
+        properties.append("\n修改时间: ");
+        if (selectedEntry.getModifyTime() != null) {
+            LocalDateTime modifyTime = selectedEntry.getModifyTime().toInstant()
+                    .atZone(ZoneId.systemDefault()).toLocalDateTime();
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            properties.append(modifyTime.format(formatter));
+        } else {
+            properties.append("未知");
+        }
+        
+        propertiesDialog.setContentText(properties.toString());
+        
+        // 设置对话框按钮
+        propertiesDialog.getButtonTypes().setAll(ButtonType.OK);
+        
+        // 显示对话框
+        propertiesDialog.showAndWait();
     }
 }
