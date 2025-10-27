@@ -34,6 +34,10 @@ import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.MouseButton;
+import javafx.scene.layout.FlowPane;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.image.ImageView;
+import javafx.scene.image.Image;
 
 public class MainController {
 
@@ -64,6 +68,13 @@ public class MainController {
     @FXML private MenuItem newDirItem;
     @FXML private MenuItem deleteItem;
     @FXML private MenuItem refreshItem;
+    @FXML private MenuItem listViewItem;
+    @FXML private MenuItem iconViewItem;
+    
+    // 视图切换组件
+    @FXML private Button toggleViewButton;
+    @FXML private javafx.scene.control.ScrollPane iconViewScrollPane;
+    @FXML private javafx.scene.layout.FlowPane iconViewPane;
 
     // ============================== 业务对象 ==============================
     private FileSystem fileSystem; // 文件系统核心对象（由外部注入）
@@ -73,6 +84,14 @@ public class MainController {
     private long lastClickTime = 0L;
     private int lastClickedRowIndex = -1;
     private static final int DOUBLE_CLICK_THRESHOLD_MS = 350;
+    
+    // ============================== 视图模式状态 ==============================
+    public enum ViewMode {
+        LIST,   // 列表模式（表格）
+        ICON    // 图标模式
+    }
+    
+    private ViewMode currentViewMode = ViewMode.LIST; // 默认列表模式
 
     // ============================== 初始化 ==============================
     @FXML
@@ -244,15 +263,22 @@ public class MainController {
         // 6. 返回按钮
         backButton.setOnAction(e -> navigateBack());
         
+        // 7. 视图切换按钮
+        toggleViewButton.setOnAction(e -> toggleViewMode());
+        
+        // 8. 视图菜单项
+        listViewItem.setOnAction(e -> switchToListView());
+        iconViewItem.setOnAction(e -> switchToIconView());
+        
         // 地址栏回车跳转路径
         if (pathTextField != null) {
             pathTextField.setOnAction(e -> handlePathEnter());
         }
         
-        // 7. 设置右键菜单
+        // 9. 设置右键菜单
         setupContextMenus();
         
-        // 8. 文件表格点击事件统一由 setupContextMenus() 中注册的处理器负责
+        // 10. 文件表格点击事件统一由 setupContextMenus() 中注册的处理器负责
         // （包含自定义双击阈值与取消选中逻辑，避免事件处理器覆盖问题）
     }
     
@@ -414,6 +440,9 @@ public class MainController {
 
             // 更新文件数量状态栏
             fileCountLabel.setText(String.format("文件数量：%d", entries.size()));
+            
+            // 如果当前是图标视图模式，也刷新图标视图
+            refreshCurrentView();
 
         } catch (FileSystemException e) {
             showError("加载目录失败", e.getMessage());
@@ -997,5 +1026,227 @@ public class MainController {
                 }
             }
         });
+    }
+    
+    // ============================== 视图切换相关方法 ==============================
+    
+    /**
+     * 切换视图模式（在列表和图标之间切换）
+     */
+    private void toggleViewMode() {
+        if (currentViewMode == ViewMode.LIST) {
+            switchToIconView();
+        } else {
+            switchToListView();
+        }
+    }
+    
+    /**
+     * 切换到列表视图
+     */
+    private void switchToListView() {
+        currentViewMode = ViewMode.LIST;
+        fileTableView.setVisible(true);
+        iconViewScrollPane.setVisible(false);
+        toggleViewButton.setText("图标视图");
+        LogUtil.info("切换到列表视图");
+    }
+    
+    /**
+     * 切换到图标视图
+     */
+    private void switchToIconView() {
+        currentViewMode = ViewMode.ICON;
+        fileTableView.setVisible(false);
+        iconViewScrollPane.setVisible(true);
+        toggleViewButton.setText("列表视图");
+        refreshIconView();
+        LogUtil.info("切换到图标视图");
+    }
+    
+    /**
+     * 刷新图标视图
+     */
+    private void refreshIconView() {
+        if (iconViewPane == null) return;
+        
+        iconViewPane.getChildren().clear();
+        
+        if (currentDirectory == null) return;
+        
+        try {
+            List<FileEntry> entries = fileSystem.listDirectory(currentDirectory.getDirEntry().getFullPath());
+            
+            for (FileEntry entry : entries) {
+                javafx.scene.layout.VBox iconItem = createIconItem(entry);
+                iconViewPane.getChildren().add(iconItem);
+            }
+        } catch (FileSystemException e) {
+            LogUtil.error("刷新图标视图失败：" + e.getMessage());
+        }
+    }
+    
+    /**
+     * 创建单个图标项
+     */
+    private javafx.scene.layout.VBox createIconItem(FileEntry entry) {
+        javafx.scene.layout.VBox iconItem = new javafx.scene.layout.VBox();
+        iconItem.setAlignment(javafx.geometry.Pos.CENTER);
+        iconItem.setSpacing(5);
+        iconItem.setPrefWidth(80);
+        iconItem.setStyle("-fx-cursor: hand; -fx-padding: 5;");
+        
+        // 创建图标
+        javafx.scene.image.ImageView iconView = new javafx.scene.image.ImageView();
+        iconView.setFitWidth(48);
+        iconView.setFitHeight(48);
+        iconView.setPreserveRatio(true);
+        
+        // 根据文件类型加载图标
+        String iconPath;
+        if (entry.getType() == FileEntry.EntryType.DIRECTORY) {
+            iconPath = "/org/jiejiejiang/filemanager/images/folder.png";
+        } else {
+            iconPath = "/org/jiejiejiang/filemanager/images/file.png";
+        }
+        
+        try {
+            javafx.scene.image.Image icon = new javafx.scene.image.Image(getClass().getResourceAsStream(iconPath));
+            iconView.setImage(icon);
+        } catch (Exception e) {
+            LogUtil.error("加载图标失败：" + iconPath + " - " + e.getMessage());
+            // 如果图标加载失败，创建一个简单的文本标识
+            iconView = null;
+        }
+        
+        // 创建文件名标签
+        Label nameLabel = new Label(entry.getName());
+        nameLabel.setWrapText(true);
+        nameLabel.setMaxWidth(75);
+        nameLabel.setStyle("-fx-font-size: 10px; -fx-text-alignment: center;");
+        
+        // 添加组件到容器
+        if (iconView != null) {
+            iconItem.getChildren().addAll(iconView, nameLabel);
+        } else {
+            // 如果图标加载失败，显示文件类型标识
+            Label typeLabel = new Label(entry.getType() == FileEntry.EntryType.DIRECTORY ? "📁" : "📄");
+            typeLabel.setStyle("-fx-font-size: 32px;");
+            iconItem.getChildren().addAll(typeLabel, nameLabel);
+        }
+        
+        // 添加点击事件
+        iconItem.setOnMouseClicked(event -> {
+            if (event.getClickCount() == 2) {
+                // 双击事件
+                if (entry.getType() == FileEntry.EntryType.DIRECTORY) {
+                    // 进入目录
+                    String parentPath = currentDirectory.getDirEntry().getFullPath();
+                    String fullPath = parentPath.endsWith("/") ? parentPath + entry.getName() : parentPath + "/" + entry.getName();
+                    loadDirectory(fullPath);
+                    selectTreeItemByPath(fullPath);
+                } else {
+                    // 打开文件
+                    showEditFileContentDialog(entry);
+                }
+            } else if (event.getButton() == MouseButton.SECONDARY) {
+                // 右键点击 - 显示上下文菜单
+                showIconContextMenu(entry, event.getScreenX(), event.getScreenY());
+            }
+        });
+        
+        // 添加悬停效果
+        iconItem.setOnMouseEntered(e -> iconItem.setStyle("-fx-cursor: hand; -fx-padding: 5; -fx-background-color: #e3f2fd;"));
+        iconItem.setOnMouseExited(e -> iconItem.setStyle("-fx-cursor: hand; -fx-padding: 5;"));
+        
+        return iconItem;
+    }
+    
+    /**
+     * 显示图标项的右键菜单
+     */
+    private void showIconContextMenu(FileEntry entry, double screenX, double screenY) {
+        ContextMenu contextMenu = new ContextMenu();
+        
+        // 打开/进入
+        MenuItem openItem = new MenuItem(entry.getType() == FileEntry.EntryType.DIRECTORY ? "进入" : "打开");
+        openItem.setOnAction(e -> {
+            if (entry.getType() == FileEntry.EntryType.DIRECTORY) {
+                String parentPath = currentDirectory.getDirEntry().getFullPath();
+                String fullPath = parentPath.endsWith("/") ? parentPath + entry.getName() : parentPath + "/" + entry.getName();
+                loadDirectory(fullPath);
+                selectTreeItemByPath(fullPath);
+            } else {
+                showEditFileContentDialog(entry);
+            }
+        });
+        
+        // 属性
+        MenuItem propertiesItem = new MenuItem("属性");
+        propertiesItem.setOnAction(e -> {
+            // 先在表格中选中该项，然后显示属性对话框
+            fileTableView.getSelectionModel().clearSelection();
+            for (int i = 0; i < fileTableView.getItems().size(); i++) {
+                if (fileTableView.getItems().get(i).getName().equals(entry.getName())) {
+                    fileTableView.getSelectionModel().select(i);
+                    break;
+                }
+            }
+            showFilePropertiesDialog();
+        });
+        
+        // 删除
+        MenuItem deleteItem = new MenuItem("删除");
+        deleteItem.setOnAction(e -> {
+            // 模拟选中该项并删除
+            fileTableView.getSelectionModel().clearSelection();
+            // 创建一个临时选择来删除
+            deleteFileEntry(entry);
+        });
+        
+        contextMenu.getItems().addAll(openItem, propertiesItem, deleteItem);
+        contextMenu.show(iconViewPane, screenX, screenY);
+    }
+    
+    /**
+     * 删除指定的文件条目
+     */
+    private void deleteFileEntry(FileEntry entry) {
+        Alert confirmAlert = new Alert(Alert.AlertType.CONFIRMATION);
+        confirmAlert.setTitle("确认删除");
+        confirmAlert.setHeaderText(null);
+        confirmAlert.setContentText("确定要删除 \"" + entry.getName() + "\" 吗？");
+        
+        confirmAlert.showAndWait().ifPresent(result -> {
+            if (result == ButtonType.OK) {
+                try {
+                    String parentPath = currentDirectory.getDirEntry().getFullPath();
+                    String fullPath = parentPath.endsWith("/") ? parentPath + entry.getName() : parentPath + "/" + entry.getName();
+                    
+                    if (entry.getType() == FileEntry.EntryType.DIRECTORY) {
+                        fileSystem.deleteDirectoryRecursively(fullPath);
+                    } else {
+                        fileSystem.deleteFile(fullPath);
+                    }
+                    
+                    // 刷新视图
+                    loadDirectory(currentDirectory.getDirEntry().getFullPath());
+                    initDirectoryTree();
+                    refreshFatView();
+                } catch (FileSystemException e) {
+                    showError("删除失败", e.getMessage());
+                }
+            }
+        });
+    }
+    
+    /**
+     * 重写loadDirectory方法以支持视图切换
+     */
+    private void refreshCurrentView() {
+        if (currentViewMode == ViewMode.ICON) {
+            refreshIconView();
+        }
+        // 列表视图的刷新已经在原有的loadDirectory方法中处理
     }
 }

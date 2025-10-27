@@ -16,6 +16,10 @@
 <?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.FlowPane?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.control.ScrollPane?>
 <?import javafx.geometry.Insets?>
 
 <?import javafx.scene.control.SeparatorMenuItem?>
@@ -84,29 +88,42 @@
     <!-- 3. 中间：主内容区（文件列表，默认表格模式） -->
     <center>
         <VBox>
-            <!-- 导航栏：返回按钮 + 路径栏 -->
+            <!-- 导航栏：返回按钮 + 路径栏 + 视图切换按钮 -->
             <HBox spacing="10" style="-fx-padding: 5; -fx-background-color: #f0f0f0;">
                 <Button fx:id="backButton" text="← 返回" style="-fx-cursor: hand;"/>
                 <TextField fx:id="pathTextField" HBox.hgrow="ALWAYS" promptText="当前路径" editable="true"/>
+                <!-- 视图切换按钮 -->
+                <Button fx:id="toggleViewButton" text="切换视图" style="-fx-cursor: hand;"/>
             </HBox>
             
-            <TableView fx:id="fileTableView" style="-fx-background-color: white;" VBox.vgrow="ALWAYS">
-            <!-- 表格列：名称、类型、大小、修改时间 -->
-            <columns>
-                <TableColumn text="名称" prefWidth="200" fx:id="nameColumn">
-                    <!-- 后续通过Controller绑定FileEntry的name属性 -->
-                </TableColumn>
-                <TableColumn text="类型" prefWidth="100" fx:id="typeColumn">
-                    <!-- 绑定FileEntry的type属性（FILE/DIRECTORY） -->
-                </TableColumn>
-                <TableColumn text="大小(KB)" prefWidth="100" fx:id="sizeColumn">
-                    <!-- 绑定FileEntry的size属性（需计算转换） -->
-                </TableColumn>
-                <TableColumn text="修改时间" prefWidth="180" fx:id="modifyTimeColumn">
-                    <!-- 绑定FileEntry的modifyTime属性 -->
-                </TableColumn>
-            </columns>
-        </TableView>
+            <!-- 视图容器：使用StackPane在同一区域内切换列表视图和图标视图 -->
+            <StackPane VBox.vgrow="ALWAYS">
+                <!-- 列表视图：表格模式 -->
+                <TableView fx:id="fileTableView" style="-fx-background-color: white;">
+                    <!-- 表格列：名称、类型、大小、修改时间 -->
+                    <columns>
+                        <TableColumn text="名称" prefWidth="200" fx:id="nameColumn">
+                            <!-- 后续通过Controller绑定FileEntry的name属性 -->
+                        </TableColumn>
+                        <TableColumn text="类型" prefWidth="100" fx:id="typeColumn">
+                            <!-- 绑定FileEntry的type属性（FILE/DIRECTORY） -->
+                        </TableColumn>
+                        <TableColumn text="大小(KB)" prefWidth="100" fx:id="sizeColumn">
+                            <!-- 绑定FileEntry的size属性（需计算转换） -->
+                        </TableColumn>
+                        <TableColumn text="修改时间" prefWidth="180" fx:id="modifyTimeColumn">
+                            <!-- 绑定FileEntry的modifyTime属性 -->
+                        </TableColumn>
+                    </columns>
+                </TableView>
+                
+                <!-- 图标视图：网格模式 -->
+                <ScrollPane fx:id="iconViewScrollPane" style="-fx-background-color: white;" visible="false">
+                    <FlowPane fx:id="iconViewPane" hgap="10" vgap="10" style="-fx-padding: 10;">
+                        <!-- 图标项将由Controller动态添加 -->
+                    </FlowPane>
+                </ScrollPane>
+            </StackPane>
         </VBox>
     </center>
 
