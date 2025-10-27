@@ -63,42 +63,24 @@ public class FileManagerApp extends Application {
     }
 
     /**
-     * 初始化文件系统（磁盘 + FAT + 挂载）
+     * 初始化文件系统核心组件
      */
     private void initFileSystem() throws FileSystemException, DiskInitializeException {
-        // 启动时删除data/disk.img文件
-        try {
-            // 先加载配置获取磁盘文件路径
-            Properties props = new Properties();
-            try (InputStream in = new FileInputStream(DISK_CONFIG_PATH)) {
-                props.load(in);
-            }
-            String diskFilePath = props.getProperty("disk.file.path", "./data/disk.img");
-            
-            // 转换为绝对路径
-            String absoluteDiskPath = PathUtil.getAbsolutePath(diskFilePath);
-            File diskFile = new File(absoluteDiskPath);
-            
-            // 如果文件存在则删除
-            if (diskFile.exists()) {
-                if (diskFile.delete()) {
-                    LogUtil.info("已成功删除旧的磁盘文件：" + absoluteDiskPath);
-                } else {
-                    LogUtil.warn("无法删除旧的磁盘文件：" + absoluteDiskPath);
-                }
-            }
-        } catch (Exception e) {
-            LogUtil.error("删除磁盘文件时发生错误", e);
-            // 继续初始化，不中断启动过程
-        }
-        
         // 1. 从配置文件初始化磁盘（使用类路径下的config资源）
         Disk disk = new Disk(DISK_CONFIG_PATH);
         disk.initialize(); // 完成磁盘初始化（创建或加载磁盘文件）
 
         // 2. 初始化FAT表（基于磁盘配置）
         FAT fat = new FAT(disk);
-        fat.initialize(); // 从磁盘加载或创建新FAT表
+        
+        // 尝试从磁盘加载现有的FAT表，如果失败则创建新的
+        try {
+            fat.loadFromDisk();
+            LogUtil.info("成功从磁盘加载现有FAT表");
+        } catch (Exception e) {
+            LogUtil.info("无法从磁盘加载FAT表，创建新的FAT表：" + e.getMessage());
+            fat.initialize(); // 创建新FAT表
+        }
 
         // 3. 创建并挂载文件系统
         fileSystem = new FileSystem(disk, fat);

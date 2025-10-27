@@ -263,67 +263,54 @@ public class Directory {
                 if (currentBlockId != -1 && !fat.isFreeBlock(currentBlockId)) {
                     fat.markAsFreeBlock(currentBlockId); // 释放块为空闲
                 }
-                // 关键修复1：更新目录项的起始块ID为-1（未分配）
-                updateDirEntryStartBlock(-1); // 建议用setter或重新创建实例，避免反射
+                updateDirEntryStartBlock(-1);
             } else {
-                // 非空目录：先分配新块链，成功后再释放旧链
+                // 非空目录：智能块管理策略
                 int requiredBlocks = (entriesCache.size() + MAX_ENTRIES_PER_BLOCK - 1) / MAX_ENTRIES_PER_BLOCK;
-                int startBlockId = -1;
-                int prevBlockId = -1;
+                int currentStartBlockId = dirEntry.getStartBlockId();
+                
+                // 智能策略：如果当前已有块且只需要1个块，直接就地更新
+                if (requiredBlocks == 1 && currentStartBlockId != -1 && !fat.isFreeBlock(currentStartBlockId)) {
+                    // 就地更新：直接写入现有块，无需重新分配
+                    writeDirectoryContent(currentStartBlockId);
+                    LogUtil.debug("目录项就地更新完成：" + dirEntry.getFullPath() + "，使用现有块：" + currentStartBlockId);
+                } else {
+                    // 需要重新分配块链的情况：
+                    // 1. 目录还没有分配块 (currentStartBlockId == -1)
+                    // 2. 需要多个块 (requiredBlocks > 1)
+                    // 3. 当前块已被释放或损坏
+                    
+                    int startBlockId = -1;
+                    int prevBlockId = -1;
 
-                // 1. 分配新块链（避免先释放旧链导致中间状态错误）
-                if (requiredBlocks > 0) {
-                    startBlockId = fat.allocateBlock(); // 起始块
-                    prevBlockId = startBlockId;
+                    // 分配新块链
+                    if (requiredBlocks > 0) {
+                        startBlockId = fat.allocateBlock(); // 起始块
+                        prevBlockId = startBlockId;
 
-                    // 分配剩余块
-                    for (int i = 1; i <= requiredBlocks; i++) {
-                        int nextBlockId = fat.allocateBlock();
-                        fat.setNextBlock(prevBlockId, nextBlockId);
-                        prevBlockId = nextBlockId;
-                    }
-                    fat.setNextBlock(prevBlockId, FAT.END_OF_FILE); // 标记链结束
-                }
-
-                // 2. 写入新块链数据
-                if (startBlockId != -1) {
-                    int entryIndex = 0;
-                    int currentBlockId = startBlockId;
-                    while (currentBlockId != FAT.END_OF_FILE && entryIndex < entriesCache.size()) {
-                        StringBuilder blockContent = new StringBuilder();
-                        int entriesInBlock = 0;
-
-                        while (entriesInBlock < MAX_ENTRIES_PER_BLOCK && entryIndex < entriesCache.size()) {
-                            FileEntry entry = entriesCache.get(entryIndex);
-                            // 只写入未被删除的条目，防止已删除文件在同步后重新出现
-                            if (!entry.isDeleted()) {
-                                blockContent.append(formatEntryString(entry))
-                                        .append(ENTRY_TERMINATOR);
-                                entriesInBlock++;
-                            }
-                            entryIndex++;
+                        // 分配剩余块
+                        for (int i = 1; i < requiredBlocks; i++) {
+                            int nextBlockId = fat.allocateBlock();
+                            fat.setNextBlock(prevBlockId, nextBlockId);
+                            prevBlockId = nextBlockId;
                         }
-
-                        // 填充块数据并写入
-                        byte[] blockData = blockContent.toString().getBytes();
-                        byte[] fullBlock = new byte[blockSize];
-                        System.arraycopy(blockData, 0, fullBlock, 0, Math.min(blockData.length, blockSize));
-                        disk.writeBlock(currentBlockId, fullBlock);
-
-                        currentBlockId = fat.getNextBlock(currentBlockId);
+                        fat.setNextBlock(prevBlockId, FAT.END_OF_FILE); // 标记链结束
                     }
+
+                    // 写入新块链数据
+                    if (startBlockId != -1) {
+                        writeDirectoryContent(startBlockId);
+                    }
+
+                    // 释放旧块链（仅在分配了新块链后）
+                    if (currentStartBlockId != -1 && currentStartBlockId != startBlockId) {
+                        fat.freeBlocks(currentStartBlockId);
+                    }
+
+                    // 更新目录项的起始块ID
+                    updateDirEntryStartBlock(startBlockId);
+                    LogUtil.debug("目录项重新分配完成：" + dirEntry.getFullPath() + "，新块数：" + requiredBlocks);
                 }
-
-                // 3. 释放旧块链（确保新块链已成功分配和写入）
-                int oldStartBlockId = dirEntry.getStartBlockId();
-                if (oldStartBlockId != -1) {
-                    fat.freeBlocks(oldStartBlockId);
-                }
-
-                // 4. 更新目录项的起始块ID（新块链的起始块）
-                updateDirEntryStartBlock(startBlockId); // 优先用setter：dirEntry.setStartBlockId(startBlockId)
-
-                LogUtil.debug("目录项同步到磁盘完成：" + dirEntry.getFullPath() + "，块数：" + requiredBlocks);
             }
             isDirty = false;
 
@@ -331,6 +318,39 @@ public class Directory {
             throw new FileSystemException("目录项同步失败：块分配异常", e);
         } catch (DiskWriteException e) {
             throw new FileSystemException("目录项同步失败：磁盘写入错误", e);
+        }
+    }
+
+    /**
+     * 将目录内容写入指定的起始块
+     * @param startBlockId 起始块ID
+     */
+    private void writeDirectoryContent(int startBlockId) throws DiskWriteException, InvalidBlockIdException {
+        int entryIndex = 0;
+        int currentBlockId = startBlockId;
+        
+        while (currentBlockId != FAT.END_OF_FILE && entryIndex < entriesCache.size()) {
+            StringBuilder blockContent = new StringBuilder();
+            int entriesInBlock = 0;
+
+            while (entriesInBlock < MAX_ENTRIES_PER_BLOCK && entryIndex < entriesCache.size()) {
+                FileEntry entry = entriesCache.get(entryIndex);
+                // 只写入未被删除的条目
+                if (!entry.isDeleted()) {
+                    blockContent.append(formatEntryString(entry))
+                            .append(ENTRY_TERMINATOR);
+                    entriesInBlock++;
+                }
+                entryIndex++;
+            }
+
+            // 填充块数据并写入
+            byte[] blockData = blockContent.toString().getBytes();
+            byte[] fullBlock = new byte[blockSize];
+            System.arraycopy(blockData, 0, fullBlock, 0, Math.min(blockData.length, blockSize));
+            disk.writeBlock(currentBlockId, fullBlock);
+
+            currentBlockId = fat.getNextBlock(currentBlockId);
         }
     }
 

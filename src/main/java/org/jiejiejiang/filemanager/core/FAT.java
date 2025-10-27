@@ -70,15 +70,7 @@ public class FAT {
             LogUtil.info("FAT 初始化：块 1 标记为FAT存储区");
         }
         
-        // 4. 标记题目指定的坏块23和49
-        if (totalBlocks > 23) {
-            fatTable[23] = BAD_BLOCK;
-            LogUtil.info("FAT 初始化：块 23 标记为坏块");
-        }
-        if (totalBlocks > 49) {
-            fatTable[49] = BAD_BLOCK;
-            LogUtil.info("FAT 初始化：块 49 标记为坏块");
-        }
+        // 4. 不再预设坏块，所有数据块默认为可用状态
         
         this.isInitialized = true;
         LogUtil.info("FAT 初始化完成：总块数=" + totalBlocks + "，FAT表大小=" + fatTable.length + "，数据分配从块2开始");
@@ -93,12 +85,25 @@ public class FAT {
     public synchronized int allocateBlock() throws DiskFullException, InvalidBlockIdException {
         checkInitialized();
 
-        // 遍历 FAT 表，找第一个空闲块（从2开始，跳过0、1号FAT存储块和坏块）
+        // 记录分配前的空闲块数量
+        int freeBlocksBefore = getFreeBlockCount();
+        
+        // 遍历 FAT 表，找第一个空闲块（从2开始，跳过0、1号FAT存储块）
         for (int blockId = 2; blockId < totalBlocks; blockId++) {
             if (fatTable[blockId] == FREE_BLOCK) {
                 // 标记块为"已占用"（初始无后续块，设为 END_OF_FILE）
                 fatTable[blockId] = END_OF_FILE;
-                LogUtil.info("FAT 分配块：blockId=" + blockId + "（跳过坏块23、49）");
+                
+                // 详细日志：显示FAT表变化
+                int freeBlocksAfter = getFreeBlockCount();
+                LogUtil.info("=== FAT块分配 ===");
+                LogUtil.info("分配块ID: " + blockId);
+                LogUtil.info("FAT[" + blockId + "]: FREE_BLOCK(-1) → END_OF_FILE(-2)");
+                LogUtil.info("空闲块数量: " + freeBlocksBefore + " → " + freeBlocksAfter);
+                LogUtil.info("已用块数量: " + (totalBlocks - 2 - freeBlocksBefore) + " → " + (totalBlocks - 2 - freeBlocksAfter));
+                printFATStatus();
+                LogUtil.info("==================");
+                
                 return blockId;
             }
             // 明确跳过坏块（虽然坏块不会是FREE_BLOCK，但为了清晰性添加日志）
@@ -142,14 +147,25 @@ public class FAT {
         checkInitialized();
         validateAllocatedBlock(startBlockId); // 校验起始块是否合法且已占用
 
+        // 记录释放前的空闲块数量
+        int freeBlocksBefore = getFreeBlockCount();
+        int releasedBlockCount = 0;
+        
+        LogUtil.info("=== FAT块释放开始 ===");
+        LogUtil.info("起始块ID: " + startBlockId);
+        
         int currentBlockId = startBlockId;
         // 循环释放当前块及后续所有块
         while (true) {
             // 1. 记录下一个块ID（避免释放后丢失后续块引用）
             int nextBlockId = fatTable[currentBlockId];
+            byte oldValue = fatTable[currentBlockId];
+            
             // 2. 将当前块标记为空闲
             fatTable[currentBlockId] = FREE_BLOCK;
-            LogUtil.info("FAT 释放块：blockId=" + currentBlockId);
+            releasedBlockCount++;
+            
+            LogUtil.info("释放块ID: " + currentBlockId + ", FAT[" + currentBlockId + "]: " + oldValue + " → FREE_BLOCK(-1)");
 
             // 3. 终止条件：当前块是文件最后一块（END_OF_FILE）
             if (nextBlockId == END_OF_FILE) {
@@ -164,6 +180,14 @@ public class FAT {
             // 5. 移动到下一个块
             currentBlockId = nextBlockId;
         }
+        
+        // 释放完成的汇总日志
+        int freeBlocksAfter = getFreeBlockCount();
+        LogUtil.info("释放块数量: " + releasedBlockCount);
+        LogUtil.info("空闲块数量: " + freeBlocksBefore + " → " + freeBlocksAfter);
+        LogUtil.info("已用块数量: " + (totalBlocks - 2 - freeBlocksBefore) + " → " + (totalBlocks - 2 - freeBlocksAfter));
+        printFATStatus();
+        LogUtil.info("=== FAT块释放完成 ===");
     }
 
     /**
@@ -371,6 +395,16 @@ public class FAT {
             // 5. 直接使用字节数组作为FAT表
             this.fatTable = fatBytes;
             
+            // 6. 确保块0和块1被正确标记为FAT存储区（修复加载后的状态）
+            if (totalBlocks > 0 && fatTable[0] != BAD_BLOCK) {
+                fatTable[0] = BAD_BLOCK; // 块0用于FAT存储
+                LogUtil.info("FAT 加载后修正：块 0 标记为FAT存储区");
+            }
+            if (totalBlocks > 1 && fatTable[1] != BAD_BLOCK) {
+                fatTable[1] = BAD_BLOCK; // 块1用于FAT存储
+                LogUtil.info("FAT 加载后修正：块 1 标记为FAT存储区");
+            }
+            
             this.isInitialized = true;
             LogUtil.info("FAT 表已从磁盘加载完成，表大小=" + fatTable.length + "，总块数=" + totalBlocks);
         } catch (Exception e) {
@@ -480,5 +514,41 @@ public class FAT {
             throw new IllegalArgumentException("块ID不能为负数: " + blockId);
         }
         return (fatTable[blockId] == FREE_BLOCK);
+    }
+    
+    /**
+     * 获取空闲块数量
+     * @return 空闲块数量
+     */
+    public int getFreeBlockCount() {
+        int count = 0;
+        for (int i = 2; i < totalBlocks; i++) { // 从块2开始，跳过FAT存储块0和1
+            if (fatTable[i] == FREE_BLOCK) {
+                count++;
+            }
+        }
+        return count;
+    }
+    
+    /**
+     * 打印FAT表状态摘要
+     */
+    private void printFATStatus() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("FAT状态: [");
+        
+        // 显示前20个块的状态
+        int maxDisplay = Math.min(20, totalBlocks);
+        for (int i = 0; i < maxDisplay; i++) {
+            if (i > 0) sb.append(", ");
+            sb.append(i).append(":").append(fatTable[i]);
+        }
+        
+        if (totalBlocks > maxDisplay) {
+            sb.append(", ...(共").append(totalBlocks).append("块)");
+        }
+        sb.append("]");
+        
+        LogUtil.info(sb.toString());
     }
 }
