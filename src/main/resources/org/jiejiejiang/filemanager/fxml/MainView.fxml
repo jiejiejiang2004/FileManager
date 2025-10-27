@@ -50,6 +50,11 @@
                 <MenuItem text="刷新" fx:id="refreshItem"/>
             </Menu>
 
+            <!-- 工具菜单（磁盘查看器等） -->
+            <Menu text="工具">
+                <MenuItem text="磁盘块查看器" fx:id="diskViewerItem"/>
+            </Menu>
+
 
         </MenuBar>
     </top>

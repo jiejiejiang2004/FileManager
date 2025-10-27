@@ -1,28 +1,24 @@
 package org.jiejiejiang.filemanager.gui;
 
+import java.io.IOException;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
+import org.jiejiejiang.filemanager.core.Disk;
+import org.jiejiejiang.filemanager.core.FAT;
+import org.jiejiejiang.filemanager.core.FileSystem;
+import org.jiejiejiang.filemanager.exception.DiskInitializeException;
+import org.jiejiejiang.filemanager.exception.FileSystemException;
+import org.jiejiejiang.filemanager.util.LogUtil;
+
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
-import org.jiejiejiang.filemanager.core.Disk;
-import org.jiejiejiang.filemanager.core.FileSystem;
-import org.jiejiejiang.filemanager.core.FAT;
-import org.jiejiejiang.filemanager.exception.FileSystemException;
-import org.jiejiejiang.filemanager.exception.DiskInitializeException;
-import org.jiejiejiang.filemanager.util.LogUtil;
-import org.jiejiejiang.filemanager.util.PathUtil;
-
-import java.io.IOException;
-import java.net.URL;
-import java.io.File;
-import java.io.InputStream;
-import java.io.FileInputStream;
-import java.util.Properties;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import javafx.application.Platform;
 
 /**
  * JavaFX 应用入口类，负责初始化应用并加载主界面
