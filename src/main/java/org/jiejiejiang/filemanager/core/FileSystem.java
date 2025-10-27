@@ -86,13 +86,34 @@ public class FileSystem {
             entryCache.clear();
             LogUtil.debug("文件系统挂载前已清空全局缓存");
             
-            // 1. 创建根目录 Entry（父路径为自身，起始块ID=-1 表示空目录）
-            rootDir = new FileEntry(ROOT_NAME, FileEntry.EntryType.DIRECTORY, ROOT_PATH, -1);
-            // 2. 缓存根目录（完整路径为 "/"）
+            // 1. 为根目录分配磁盘块（根据实验要求，根目录应占用一个磁盘块）
+            int rootBlockId;
+            try {
+                rootBlockId = fat.allocateBlock();
+                LogUtil.debug("为根目录分配磁盘块：" + rootBlockId);
+            } catch (Exception e) {
+                // 如果分配失败，可能是因为块2已经被分配，尝试检查块2是否可用
+                if (!fat.isFreeBlock(2)) {
+                    LogUtil.debug("块2已被占用，根目录可能已存在");
+                    rootBlockId = 2; // 假设根目录使用块2
+                } else {
+                    throw new FileSystemException("为根目录分配磁盘块失败：" + e.getMessage());
+                }
+            }
+            
+            // 2. 创建根目录 Entry（父路径为自身，使用分配的磁盘块）
+            rootDir = new FileEntry(ROOT_NAME, FileEntry.EntryType.DIRECTORY, ROOT_PATH, rootBlockId);
+            
+            // 3. 初始化根目录内容到磁盘（空目录）
+            Directory rootDirectory = new Directory(this, rootDir);
+            rootDirectory.syncToDisk();
+            
+            // 4. 缓存根目录（完整路径为 "/"）
             entryCache.put(rootDir.getFullPath(), rootDir);
-            // 3. 标记文件系统已挂载
+            
+            // 5. 标记文件系统已挂载
             this.isMounted = true;
-            LogUtil.info("文件系统挂载成功：块大小=" + blockSize + "字节，总块数=" + fat.getTotalBlocks());
+            LogUtil.info("文件系统挂载成功：块大小=" + blockSize + "字节，总块数=" + fat.getTotalBlocks() + "，根目录块ID=" + rootBlockId);
         } catch (Exception e) {
             throw new FileSystemException("文件系统挂载失败：" + e.getMessage());
         }
@@ -320,8 +341,9 @@ public class FileSystem {
 
         try {
             // 4. 分配文件的起始块（FAT 分配空闲块）
+            LogUtil.info(">>> 创建文件操作：" + fullPath + " <<<");
             int startBlockId = fat.allocateBlock();
-            LogUtil.debug("为文件分配起始块：" + startBlockId);
+            LogUtil.info("文件创建：为文件 '" + fileName + "' 分配起始块：" + startBlockId);
             // 5. 创建文件元数据
             FileEntry newFile = new FileEntry(fileName, FileEntry.EntryType.FILE, parentPath, startBlockId);
             LogUtil.debug("创建文件元数据：" + newFile);
@@ -378,6 +400,8 @@ public class FileSystem {
 
         try {
             // 2. 释放文件占用的所有块（FAT 释放块链）
+            LogUtil.info(">>> 删除文件操作：" + fullPath + " <<<");
+            LogUtil.info("文件删除：释放文件 '" + file.getName() + "' 的块链，起始块：" + file.getStartBlockId());
             fat.freeBlocks(file.getStartBlockId());
             // 3. 标记文件为已删除
             file.markAsDeleted();
@@ -968,19 +992,40 @@ public class FileSystem {
             }
         }
 
-        // 4. 创建目录元数据（目录初始无块，startBlockId=-1）
-        FileEntry newDir = new FileEntry(dirName, FileEntry.EntryType.DIRECTORY, parentPath, -1);
-        // 5. 缓存目录元数据
-        entryCache.put(fullPath, newDir);
-        // 6. 若不是根目录，更新父目录的修改时间并将新目录添加到父目录
-        if (!fullPath.equals(ROOT_PATH)) {
-            FileEntry parentDir = getEntry(parentPath);
-            updateDirModifyTime(parentDir);
+        // 4. 为子目录分配磁盘块并创建目录元数据
+        FileEntry newDir;
+        try {
+            // 为子目录分配磁盘块（根据实验要求，每个子目录应占用一个磁盘块）
+            LogUtil.info(">>> 创建目录操作：" + fullPath + " <<<");
+            int dirBlockId = fat.allocateBlock();
+            LogUtil.info("目录创建：为目录 '" + dirName + "' 分配磁盘块：" + dirBlockId);
             
-            // 将新目录添加到父目录并同步到磁盘
-            Directory parentDirectory = new Directory(this, parentDir);
-            parentDirectory.addEntry(newDir);
-            parentDirectory.syncToDisk();
+            // 创建目录元数据（使用分配的磁盘块）
+            newDir = new FileEntry(dirName, FileEntry.EntryType.DIRECTORY, parentPath, dirBlockId);
+            
+            // 初始化子目录内容到磁盘（空目录）
+            Directory newDirectory = new Directory(this, newDir);
+            newDirectory.syncToDisk();
+            
+            // 缓存目录元数据
+            entryCache.put(fullPath, newDir);
+            
+            // 若不是根目录，更新父目录的修改时间并将新目录添加到父目录
+            if (!fullPath.equals(ROOT_PATH)) {
+                FileEntry parentDir = getEntry(parentPath);
+                updateDirModifyTime(parentDir);
+                
+                // 将新目录添加到父目录并同步到磁盘
+                Directory parentDirectory = new Directory(this, parentDir);
+                parentDirectory.addEntry(newDir);
+                parentDirectory.syncToDisk();
+            }
+        } catch (DiskFullException e) {
+            LogUtil.error("创建目录失败：磁盘空间不足", e);
+            throw new FileSystemException("创建目录失败：磁盘空间不足");
+        } catch (InvalidBlockIdException e) {
+            LogUtil.error("创建目录失败：块分配异常", e);
+            throw new FileSystemException("创建目录失败：块分配异常");
         }
 
         LogUtil.info("创建目录成功：" + newDir);
@@ -1022,13 +1067,31 @@ public class FileSystem {
             throw new FileSystemException("删除目录失败：目录非空 → " + fullPath);
         }
 
-        // 4. 标记目录为已删除
-        dir.markAsDeleted();
-        // 5. 更新父目录的修改时间
-        FileEntry parentDir = getEntry(dir.getParentPath());
-        updateDirModifyTime(parentDir);
+        try {
+            // 4. 释放目录占用的磁盘块（FAT 释放块链）
+            LogUtil.info(">>> 删除目录操作：" + fullPath + " <<<");
+            LogUtil.info("目录删除：释放目录 '" + dir.getName() + "' 的磁盘块：" + dir.getStartBlockId());
+            fat.freeBlocks(dir.getStartBlockId());
+            
+            // 5. 标记目录为已删除
+            dir.markAsDeleted();
+            
+            // 6. 从父目录中移除该目录并同步到磁盘
+            Directory parentDirectory = getDirectory(dir.getParentPath());
+            parentDirectory.removeEntry(dir.getName());
+            parentDirectory.syncToDisk();
+            
+            // 7. 从entryCache中完全移除已删除的目录
+            entryCache.remove(fullPath);
+            
+            // 8. 更新父目录的修改时间
+            FileEntry parentDir = getEntry(dir.getParentPath());
+            updateDirModifyTime(parentDir);
 
-        LogUtil.info("删除目录成功：" + fullPath);
+            LogUtil.info("删除目录成功：" + fullPath);
+        } catch (InvalidBlockIdException e) {
+            throw new FileSystemException("删除目录失败：块释放异常");
+        }
     }
 
     /**
