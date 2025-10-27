@@ -433,7 +433,7 @@ public class MainController {
     /**
      * 加载指定路径的目录内容
      */
-    private void loadDirectory(String path) {
+    public void loadDirectory(String path) {
         try {
             // 从文件系统获取目录对象
             currentDirectory = fileSystem.getDirectory(path);

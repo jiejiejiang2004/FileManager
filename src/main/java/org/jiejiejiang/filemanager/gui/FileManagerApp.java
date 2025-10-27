@@ -19,6 +19,10 @@ import java.io.File;
 import java.io.InputStream;
 import java.io.FileInputStream;
 import java.util.Properties;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import javafx.application.Platform;
 
 /**
  * JavaFX 应用入口类，负责初始化应用并加载主界面
@@ -33,6 +37,9 @@ public class FileManagerApp extends Application {
     @Override
     public void start(Stage primaryStage) {
         try {
+            // 0. 在启动前删除已有的disk.img文件
+            deleteDiskImageFile();
+
             // 1. 初始化文件系统（磁盘 + FAT）
             initFileSystem();
 
@@ -53,6 +60,11 @@ public class FileManagerApp extends Application {
             primaryStage.setTitle("Simple File Manager");
             primaryStage.setScene(new Scene(root, 800, 600)); // 初始窗口大小
             primaryStage.show();
+
+            // 5. 启动后自动跳转到根目录
+            Platform.runLater(() -> {
+                navigateToRoot(mainController);
+            });
 
             LogUtil.info("应用启动成功");
 
@@ -85,6 +97,38 @@ public class FileManagerApp extends Application {
         // 3. 创建并挂载文件系统
         fileSystem = new FileSystem(disk, fat);
         fileSystem.mount(); // 挂载文件系统（初始化根目录）
+    }
+
+    /**
+     * 删除已有的disk.img文件
+     */
+    private void deleteDiskImageFile() {
+        try {
+            Path diskImagePath = Paths.get("./data/disk.img");
+            if (Files.exists(diskImagePath)) {
+                Files.delete(diskImagePath);
+                LogUtil.info("已删除旧的disk.img文件");
+                System.out.println("已删除旧的disk.img文件");
+            } else {
+                LogUtil.info("disk.img文件不存在，无需删除");
+            }
+        } catch (IOException e) {
+            LogUtil.error("删除disk.img文件失败", e);
+            System.err.println("删除disk.img文件失败: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 自动跳转到根目录
+     */
+    private void navigateToRoot(org.jiejiejiang.filemanager.gui.controller.MainController controller) {
+        try {
+            // 调用控制器的方法跳转到根目录
+            controller.loadDirectory("/");
+            LogUtil.info("已自动跳转到根目录");
+        } catch (Exception e) {
+            LogUtil.error("自动跳转到根目录失败", e);
+        }
     }
 
     /**
