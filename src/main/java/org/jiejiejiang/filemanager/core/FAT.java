@@ -173,7 +173,7 @@ public class FAT {
             }
 
             // 4. 校验下一个块ID是否合法（防止循环引用或无效值）
-            if (nextBlockId < 1 || nextBlockId >= totalBlocks || fatTable[nextBlockId] == FREE_BLOCK) {
+            if (nextBlockId < 1 || nextBlockId >= totalBlocks) {
                 throw new InvalidBlockIdException("释放块失败：无效的后续块ID=" + nextBlockId + "（当前块ID=" + currentBlockId + "）");
             }
 

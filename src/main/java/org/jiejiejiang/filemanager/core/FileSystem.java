@@ -88,15 +88,18 @@ public class FileSystem {
             
             // 1. 为根目录分配磁盘块（根据实验要求，根目录应占用一个磁盘块）
             int rootBlockId;
-            try {
-                rootBlockId = fat.allocateBlock();
-                LogUtil.debug("为根目录分配磁盘块：" + rootBlockId);
-            } catch (Exception e) {
-                // 如果分配失败，可能是因为块2已经被分配，尝试检查块2是否可用
-                if (!fat.isFreeBlock(2)) {
-                    LogUtil.debug("块2已被占用，根目录可能已存在");
-                    rootBlockId = 2; // 假设根目录使用块2
-                } else {
+            
+            // 检查块2是否已被使用（根目录通常使用块2）
+            if (!fat.isFreeBlock(2)) {
+                // 块2已被占用，说明根目录已存在，直接使用块2
+                rootBlockId = 2;
+                LogUtil.debug("根目录已存在，使用现有块：" + rootBlockId);
+            } else {
+                // 块2空闲，为根目录分配新块
+                try {
+                    rootBlockId = fat.allocateBlock();
+                    LogUtil.debug("为根目录分配新磁盘块：" + rootBlockId);
+                } catch (Exception e) {
                     throw new FileSystemException("为根目录分配磁盘块失败：" + e.getMessage());
                 }
             }
@@ -108,10 +111,14 @@ public class FileSystem {
             Directory rootDirectory = new Directory(this, rootDir);
             rootDirectory.syncToDisk();
             
-            // 4. 缓存根目录（完整路径为 "/"）
+            // 4. 立即保存FAT表到磁盘，确保块状态正确持久化
+            fat.saveToDisk();
+            LogUtil.debug("根目录创建后已保存FAT表到磁盘");
+            
+            // 5. 缓存根目录（完整路径为 "/"）
             entryCache.put(rootDir.getFullPath(), rootDir);
             
-            // 5. 标记文件系统已挂载
+            // 6. 标记文件系统已挂载
             this.isMounted = true;
             LogUtil.info("文件系统挂载成功：块大小=" + blockSize + "字节，总块数=" + fat.getTotalBlocks() + "，根目录块ID=" + rootBlockId);
         } catch (Exception e) {

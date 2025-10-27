@@ -162,7 +162,7 @@ public class Directory8Byte {
                     fat.setNextBlock(currentBlockId, nextBlockId);
                     currentBlockId = nextBlockId;
                 }
-                fat.setNextBlock(currentBlockId, FAT.END_OF_FILE);
+                fat.setNextBlock(currentBlockId, -1);
             }
             
             // 写入数据
