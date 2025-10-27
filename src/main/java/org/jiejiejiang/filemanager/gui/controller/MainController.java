@@ -16,7 +16,10 @@ import org.jiejiejiang.filemanager.util.LogUtil;
 
 import javafx.application.Platform;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
@@ -39,6 +42,7 @@ import javafx.scene.layout.FlowPane;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.Image;
+import javafx.stage.Stage;
 
 public class MainController {
 
@@ -71,6 +75,7 @@ public class MainController {
     @FXML private MenuItem refreshItem;
     @FXML private MenuItem listViewItem;
     @FXML private MenuItem iconViewItem;
+    @FXML private MenuItem diskViewerItem;
     
     // 视图切换组件
     @FXML private Button toggleViewButton;
@@ -299,6 +304,9 @@ public class MainController {
         // 8. 视图菜单项
         listViewItem.setOnAction(e -> switchToListView());
         iconViewItem.setOnAction(e -> switchToIconView());
+        
+        // 9. 磁盘查看器菜单项
+        diskViewerItem.setOnAction(e -> openDiskViewer());
         
         // 地址栏回车跳转路径
         if (pathTextField != null) {
@@ -1451,5 +1459,32 @@ public class MainController {
             refreshIconView();
         }
         // 列表视图的刷新已经在原有的loadDirectory方法中处理
+    }
+    
+    /**
+     * 打开磁盘块查看器窗口
+     */
+    private void openDiskViewer() {
+        try {
+            // 加载FXML文件
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/org/jiejiejiang/filemanager/fxml/DiskViewer.fxml"));
+            Parent root = loader.load();
+            
+            // 获取控制器并设置文件系统
+            DiskViewerController controller = loader.getController();
+            controller.setFileSystem(fileSystem);
+            
+            // 创建新窗口
+            Stage stage = new Stage();
+            stage.setTitle("磁盘块查看器");
+            stage.setScene(new Scene(root, 800, 600));
+            stage.show();
+            
+            LogUtil.info("磁盘块查看器窗口已打开");
+            
+        } catch (Exception e) {
+            LogUtil.error("打开磁盘块查看器时发生错误: " + e.getMessage(), e);
+            showError("错误", "无法打开磁盘块查看器: " + e.getMessage());
+        }
     }
 }
