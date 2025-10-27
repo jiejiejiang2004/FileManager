@@ -676,6 +676,69 @@ public class MainController {
             lastClickedRowIndex = performedCancel ? -1 : clickedRowIndex;
             lastClickTime = now;
         });
+        
+        // 为图标视图的ScrollPane和FlowPane设置右键菜单
+        if (iconViewScrollPane != null && iconViewPane != null) {
+            // 为ScrollPane设置右键菜单（处理ScrollPane空白区域）
+            iconViewScrollPane.setOnContextMenuRequested(event -> {
+                // 获取点击位置的节点
+                Node node = event.getPickResult().getIntersectedNode();
+                
+                // 检查是否点击在空白区域（没有点击在任何图标项上）
+                boolean clickedOnEmpty = true;
+                Node cur = node;
+                while (cur != null) {
+                    if (cur.getStyleClass().contains("icon-item")) {
+                        clickedOnEmpty = false;
+                        break;
+                    }
+                    cur = cur.getParent();
+                }
+                
+                // 如果点击在空白区域，显示新建菜单
+                if (clickedOnEmpty) {
+                    emptyAreaContextMenu.show(iconViewScrollPane, event.getScreenX(), event.getScreenY());
+                }
+            });
+            
+            // 为FlowPane设置右键菜单（处理FlowPane空白区域）
+            iconViewPane.setOnContextMenuRequested(event -> {
+                // 获取点击位置的节点
+                Node node = event.getPickResult().getIntersectedNode();
+                
+                // 检查是否点击在空白区域（没有点击在任何图标项上）
+                boolean clickedOnEmpty = true;
+                Node cur = node;
+                while (cur != null) {
+                    if (cur.getStyleClass().contains("icon-item")) {
+                        clickedOnEmpty = false;
+                        break;
+                    }
+                    cur = cur.getParent();
+                }
+                
+                // 如果点击在空白区域，显示新建菜单
+                if (clickedOnEmpty) {
+                    emptyAreaContextMenu.show(iconViewPane, event.getScreenX(), event.getScreenY());
+                }
+            });
+            
+            // 为ScrollPane添加鼠标点击事件，用于隐藏右键菜单
+            iconViewScrollPane.setOnMouseClicked(event -> {
+                if (event.getButton() == MouseButton.PRIMARY) {
+                    emptyAreaContextMenu.hide();
+                    selectedItemContextMenu.hide();
+                }
+            });
+            
+            // 为FlowPane添加鼠标点击事件，用于隐藏右键菜单
+            iconViewPane.setOnMouseClicked(event -> {
+                if (event.getButton() == MouseButton.PRIMARY) {
+                    emptyAreaContextMenu.hide();
+                    selectedItemContextMenu.hide();
+                }
+            });
+        }
     }
 
     /**
@@ -1095,6 +1158,9 @@ public class MainController {
         iconItem.setSpacing(5);
         iconItem.setPrefWidth(80);
         iconItem.setStyle("-fx-cursor: hand; -fx-padding: 5;");
+        
+        // 添加样式类标识，用于右键菜单识别
+        iconItem.getStyleClass().add("icon-item");
         
         // 创建图标
         javafx.scene.image.ImageView iconView = new javafx.scene.image.ImageView();
