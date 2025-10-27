@@ -34,7 +34,7 @@
                 <MenuItem text="新建文件" fx:id="newFileItem"/>
                 <MenuItem text="新建文件夹" fx:id="newDirItem"/>
                 <SeparatorMenuItem/>
-                <MenuItem text="打开" fx:id="openItem"/>
+                <MenuItem text="查看" fx:id="openItem"/>
             </Menu>
 
             <!-- 编辑菜单（删除） -->
