@@ -1097,6 +1097,122 @@ public class FileSystem {
     }
 
     /**
+     * 重命名文件夹（递归更新所有子文件和子文件夹的路径）
+     * @param oldFullPath 原文件夹完整路径
+     * @param newName 新文件夹名称
+     * @throws FileSystemException 文件夹不存在、新名称已存在或操作失败时抛出
+     */
+    public void renameDirectory(String oldFullPath, String newName) throws FileSystemException {
+        checkMounted();
+        validateFullPath(oldFullPath);
+        
+        if (newName == null || newName.trim().isEmpty()) {
+            throw new FileSystemException("重命名失败：新名称不能为空");
+        }
+        
+        // 1. 校验原文件夹是否存在且为目录
+        FileEntry oldDir = getEntry(oldFullPath);
+        if (oldDir == null) {
+            throw new FileSystemException("重命名失败：文件夹不存在 → " + oldFullPath);
+        }
+        if (oldDir.getType() != FileEntry.EntryType.DIRECTORY) {
+            throw new FileSystemException("重命名失败：" + oldFullPath + " 不是文件夹");
+        }
+        
+        // 2. 构建新的完整路径
+        String parentPath = oldDir.getParentPath();
+        String newFullPath = parentPath.equals("/") ? "/" + newName : parentPath + "/" + newName;
+        
+        // 3. 校验新名称是否已存在
+        FileEntry existingEntry = getEntry(newFullPath);
+        if (existingEntry != null) {
+            throw new FileSystemException("重命名失败：目标名称已存在 → " + newName);
+        }
+        
+        LogUtil.info("开始重命名文件夹：" + oldFullPath + " → " + newFullPath);
+        
+        try {
+            // 4. 收集所有需要更新路径的子条目
+            List<String> childPaths = entryCache.keySet().stream()
+                    .filter(path -> path.startsWith(oldFullPath + "/"))
+                    .sorted() // 按路径排序，确保父目录在子目录之前处理
+                    .collect(Collectors.toList());
+            
+            LogUtil.debug("找到需要更新路径的子条目数量：" + childPaths.size());
+            
+            // 5. 递归更新所有子条目的路径
+            Map<String, FileEntry> updatedEntries = new HashMap<>();
+            for (String oldChildPath : childPaths) {
+                FileEntry childEntry = entryCache.get(oldChildPath);
+                if (childEntry != null && !childEntry.isDeleted()) {
+                    // 计算新的路径
+                    String newChildPath = oldChildPath.replace(oldFullPath, newFullPath);
+                    
+                    // 创建新的FileEntry，更新父路径
+                    String newParentPath = PathUtil.getParentPath(newChildPath);
+                    FileEntry newChildEntry = new FileEntry(
+                            childEntry.getName(),
+                            childEntry.getType(),
+                            newParentPath,
+                            childEntry.getStartBlockId(),
+                            childEntry.getUuid()
+                    );
+                    // 只对文件类型设置大小，目录大小不可修改
+                    if (childEntry.getType() == FileEntry.EntryType.FILE) {
+                        newChildEntry.setSize(childEntry.getSize());
+                    }
+                    if (childEntry.isReadOnly()) {
+                        newChildEntry.setReadOnly(true);
+                    }
+                    
+                    updatedEntries.put(newChildPath, newChildEntry);
+                    LogUtil.debug("准备更新子条目路径：" + oldChildPath + " → " + newChildPath);
+                }
+            }
+            
+            // 6. 创建新的文件夹条目
+            FileEntry newDir = new FileEntry(
+                    newName,
+                    oldDir.getType(),
+                    oldDir.getParentPath(),
+                    oldDir.getStartBlockId(),
+                    oldDir.getUuid()
+            );
+            // 目录大小不可修改，无需设置大小
+            
+            // 7. 从父目录中移除旧条目并添加新条目
+            Directory parentDirectory = getDirectory(parentPath);
+            parentDirectory.removeEntry(oldDir.getName());
+            parentDirectory.addEntry(newDir);
+            parentDirectory.syncToDisk();
+            
+            // 8. 更新全局缓存：移除旧路径，添加新路径
+            entryCache.remove(oldFullPath);
+            entryCache.put(newFullPath, newDir);
+            
+            // 9. 更新所有子条目的缓存
+            for (String oldChildPath : childPaths) {
+                String newChildPath = oldChildPath.replace(oldFullPath, newFullPath);
+                FileEntry newChildEntry = updatedEntries.get(newChildPath);
+                if (newChildEntry != null) {
+                    entryCache.remove(oldChildPath);
+                    entryCache.put(newChildPath, newChildEntry);
+                }
+            }
+            
+            // 10. 更新父目录的修改时间
+            FileEntry parentDir = getEntry(parentPath);
+            updateDirModifyTime(parentDir);
+            
+            LogUtil.info("文件夹重命名成功：" + oldFullPath + " → " + newFullPath + "，更新了 " + childPaths.size() + " 个子条目");
+            
+        } catch (Exception e) {
+            LogUtil.error("文件夹重命名失败：" + e.getMessage(), e);
+            throw new FileSystemException("文件夹重命名失败：" + e.getMessage());
+        }
+    }
+
+    /**
      * 列出目录下的所有文件/目录
      * @param fullPath 目录完整路径
      * @return 目录下的 FileEntry 列表（空列表表示目录为空）

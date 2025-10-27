@@ -19965,3 +19965,544 @@ javafx.fxml.LoadException: StackPane is not a valid type.
 [2025-10-27 09:56:21] [INFO] FAT 表已持久化到磁盘，共使用2个块
 [2025-10-27 09:56:21] [INFO] 文件系统卸载成功
 [2025-10-27 09:56:21] [INFO] 应用关闭，文件系统已卸载
+[2025-10-27 09:57:08] [INFO] 已成功删除旧的磁盘文件：D:\Project\FileManager\data\disk.img
+[2025-10-27 09:57:08] [INFO] FAT 初始化：块 0 标记为FAT存储区
+[2025-10-27 09:57:08] [INFO] FAT 初始化：块 1 标记为FAT存储区
+[2025-10-27 09:57:08] [INFO] FAT 初始化：块 23 标记为坏块
+[2025-10-27 09:57:08] [INFO] FAT 初始化：块 49 标记为坏块
+[2025-10-27 09:57:08] [INFO] FAT 初始化完成：总块数=128，FAT表大小=128，数据分配从块2开始
+[2025-10-27 09:57:08] [INFO] 已打开文件表（OFT）初始化完成，容量：5
+[2025-10-27 09:57:08] [DEBUG] 文件系统挂载前已清空全局缓存
+[2025-10-27 09:57:08] [INFO] 文件系统挂载成功：块大小=64字节，总块数=128
+[2025-10-27 09:57:08] [INFO] 列出目录成功：/，子条目数：0
+[2025-10-27 09:57:09] [INFO] 应用启动成功
+[2025-10-27 09:57:14] [INFO] 列出目录成功：/，子条目数：0
+[2025-10-27 09:57:17] [DEBUG] 准备创建文件：/新建文件.txt
+[2025-10-27 09:57:17] [DEBUG] 尝试创建文件：/新建文件.txt
+[2025-10-27 09:57:17] [DEBUG] 解析路径 - 父目录：/, 文件名：新建文件.txt
+[2025-10-27 09:57:17] [INFO] FAT 分配块：blockId=2（跳过坏块23、49）
+[2025-10-27 09:57:17] [DEBUG] 为文件分配起始块：2
+[2025-10-27 09:57:17] [DEBUG] 创建文件元数据：[文件] /新建文件.txt | 大小：0 B | 创建时间：Mon Oct 27 09:57:17 CST 2025 | 起始块：2 | UUID：fc7da9e2 | 状态：正常 | 只读：否
+[2025-10-27 09:57:17] [DEBUG] 文件元数据已缓存：/新建文件.txt
+[2025-10-27 09:57:17] [DEBUG] 父目录修改时间已更新：/
+[2025-10-27 09:57:17] [DEBUG] 创建父目录对象：/
+[2025-10-27 09:57:17] [DEBUG] 向FileSystem缓存中添加条目：/新建文件.txt
+[2025-10-27 09:57:17] [DEBUG] 已更新FileSystem全局缓存：/新建文件.txt
+[2025-10-27 09:57:17] [DEBUG] 目录添加项成功：新建文件.txt → /
+[2025-10-27 09:57:17] [DEBUG] 文件已添加到父目录：新建文件.txt → /
+[2025-10-27 09:57:17] [INFO] FAT 分配块：blockId=3（跳过坏块23、49）
+[2025-10-27 09:57:17] [INFO] FAT 分配块：blockId=4（跳过坏块23、49）
+[2025-10-27 09:57:17] [DEBUG] FAT更新块链：3 → 4
+[2025-10-27 09:57:17] [DEBUG] FAT更新块链：4 → END_OF_FILE
+[2025-10-27 09:57:17] [DEBUG] 目录项同步到磁盘完成：/，块数：1
+[2025-10-27 09:57:17] [DEBUG] 父目录已同步到磁盘：/
+[2025-10-27 09:57:17] [INFO] 创建文件成功：[文件] /新建文件.txt | 大小：0 B | 创建时间：Mon Oct 27 09:57:17 CST 2025 | 起始块：2 | UUID：fc7da9e2 | 状态：正常 | 只读：否
+[2025-10-27 09:57:17] [INFO] 文件创建成功：/新建文件.txt
+[2025-10-27 09:57:17] [DEBUG] 创建文件后刷新目录：/
+[2025-10-27 09:57:17] [DEBUG] 从磁盘加载目录项完成：/，共1项
+[2025-10-27 09:57:17] [DEBUG] 从磁盘加载目录项完成：/，共1项
+[2025-10-27 09:57:17] [INFO] 列出目录成功：/，子条目数：1
+[2025-10-27 09:57:19] [DEBUG] 从磁盘加载目录项完成：/，共1项
+[2025-10-27 09:57:19] [DEBUG] 向FileSystem缓存中添加条目：/新建文件夹
+[2025-10-27 09:57:19] [DEBUG] 已更新FileSystem全局缓存：/新建文件夹
+[2025-10-27 09:57:19] [DEBUG] 目录添加项成功：新建文件夹 → /
+[2025-10-27 09:57:19] [INFO] FAT 分配块：blockId=5（跳过坏块23、49）
+[2025-10-27 09:57:19] [INFO] FAT 分配块：blockId=6（跳过坏块23、49）
+[2025-10-27 09:57:19] [DEBUG] FAT更新块链：5 → 6
+[2025-10-27 09:57:19] [DEBUG] FAT更新块链：6 → END_OF_FILE
+[2025-10-27 09:57:19] [INFO] FAT 释放块：blockId=3
+[2025-10-27 09:57:19] [INFO] FAT 释放块：blockId=4
+[2025-10-27 09:57:19] [DEBUG] 目录项同步到磁盘完成：/，块数：1
+[2025-10-27 09:57:19] [INFO] 创建目录成功：[目录] /新建文件夹 | 大小：- | 创建时间：Mon Oct 27 09:57:19 CST 2025 | 起始块：未分配 | UUID：c480f93c | 状态：正常 | 只读：否
+[2025-10-27 09:57:19] [DEBUG] 从磁盘加载目录项完成：/，共1项
+[2025-10-27 09:57:19] [DEBUG] 从磁盘加载目录项完成：/，共1项
+[2025-10-27 09:57:19] [INFO] 列出目录成功：/，子条目数：2
+[2025-10-27 09:57:19] [INFO] 列出目录成功：/，子条目数：2
+[2025-10-27 09:57:20] [INFO] 列出目录成功：/新建文件夹，子条目数：0
+[2025-10-27 09:57:22] [DEBUG] 准备创建文件：/新建文件夹/新建文件.txt
+[2025-10-27 09:57:22] [DEBUG] 尝试创建文件：/新建文件夹/新建文件.txt
+[2025-10-27 09:57:22] [DEBUG] 解析路径 - 父目录：/新建文件夹, 文件名：新建文件.txt
+[2025-10-27 09:57:22] [INFO] FAT 分配块：blockId=3（跳过坏块23、49）
+[2025-10-27 09:57:22] [DEBUG] 为文件分配起始块：3
+[2025-10-27 09:57:22] [DEBUG] 创建文件元数据：[文件] /新建文件夹/新建文件.txt | 大小：0 B | 创建时间：Mon Oct 27 09:57:22 CST 2025 | 起始块：3 | UUID：21a368c4 | 状态：正常 | 只读：否
+[2025-10-27 09:57:22] [DEBUG] 文件元数据已缓存：/新建文件夹/新建文件.txt
+[2025-10-27 09:57:22] [DEBUG] 父目录修改时间已更新：/新建文件夹
+[2025-10-27 09:57:22] [DEBUG] 创建父目录对象：/新建文件夹
+[2025-10-27 09:57:22] [DEBUG] 向FileSystem缓存中添加条目：/新建文件夹/新建文件.txt
+[2025-10-27 09:57:22] [DEBUG] 已更新FileSystem全局缓存：/新建文件夹/新建文件.txt
+[2025-10-27 09:57:22] [DEBUG] 目录添加项成功：新建文件.txt → /新建文件夹
+[2025-10-27 09:57:22] [DEBUG] 文件已添加到父目录：新建文件.txt → /新建文件夹
+[2025-10-27 09:57:22] [INFO] FAT 分配块：blockId=4（跳过坏块23、49）
+[2025-10-27 09:57:22] [INFO] FAT 分配块：blockId=7（跳过坏块23、49）
+[2025-10-27 09:57:22] [DEBUG] FAT更新块链：4 → 7
+[2025-10-27 09:57:22] [DEBUG] FAT更新块链：7 → END_OF_FILE
+[2025-10-27 09:57:22] [DEBUG] 目录项同步到磁盘完成：/新建文件夹，块数：1
+[2025-10-27 09:57:22] [DEBUG] 父目录已同步到磁盘：/新建文件夹
+[2025-10-27 09:57:22] [INFO] 创建文件成功：[文件] /新建文件夹/新建文件.txt | 大小：0 B | 创建时间：Mon Oct 27 09:57:22 CST 2025 | 起始块：3 | UUID：21a368c4 | 状态：正常 | 只读：否
+[2025-10-27 09:57:22] [INFO] 文件创建成功：/新建文件夹/新建文件.txt
+[2025-10-27 09:57:22] [DEBUG] 创建文件后刷新目录：/新建文件夹
+[2025-10-27 09:57:22] [DEBUG] 从磁盘加载目录项完成：/新建文件夹，共1项
+[2025-10-27 09:57:22] [DEBUG] 从磁盘加载目录项完成：/新建文件夹，共1项
+[2025-10-27 09:57:22] [INFO] 列出目录成功：/新建文件夹，子条目数：1
+[2025-10-27 09:57:23] [DEBUG] 从磁盘加载目录项完成：/，共1项
+[2025-10-27 09:57:23] [DEBUG] 从磁盘加载目录项完成：/，共1项
+[2025-10-27 09:57:23] [INFO] 列出目录成功：/，子条目数：2
+[2025-10-27 09:57:36] [DEBUG] 从磁盘加载目录项完成：/新建文件夹，共1项
+[2025-10-27 09:57:36] [DEBUG] 从磁盘加载目录项完成：/新建文件夹，共1项
+[2025-10-27 09:57:36] [INFO] 列出目录成功：/新建文件夹，子条目数：1
+[2025-10-27 09:57:43] [INFO] OFT清理完成，关闭了 0 个文件
+[2025-10-27 09:57:43] [INFO] 开始保存FAT表到磁盘，总大小=128字节，使用块0和块1
+[2025-10-27 09:57:43] [DEBUG] FAT表块 0 已写入磁盘
+[2025-10-27 09:57:43] [DEBUG] FAT表块 1 已写入磁盘
+[2025-10-27 09:57:43] [INFO] FAT 表已持久化到磁盘，共使用2个块
+[2025-10-27 09:57:43] [INFO] 文件系统卸载成功
+[2025-10-27 09:57:43] [INFO] 应用关闭，文件系统已卸载
+[2025-10-27 09:57:50] [INFO] 已成功删除旧的磁盘文件：D:\Project\FileManager\data\disk.img
+[2025-10-27 09:57:50] [INFO] FAT 初始化：块 0 标记为FAT存储区
+[2025-10-27 09:57:50] [INFO] FAT 初始化：块 1 标记为FAT存储区
+[2025-10-27 09:57:50] [INFO] FAT 初始化：块 23 标记为坏块
+[2025-10-27 09:57:50] [INFO] FAT 初始化：块 49 标记为坏块
+[2025-10-27 09:57:50] [INFO] FAT 初始化完成：总块数=128，FAT表大小=128，数据分配从块2开始
+[2025-10-27 09:57:50] [INFO] 已打开文件表（OFT）初始化完成，容量：5
+[2025-10-27 09:57:50] [DEBUG] 文件系统挂载前已清空全局缓存
+[2025-10-27 09:57:50] [INFO] 文件系统挂载成功：块大小=64字节，总块数=128
+[2025-10-27 09:57:50] [INFO] 列出目录成功：/，子条目数：0
+[2025-10-27 09:57:50] [INFO] 应用启动成功
+[2025-10-27 09:58:03] [INFO] 列出目录成功：/，子条目数：0
+[2025-10-27 09:58:07] [DEBUG] 向FileSystem缓存中添加条目：/新建文件夹
+[2025-10-27 09:58:07] [DEBUG] 已更新FileSystem全局缓存：/新建文件夹
+[2025-10-27 09:58:07] [DEBUG] 目录添加项成功：新建文件夹 → /
+[2025-10-27 09:58:07] [INFO] FAT 分配块：blockId=2（跳过坏块23、49）
+[2025-10-27 09:58:07] [INFO] FAT 分配块：blockId=3（跳过坏块23、49）
+[2025-10-27 09:58:07] [DEBUG] FAT更新块链：2 → 3
+[2025-10-27 09:58:07] [DEBUG] FAT更新块链：3 → END_OF_FILE
+[2025-10-27 09:58:07] [DEBUG] 目录项同步到磁盘完成：/，块数：1
+[2025-10-27 09:58:07] [INFO] 创建目录成功：[目录] /新建文件夹 | 大小：- | 创建时间：Mon Oct 27 09:58:07 CST 2025 | 起始块：未分配 | UUID：be83fb2e | 状态：正常 | 只读：否
+[2025-10-27 09:58:07] [DEBUG] 从磁盘加载目录项完成：/，共1项
+[2025-10-27 09:58:07] [DEBUG] 从磁盘加载目录项完成：/，共1项
+[2025-10-27 09:58:07] [INFO] 列出目录成功：/，子条目数：1
+[2025-10-27 09:58:07] [INFO] 列出目录成功：/，子条目数：1
+[2025-10-27 09:58:09] [DEBUG] 目录已在缓存中存在，检查删除状态：false
+[2025-10-27 09:58:13] [DEBUG] 从磁盘加载目录项完成：/，共1项
+[2025-10-27 09:58:13] [DEBUG] 向FileSystem缓存中添加条目：/新建文件夹1
+[2025-10-27 09:58:13] [DEBUG] 已更新FileSystem全局缓存：/新建文件夹1
+[2025-10-27 09:58:13] [DEBUG] 目录添加项成功：新建文件夹1 → /
+[2025-10-27 09:58:13] [INFO] FAT 分配块：blockId=4（跳过坏块23、49）
+[2025-10-27 09:58:13] [INFO] FAT 分配块：blockId=5（跳过坏块23、49）
+[2025-10-27 09:58:13] [DEBUG] FAT更新块链：4 → 5
+[2025-10-27 09:58:13] [DEBUG] FAT更新块链：5 → END_OF_FILE
+[2025-10-27 09:58:13] [INFO] FAT 释放块：blockId=2
+[2025-10-27 09:58:13] [INFO] FAT 释放块：blockId=3
+[2025-10-27 09:58:13] [DEBUG] 目录项同步到磁盘完成：/，块数：1
+[2025-10-27 09:58:13] [INFO] 创建目录成功：[目录] /新建文件夹1 | 大小：- | 创建时间：Mon Oct 27 09:58:13 CST 2025 | 起始块：未分配 | UUID：66e6bffe | 状态：正常 | 只读：否
+[2025-10-27 09:58:13] [DEBUG] 从磁盘加载目录项完成：/，共1项
+[2025-10-27 09:58:13] [DEBUG] 从磁盘加载目录项完成：/，共1项
+[2025-10-27 09:58:13] [INFO] 列出目录成功：/，子条目数：2
+[2025-10-27 09:58:13] [INFO] 列出目录成功：/，子条目数：2
+[2025-10-27 09:58:24] [INFO] OFT清理完成，关闭了 0 个文件
+[2025-10-27 09:58:24] [INFO] 开始保存FAT表到磁盘，总大小=128字节，使用块0和块1
+[2025-10-27 09:58:24] [DEBUG] FAT表块 0 已写入磁盘
+[2025-10-27 09:58:24] [DEBUG] FAT表块 1 已写入磁盘
+[2025-10-27 09:58:24] [INFO] FAT 表已持久化到磁盘，共使用2个块
+[2025-10-27 09:58:24] [INFO] 文件系统卸载成功
+[2025-10-27 09:58:24] [INFO] 应用关闭，文件系统已卸载
+[2025-10-27 10:02:57] [INFO] 已成功删除旧的磁盘文件：D:\Project\FileManager\data\disk.img
+[2025-10-27 10:02:57] [INFO] FAT 初始化：块 0 标记为FAT存储区
+[2025-10-27 10:02:57] [INFO] FAT 初始化：块 1 标记为FAT存储区
+[2025-10-27 10:02:57] [INFO] FAT 初始化：块 23 标记为坏块
+[2025-10-27 10:02:57] [INFO] FAT 初始化：块 49 标记为坏块
+[2025-10-27 10:02:57] [INFO] FAT 初始化完成：总块数=128，FAT表大小=128，数据分配从块2开始
+[2025-10-27 10:02:57] [INFO] 已打开文件表（OFT）初始化完成，容量：5
+[2025-10-27 10:02:57] [DEBUG] 文件系统挂载前已清空全局缓存
+[2025-10-27 10:02:57] [INFO] 文件系统挂载成功：块大小=64字节，总块数=128
+[2025-10-27 10:02:57] [INFO] 列出目录成功：/，子条目数：0
+[2025-10-27 10:02:58] [INFO] 应用启动成功
+[2025-10-27 10:03:01] [INFO] 列出目录成功：/，子条目数：0
+[2025-10-27 10:03:04] [DEBUG] 向FileSystem缓存中添加条目：/新建文件夹
+[2025-10-27 10:03:04] [DEBUG] 已更新FileSystem全局缓存：/新建文件夹
+[2025-10-27 10:03:04] [DEBUG] 目录添加项成功：新建文件夹 → /
+[2025-10-27 10:03:04] [INFO] FAT 分配块：blockId=2（跳过坏块23、49）
+[2025-10-27 10:03:04] [INFO] FAT 分配块：blockId=3（跳过坏块23、49）
+[2025-10-27 10:03:04] [DEBUG] FAT更新块链：2 → 3
+[2025-10-27 10:03:04] [DEBUG] FAT更新块链：3 → END_OF_FILE
+[2025-10-27 10:03:04] [DEBUG] 目录项同步到磁盘完成：/，块数：1
+[2025-10-27 10:03:04] [INFO] 创建目录成功：[目录] /新建文件夹 | 大小：- | 创建时间：Mon Oct 27 10:03:04 CST 2025 | 起始块：未分配 | UUID：aed1e24f | 状态：正常 | 只读：否
+[2025-10-27 10:03:04] [DEBUG] 从磁盘加载目录项完成：/，共1项
+[2025-10-27 10:03:04] [DEBUG] 从磁盘加载目录项完成：/，共1项
+[2025-10-27 10:03:04] [INFO] 列出目录成功：/，子条目数：1
+[2025-10-27 10:03:04] [INFO] 列出目录成功：/，子条目数：1
+[2025-10-27 10:03:07] [DEBUG] 从磁盘加载目录项完成：/，共1项
+[2025-10-27 10:03:07] [DEBUG] 向FileSystem缓存中添加条目：/新建文件夹1
+[2025-10-27 10:03:07] [DEBUG] 已更新FileSystem全局缓存：/新建文件夹1
+[2025-10-27 10:03:07] [DEBUG] 目录添加项成功：新建文件夹1 → /
+[2025-10-27 10:03:07] [INFO] FAT 分配块：blockId=4（跳过坏块23、49）
+[2025-10-27 10:03:07] [INFO] FAT 分配块：blockId=5（跳过坏块23、49）
+[2025-10-27 10:03:07] [DEBUG] FAT更新块链：4 → 5
+[2025-10-27 10:03:07] [DEBUG] FAT更新块链：5 → END_OF_FILE
+[2025-10-27 10:03:07] [INFO] FAT 释放块：blockId=2
+[2025-10-27 10:03:07] [INFO] FAT 释放块：blockId=3
+[2025-10-27 10:03:07] [DEBUG] 目录项同步到磁盘完成：/，块数：1
+[2025-10-27 10:03:07] [INFO] 创建目录成功：[目录] /新建文件夹1 | 大小：- | 创建时间：Mon Oct 27 10:03:07 CST 2025 | 起始块：未分配 | UUID：a5245495 | 状态：正常 | 只读：否
+[2025-10-27 10:03:07] [DEBUG] 从磁盘加载目录项完成：/，共1项
+[2025-10-27 10:03:07] [DEBUG] 从磁盘加载目录项完成：/，共1项
+[2025-10-27 10:03:07] [INFO] 列出目录成功：/，子条目数：2
+[2025-10-27 10:03:07] [INFO] 列出目录成功：/，子条目数：2
+[2025-10-27 10:03:19] [INFO] OFT清理完成，关闭了 0 个文件
+[2025-10-27 10:03:19] [INFO] 开始保存FAT表到磁盘，总大小=128字节，使用块0和块1
+[2025-10-27 10:03:19] [DEBUG] FAT表块 0 已写入磁盘
+[2025-10-27 10:03:19] [DEBUG] FAT表块 1 已写入磁盘
+[2025-10-27 10:03:19] [INFO] FAT 表已持久化到磁盘，共使用2个块
+[2025-10-27 10:03:19] [INFO] 文件系统卸载成功
+[2025-10-27 10:03:19] [INFO] 应用关闭，文件系统已卸载
+[2025-10-27 10:22:02] [INFO] 已成功删除旧的磁盘文件：D:\Project\FileManager\data\disk.img
+[2025-10-27 10:22:02] [INFO] FAT 初始化：块 0 标记为FAT存储区
+[2025-10-27 10:22:02] [INFO] FAT 初始化：块 1 标记为FAT存储区
+[2025-10-27 10:22:02] [INFO] FAT 初始化：块 23 标记为坏块
+[2025-10-27 10:22:02] [INFO] FAT 初始化：块 49 标记为坏块
+[2025-10-27 10:22:02] [INFO] FAT 初始化完成：总块数=128，FAT表大小=128，数据分配从块2开始
+[2025-10-27 10:22:02] [INFO] 已打开文件表（OFT）初始化完成，容量：5
+[2025-10-27 10:22:02] [DEBUG] 文件系统挂载前已清空全局缓存
+[2025-10-27 10:22:02] [INFO] 文件系统挂载成功：块大小=64字节，总块数=128
+[2025-10-27 10:22:02] [INFO] 列出目录成功：/，子条目数：0
+[2025-10-27 10:22:03] [INFO] 应用启动成功
+[2025-10-27 10:22:07] [INFO] 列出目录成功：/，子条目数：0
+[2025-10-27 10:22:13] [DEBUG] 向FileSystem缓存中添加条目：/新建文件夹
+[2025-10-27 10:22:13] [DEBUG] 已更新FileSystem全局缓存：/新建文件夹
+[2025-10-27 10:22:13] [DEBUG] 目录添加项成功：新建文件夹 → /
+[2025-10-27 10:22:13] [INFO] FAT 分配块：blockId=2（跳过坏块23、49）
+[2025-10-27 10:22:13] [INFO] FAT 分配块：blockId=3（跳过坏块23、49）
+[2025-10-27 10:22:13] [DEBUG] FAT更新块链：2 → 3
+[2025-10-27 10:22:13] [DEBUG] FAT更新块链：3 → END_OF_FILE
+[2025-10-27 10:22:13] [DEBUG] 目录项同步到磁盘完成：/，块数：1
+[2025-10-27 10:22:13] [INFO] 创建目录成功：[目录] /新建文件夹 | 大小：- | 创建时间：Mon Oct 27 10:22:13 CST 2025 | 起始块：未分配 | UUID：9e114906 | 状态：正常 | 只读：否
+[2025-10-27 10:22:13] [DEBUG] 从磁盘加载目录项完成：/，共1项
+[2025-10-27 10:22:13] [DEBUG] 从磁盘加载目录项完成：/，共1项
+[2025-10-27 10:22:13] [INFO] 列出目录成功：/，子条目数：1
+[2025-10-27 10:22:13] [INFO] 列出目录成功：/，子条目数：1
+[2025-10-27 10:22:18] [INFO] 开始重命名文件夹：/新建文件夹 → /新建文件夹1
+[2025-10-27 10:22:18] [DEBUG] 找到需要更新路径的子条目数量：0
+[2025-10-27 10:22:18] [ERROR] 文件夹重命名失败：目录大小不可修改
+java.lang.UnsupportedOperationException: 目录大小不可修改
+	at org.jiejiejiang.filemanager.core.FileEntry.setSize(FileEntry.java:248)
+	at org.jiejiejiang.filemanager.core.FileSystem.renameDirectory(FileSystem.java:1178)
+	at org.jiejiejiang.filemanager.gui.controller.MainController.lambda$showFolderPropertiesDialogInternal$44(MainController.java:1199)
+	at java.base/java.util.Optional.ifPresent(Optional.java:178)
+	at org.jiejiejiang.filemanager.gui.controller.MainController.showFolderPropertiesDialogInternal(MainController.java:1176)
+	at org.jiejiejiang.filemanager.gui.controller.MainController.showFilePropertiesDialog(MainController.java:1006)
+	at org.jiejiejiang.filemanager.gui.controller.MainController.lambda$setupContextMenus$30(MainController.java:617)
+	at javafx.base@21/com.sun.javafx.event.CompositeEventHandler.dispatchBubblingEvent(CompositeEventHandler.java:86)
+	at javafx.base@21/com.sun.javafx.event.EventHandlerManager.dispatchBubblingEvent(EventHandlerManager.java:232)
+	at javafx.base@21/com.sun.javafx.event.EventHandlerManager.dispatchBubblingEvent(EventHandlerManager.java:189)
+	at javafx.base@21/com.sun.javafx.event.BasicEventDispatcher.dispatchEvent(BasicEventDispatcher.java:58)
+	at javafx.base@21/com.sun.javafx.event.EventDispatchChainImpl.dispatchEvent(EventDispatchChainImpl.java:114)
+	at javafx.base@21/com.sun.javafx.event.EventUtil.fireEventImpl(EventUtil.java:74)
+	at javafx.base@21/com.sun.javafx.event.EventUtil.fireEvent(EventUtil.java:49)
+	at javafx.base@21/javafx.event.Event.fireEvent(Event.java:198)
+	at javafx.controls@21/javafx.scene.control.MenuItem.fire(MenuItem.java:459)
+	at javafx.controls@21/com.sun.javafx.scene.control.ContextMenuContent$MenuItemContainer.doSelect(ContextMenuContent.java:1415)
+	at javafx.controls@21/com.sun.javafx.scene.control.ContextMenuContent$MenuItemContainer.lambda$createChildren$12(ContextMenuContent.java:1368)
+	at javafx.base@21/com.sun.javafx.event.CompositeEventHandler$NormalEventHandlerRecord.handleBubblingEvent(CompositeEventHandler.java:247)
+	at javafx.base@21/com.sun.javafx.event.CompositeEventHandler.dispatchBubblingEvent(CompositeEventHandler.java:80)
+	at javafx.base@21/com.sun.javafx.event.EventHandlerManager.dispatchBubblingEvent(EventHandlerManager.java:232)
+	at javafx.base@21/com.sun.javafx.event.EventHandlerManager.dispatchBubblingEvent(EventHandlerManager.java:189)
+	at javafx.base@21/com.sun.javafx.event.CompositeEventDispatcher.dispatchBubblingEvent(CompositeEventDispatcher.java:59)
+	at javafx.base@21/com.sun.javafx.event.BasicEventDispatcher.dispatchEvent(BasicEventDispatcher.java:58)
+	at javafx.base@21/com.sun.javafx.event.EventDispatchChainImpl.dispatchEvent(EventDispatchChainImpl.java:114)
+	at javafx.base@21/com.sun.javafx.event.BasicEventDispatcher.dispatchEvent(BasicEventDispatcher.java:56)
+	at javafx.base@21/com.sun.javafx.event.EventDispatchChainImpl.dispatchEvent(EventDispatchChainImpl.java:114)
+	at javafx.base@21/com.sun.javafx.event.BasicEventDispatcher.dispatchEvent(BasicEventDispatcher.java:56)
+	at javafx.base@21/com.sun.javafx.event.EventDispatchChainImpl.dispatchEvent(EventDispatchChainImpl.java:114)
+	at javafx.base@21/com.sun.javafx.event.BasicEventDispatcher.dispatchEvent(BasicEventDispatcher.java:56)
+	at javafx.base@21/com.sun.javafx.event.EventDispatchChainImpl.dispatchEvent(EventDispatchChainImpl.java:114)
+	at javafx.base@21/com.sun.javafx.event.EventUtil.fireEventImpl(EventUtil.java:74)
+	at javafx.base@21/com.sun.javafx.event.EventUtil.fireEvent(EventUtil.java:54)
+	at javafx.base@21/javafx.event.Event.fireEvent(Event.java:198)
+	at javafx.graphics@21/javafx.scene.Scene$MouseHandler.process(Scene.java:3984)
+	at javafx.graphics@21/javafx.scene.Scene.processMouseEvent(Scene.java:1890)
+	at javafx.graphics@21/javafx.scene.Scene$ScenePeerListener.mouseEvent(Scene.java:2708)
+	at javafx.graphics@21/com.sun.javafx.tk.quantum.GlassViewEventHandler$MouseEventNotification.run(GlassViewEventHandler.java:411)
+	at javafx.graphics@21/com.sun.javafx.tk.quantum.GlassViewEventHandler$MouseEventNotification.run(GlassViewEventHandler.java:301)
+	at java.base/java.security.AccessController.doPrivileged(AccessController.java:400)
+	at javafx.graphics@21/com.sun.javafx.tk.quantum.GlassViewEventHandler.lambda$handleMouseEvent$2(GlassViewEventHandler.java:450)
+	at javafx.graphics@21/com.sun.javafx.tk.quantum.QuantumToolkit.runWithoutRenderLock(QuantumToolkit.java:424)
+	at javafx.graphics@21/com.sun.javafx.tk.quantum.GlassViewEventHandler.handleMouseEvent(GlassViewEventHandler.java:449)
+	at javafx.graphics@21/com.sun.glass.ui.View.handleMouseEvent(View.java:551)
+	at javafx.graphics@21/com.sun.glass.ui.View.notifyMouse(View.java:937)
+	at javafx.graphics@21/com.sun.glass.ui.win.WinApplication._runLoop(Native Method)
+	at javafx.graphics@21/com.sun.glass.ui.win.WinApplication.lambda$runLoop$3(WinApplication.java:185)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+[2025-10-27 10:22:24] [INFO] 开始重命名文件夹：/新建文件夹 → /新建文件
+[2025-10-27 10:22:24] [DEBUG] 找到需要更新路径的子条目数量：0
+[2025-10-27 10:22:24] [ERROR] 文件夹重命名失败：目录大小不可修改
+java.lang.UnsupportedOperationException: 目录大小不可修改
+	at org.jiejiejiang.filemanager.core.FileEntry.setSize(FileEntry.java:248)
+	at org.jiejiejiang.filemanager.core.FileSystem.renameDirectory(FileSystem.java:1178)
+	at org.jiejiejiang.filemanager.gui.controller.MainController.lambda$showFolderPropertiesDialogInternal$44(MainController.java:1199)
+	at java.base/java.util.Optional.ifPresent(Optional.java:178)
+	at org.jiejiejiang.filemanager.gui.controller.MainController.showFolderPropertiesDialogInternal(MainController.java:1176)
+	at org.jiejiejiang.filemanager.gui.controller.MainController.showFilePropertiesDialog(MainController.java:1006)
+	at org.jiejiejiang.filemanager.gui.controller.MainController.lambda$setupContextMenus$30(MainController.java:617)
+	at javafx.base@21/com.sun.javafx.event.CompositeEventHandler.dispatchBubblingEvent(CompositeEventHandler.java:86)
+	at javafx.base@21/com.sun.javafx.event.EventHandlerManager.dispatchBubblingEvent(EventHandlerManager.java:232)
+	at javafx.base@21/com.sun.javafx.event.EventHandlerManager.dispatchBubblingEvent(EventHandlerManager.java:189)
+	at javafx.base@21/com.sun.javafx.event.BasicEventDispatcher.dispatchEvent(BasicEventDispatcher.java:58)
+	at javafx.base@21/com.sun.javafx.event.EventDispatchChainImpl.dispatchEvent(EventDispatchChainImpl.java:114)
+	at javafx.base@21/com.sun.javafx.event.EventUtil.fireEventImpl(EventUtil.java:74)
+	at javafx.base@21/com.sun.javafx.event.EventUtil.fireEvent(EventUtil.java:49)
+	at javafx.base@21/javafx.event.Event.fireEvent(Event.java:198)
+	at javafx.controls@21/javafx.scene.control.MenuItem.fire(MenuItem.java:459)
+	at javafx.controls@21/com.sun.javafx.scene.control.ContextMenuContent$MenuItemContainer.doSelect(ContextMenuContent.java:1415)
+	at javafx.controls@21/com.sun.javafx.scene.control.ContextMenuContent$MenuItemContainer.lambda$createChildren$12(ContextMenuContent.java:1368)
+	at javafx.base@21/com.sun.javafx.event.CompositeEventHandler$NormalEventHandlerRecord.handleBubblingEvent(CompositeEventHandler.java:247)
+	at javafx.base@21/com.sun.javafx.event.CompositeEventHandler.dispatchBubblingEvent(CompositeEventHandler.java:80)
+	at javafx.base@21/com.sun.javafx.event.EventHandlerManager.dispatchBubblingEvent(EventHandlerManager.java:232)
+	at javafx.base@21/com.sun.javafx.event.EventHandlerManager.dispatchBubblingEvent(EventHandlerManager.java:189)
+	at javafx.base@21/com.sun.javafx.event.CompositeEventDispatcher.dispatchBubblingEvent(CompositeEventDispatcher.java:59)
+	at javafx.base@21/com.sun.javafx.event.BasicEventDispatcher.dispatchEvent(BasicEventDispatcher.java:58)
+	at javafx.base@21/com.sun.javafx.event.EventDispatchChainImpl.dispatchEvent(EventDispatchChainImpl.java:114)
+	at javafx.base@21/com.sun.javafx.event.BasicEventDispatcher.dispatchEvent(BasicEventDispatcher.java:56)
+	at javafx.base@21/com.sun.javafx.event.EventDispatchChainImpl.dispatchEvent(EventDispatchChainImpl.java:114)
+	at javafx.base@21/com.sun.javafx.event.BasicEventDispatcher.dispatchEvent(BasicEventDispatcher.java:56)
+	at javafx.base@21/com.sun.javafx.event.EventDispatchChainImpl.dispatchEvent(EventDispatchChainImpl.java:114)
+	at javafx.base@21/com.sun.javafx.event.BasicEventDispatcher.dispatchEvent(BasicEventDispatcher.java:56)
+	at javafx.base@21/com.sun.javafx.event.EventDispatchChainImpl.dispatchEvent(EventDispatchChainImpl.java:114)
+	at javafx.base@21/com.sun.javafx.event.EventUtil.fireEventImpl(EventUtil.java:74)
+	at javafx.base@21/com.sun.javafx.event.EventUtil.fireEvent(EventUtil.java:54)
+	at javafx.base@21/javafx.event.Event.fireEvent(Event.java:198)
+	at javafx.graphics@21/javafx.scene.Scene$MouseHandler.process(Scene.java:3984)
+	at javafx.graphics@21/javafx.scene.Scene.processMouseEvent(Scene.java:1890)
+	at javafx.graphics@21/javafx.scene.Scene$ScenePeerListener.mouseEvent(Scene.java:2708)
+	at javafx.graphics@21/com.sun.javafx.tk.quantum.GlassViewEventHandler$MouseEventNotification.run(GlassViewEventHandler.java:411)
+	at javafx.graphics@21/com.sun.javafx.tk.quantum.GlassViewEventHandler$MouseEventNotification.run(GlassViewEventHandler.java:301)
+	at java.base/java.security.AccessController.doPrivileged(AccessController.java:400)
+	at javafx.graphics@21/com.sun.javafx.tk.quantum.GlassViewEventHandler.lambda$handleMouseEvent$2(GlassViewEventHandler.java:450)
+	at javafx.graphics@21/com.sun.javafx.tk.quantum.QuantumToolkit.runWithoutRenderLock(QuantumToolkit.java:424)
+	at javafx.graphics@21/com.sun.javafx.tk.quantum.GlassViewEventHandler.handleMouseEvent(GlassViewEventHandler.java:449)
+	at javafx.graphics@21/com.sun.glass.ui.View.handleMouseEvent(View.java:551)
+	at javafx.graphics@21/com.sun.glass.ui.View.notifyMouse(View.java:937)
+	at javafx.graphics@21/com.sun.glass.ui.win.WinApplication._runLoop(Native Method)
+	at javafx.graphics@21/com.sun.glass.ui.win.WinApplication.lambda$runLoop$3(WinApplication.java:185)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+[2025-10-27 10:24:56] [INFO] 已成功删除旧的磁盘文件：D:\Project\FileManager\data\disk.img
+[2025-10-27 10:24:56] [INFO] FAT 初始化：块 0 标记为FAT存储区
+[2025-10-27 10:24:56] [INFO] FAT 初始化：块 1 标记为FAT存储区
+[2025-10-27 10:24:56] [INFO] FAT 初始化：块 23 标记为坏块
+[2025-10-27 10:24:56] [INFO] FAT 初始化：块 49 标记为坏块
+[2025-10-27 10:24:56] [INFO] FAT 初始化完成：总块数=128，FAT表大小=128，数据分配从块2开始
+[2025-10-27 10:24:56] [INFO] 已打开文件表（OFT）初始化完成，容量：5
+[2025-10-27 10:24:56] [DEBUG] 文件系统挂载前已清空全局缓存
+[2025-10-27 10:24:56] [INFO] 文件系统挂载成功：块大小=64字节，总块数=128
+[2025-10-27 10:24:56] [INFO] 列出目录成功：/，子条目数：0
+[2025-10-27 10:24:57] [INFO] 应用启动成功
+[2025-10-27 10:25:02] [INFO] 列出目录成功：/，子条目数：0
+[2025-10-27 10:25:04] [DEBUG] 向FileSystem缓存中添加条目：/新建文件夹
+[2025-10-27 10:25:04] [DEBUG] 已更新FileSystem全局缓存：/新建文件夹
+[2025-10-27 10:25:04] [DEBUG] 目录添加项成功：新建文件夹 → /
+[2025-10-27 10:25:04] [INFO] FAT 分配块：blockId=2（跳过坏块23、49）
+[2025-10-27 10:25:04] [INFO] FAT 分配块：blockId=3（跳过坏块23、49）
+[2025-10-27 10:25:04] [DEBUG] FAT更新块链：2 → 3
+[2025-10-27 10:25:04] [DEBUG] FAT更新块链：3 → END_OF_FILE
+[2025-10-27 10:25:04] [DEBUG] 目录项同步到磁盘完成：/，块数：1
+[2025-10-27 10:25:04] [INFO] 创建目录成功：[目录] /新建文件夹 | 大小：- | 创建时间：Mon Oct 27 10:25:04 CST 2025 | 起始块：未分配 | UUID：7785b31d | 状态：正常 | 只读：否
+[2025-10-27 10:25:04] [DEBUG] 从磁盘加载目录项完成：/，共1项
+[2025-10-27 10:25:04] [DEBUG] 从磁盘加载目录项完成：/，共1项
+[2025-10-27 10:25:04] [INFO] 列出目录成功：/，子条目数：1
+[2025-10-27 10:25:04] [INFO] 列出目录成功：/，子条目数：1
+[2025-10-27 10:25:09] [INFO] 开始重命名文件夹：/新建文件夹 → /新建文件夹1
+[2025-10-27 10:25:09] [DEBUG] 找到需要更新路径的子条目数量：0
+[2025-10-27 10:25:09] [DEBUG] 从磁盘加载目录项完成：/，共1项
+[2025-10-27 10:25:09] [DEBUG] 尝试删除目录项：新建文件夹，目录：/
+[2025-10-27 10:25:09] [DEBUG] 已标记目录项为已删除：新建文件夹
+[2025-10-27 10:25:09] [DEBUG] 已从目录本地缓存移除条目：新建文件夹
+[2025-10-27 10:25:09] [DEBUG] 从FileSystem缓存中移除条目：/新建文件夹
+[2025-10-27 10:25:09] [DEBUG] 已请求从FileSystem全局缓存移除条目：/新建文件夹
+[2025-10-27 10:25:09] [INFO] 目录删除项成功：新建文件夹 → /
+[2025-10-27 10:25:09] [DEBUG] 向FileSystem缓存中添加条目：/新建文件夹1
+[2025-10-27 10:25:09] [DEBUG] 已更新FileSystem全局缓存：/新建文件夹1
+[2025-10-27 10:25:09] [DEBUG] 目录添加项成功：新建文件夹1 → /
+[2025-10-27 10:25:09] [INFO] FAT 分配块：blockId=4（跳过坏块23、49）
+[2025-10-27 10:25:09] [INFO] FAT 分配块：blockId=5（跳过坏块23、49）
+[2025-10-27 10:25:09] [DEBUG] FAT更新块链：4 → 5
+[2025-10-27 10:25:09] [DEBUG] FAT更新块链：5 → END_OF_FILE
+[2025-10-27 10:25:09] [INFO] FAT 释放块：blockId=2
+[2025-10-27 10:25:09] [INFO] FAT 释放块：blockId=3
+[2025-10-27 10:25:09] [DEBUG] 目录项同步到磁盘完成：/，块数：1
+[2025-10-27 10:25:09] [INFO] 文件夹重命名成功：/新建文件夹 → /新建文件夹1，更新了 0 个子条目
+[2025-10-27 10:25:09] [DEBUG] 从磁盘加载目录项完成：/，共1项
+[2025-10-27 10:25:09] [DEBUG] 从磁盘加载目录项完成：/，共1项
+[2025-10-27 10:25:09] [INFO] 列出目录成功：/，子条目数：1
+[2025-10-27 10:25:09] [INFO] 列出目录成功：/，子条目数：1
+[2025-10-27 10:25:12] [INFO] 列出目录成功：/新建文件夹1，子条目数：0
+[2025-10-27 10:25:15] [DEBUG] 准备创建文件：/新建文件夹1/新建文件.txt
+[2025-10-27 10:25:15] [DEBUG] 尝试创建文件：/新建文件夹1/新建文件.txt
+[2025-10-27 10:25:15] [DEBUG] 解析路径 - 父目录：/新建文件夹1, 文件名：新建文件.txt
+[2025-10-27 10:25:15] [INFO] FAT 分配块：blockId=2（跳过坏块23、49）
+[2025-10-27 10:25:15] [DEBUG] 为文件分配起始块：2
+[2025-10-27 10:25:15] [DEBUG] 创建文件元数据：[文件] /新建文件夹1/新建文件.txt | 大小：0 B | 创建时间：Mon Oct 27 10:25:15 CST 2025 | 起始块：2 | UUID：81bd993a | 状态：正常 | 只读：否
+[2025-10-27 10:25:15] [DEBUG] 文件元数据已缓存：/新建文件夹1/新建文件.txt
+[2025-10-27 10:25:15] [DEBUG] 父目录修改时间已更新：/新建文件夹1
+[2025-10-27 10:25:15] [DEBUG] 创建父目录对象：/新建文件夹1
+[2025-10-27 10:25:15] [DEBUG] 向FileSystem缓存中添加条目：/新建文件夹1/新建文件.txt
+[2025-10-27 10:25:15] [DEBUG] 已更新FileSystem全局缓存：/新建文件夹1/新建文件.txt
+[2025-10-27 10:25:15] [DEBUG] 目录添加项成功：新建文件.txt → /新建文件夹1
+[2025-10-27 10:25:15] [DEBUG] 文件已添加到父目录：新建文件.txt → /新建文件夹1
+[2025-10-27 10:25:15] [INFO] FAT 分配块：blockId=3（跳过坏块23、49）
+[2025-10-27 10:25:15] [INFO] FAT 分配块：blockId=6（跳过坏块23、49）
+[2025-10-27 10:25:15] [DEBUG] FAT更新块链：3 → 6
+[2025-10-27 10:25:15] [DEBUG] FAT更新块链：6 → END_OF_FILE
+[2025-10-27 10:25:15] [DEBUG] 目录项同步到磁盘完成：/新建文件夹1，块数：1
+[2025-10-27 10:25:15] [DEBUG] 父目录已同步到磁盘：/新建文件夹1
+[2025-10-27 10:25:15] [INFO] 创建文件成功：[文件] /新建文件夹1/新建文件.txt | 大小：0 B | 创建时间：Mon Oct 27 10:25:15 CST 2025 | 起始块：2 | UUID：81bd993a | 状态：正常 | 只读：否
+[2025-10-27 10:25:15] [INFO] 文件创建成功：/新建文件夹1/新建文件.txt
+[2025-10-27 10:25:15] [DEBUG] 创建文件后刷新目录：/新建文件夹1
+[2025-10-27 10:25:15] [DEBUG] 从磁盘加载目录项完成：/新建文件夹1，共1项
+[2025-10-27 10:25:15] [DEBUG] 从磁盘加载目录项完成：/新建文件夹1，共1项
+[2025-10-27 10:25:15] [INFO] 列出目录成功：/新建文件夹1，子条目数：1
+[2025-10-27 10:25:15] [DEBUG] 从磁盘加载目录项完成：/，共1项
+[2025-10-27 10:25:15] [DEBUG] 从磁盘加载目录项完成：/，共1项
+[2025-10-27 10:25:15] [INFO] 列出目录成功：/，子条目数：1
+[2025-10-27 10:25:17] [DEBUG] 从磁盘加载目录项完成：/新建文件夹1，共1项
+[2025-10-27 10:25:19] [INFO] 开始重命名文件夹：/新建文件夹1 → /新建文件夹
+[2025-10-27 10:25:19] [DEBUG] 找到需要更新路径的子条目数量：1
+[2025-10-27 10:25:19] [DEBUG] 准备更新子条目路径：/新建文件夹1/新建文件.txt → /新建文件夹/新建文件.txt
+[2025-10-27 10:25:19] [DEBUG] 从磁盘加载目录项完成：/，共1项
+[2025-10-27 10:25:19] [DEBUG] 尝试删除目录项：新建文件夹1，目录：/
+[2025-10-27 10:25:19] [DEBUG] 已标记目录项为已删除：新建文件夹1
+[2025-10-27 10:25:19] [DEBUG] 已从目录本地缓存移除条目：新建文件夹1
+[2025-10-27 10:25:19] [DEBUG] 从FileSystem缓存中移除条目：/新建文件夹1
+[2025-10-27 10:25:19] [DEBUG] 已请求从FileSystem全局缓存移除条目：/新建文件夹1
+[2025-10-27 10:25:19] [INFO] 目录删除项成功：新建文件夹1 → /
+[2025-10-27 10:25:19] [DEBUG] 向FileSystem缓存中添加条目：/新建文件夹
+[2025-10-27 10:25:19] [DEBUG] 已更新FileSystem全局缓存：/新建文件夹
+[2025-10-27 10:25:19] [DEBUG] 目录添加项成功：新建文件夹 → /
+[2025-10-27 10:25:19] [INFO] FAT 分配块：blockId=7（跳过坏块23、49）
+[2025-10-27 10:25:19] [INFO] FAT 分配块：blockId=8（跳过坏块23、49）
+[2025-10-27 10:25:19] [DEBUG] FAT更新块链：7 → 8
+[2025-10-27 10:25:19] [DEBUG] FAT更新块链：8 → END_OF_FILE
+[2025-10-27 10:25:19] [INFO] FAT 释放块：blockId=4
+[2025-10-27 10:25:19] [INFO] FAT 释放块：blockId=5
+[2025-10-27 10:25:19] [DEBUG] 目录项同步到磁盘完成：/，块数：1
+[2025-10-27 10:25:19] [INFO] 文件夹重命名成功：/新建文件夹1 → /新建文件夹，更新了 1 个子条目
+[2025-10-27 10:25:19] [DEBUG] 从磁盘加载目录项完成：/，共1项
+[2025-10-27 10:25:19] [DEBUG] 从磁盘加载目录项完成：/，共1项
+[2025-10-27 10:25:19] [INFO] 列出目录成功：/，子条目数：1
+[2025-10-27 10:25:19] [INFO] 列出目录成功：/，子条目数：1
+[2025-10-27 10:25:23] [DEBUG] 从磁盘加载目录项完成：/新建文件夹，共1项
+[2025-10-27 10:25:23] [DEBUG] 从磁盘加载目录项完成：/新建文件夹，共1项
+[2025-10-27 10:25:23] [INFO] 列出目录成功：/新建文件夹，子条目数：1
+[2025-10-27 10:25:23] [DEBUG] 从磁盘加载目录项完成：/，共1项
+[2025-10-27 10:25:23] [DEBUG] 从磁盘加载目录项完成：/，共1项
+[2025-10-27 10:25:24] [INFO] 列出目录成功：/，子条目数：1
+[2025-10-27 10:25:30] [DEBUG] 从磁盘加载目录项完成：/新建文件夹，共1项
+[2025-10-27 10:25:36] [DEBUG] 从磁盘加载目录项完成：/新建文件夹，共1项
+[2025-10-27 10:25:36] [DEBUG] 从磁盘加载目录项完成：/新建文件夹，共1项
+[2025-10-27 10:25:36] [INFO] 列出目录成功：/新建文件夹，子条目数：1
+[2025-10-27 10:25:38] [DEBUG] 从磁盘加载目录项完成：/新建文件夹，共1项
+[2025-10-27 10:25:38] [DEBUG] 向FileSystem缓存中添加条目：/新建文件夹/新建文件夹
+[2025-10-27 10:25:38] [DEBUG] 已更新FileSystem全局缓存：/新建文件夹/新建文件夹
+[2025-10-27 10:25:38] [DEBUG] 目录添加项成功：新建文件夹 → /新建文件夹
+[2025-10-27 10:25:38] [INFO] FAT 分配块：blockId=4（跳过坏块23、49）
+[2025-10-27 10:25:38] [INFO] FAT 分配块：blockId=5（跳过坏块23、49）
+[2025-10-27 10:25:38] [DEBUG] FAT更新块链：4 → 5
+[2025-10-27 10:25:38] [DEBUG] FAT更新块链：5 → END_OF_FILE
+[2025-10-27 10:25:38] [INFO] FAT 释放块：blockId=3
+[2025-10-27 10:25:38] [INFO] FAT 释放块：blockId=6
+[2025-10-27 10:25:38] [DEBUG] 目录项同步到磁盘完成：/新建文件夹，块数：1
+[2025-10-27 10:25:38] [INFO] 创建目录成功：[目录] /新建文件夹/新建文件夹 | 大小：- | 创建时间：Mon Oct 27 10:25:38 CST 2025 | 起始块：未分配 | UUID：d47f6398 | 状态：正常 | 只读：否
+[2025-10-27 10:25:38] [DEBUG] 从磁盘加载目录项完成：/新建文件夹，共1项
+[2025-10-27 10:25:38] [DEBUG] 从磁盘加载目录项完成：/新建文件夹，共1项
+[2025-10-27 10:25:38] [INFO] 列出目录成功：/新建文件夹，子条目数：2
+[2025-10-27 10:25:38] [INFO] 列出目录成功：/，子条目数：1
+[2025-10-27 10:25:40] [INFO] 列出目录成功：/新建文件夹/新建文件夹，子条目数：0
+[2025-10-27 10:25:41] [DEBUG] 准备创建文件：/新建文件夹/新建文件夹/新建文件.txt
+[2025-10-27 10:25:41] [DEBUG] 尝试创建文件：/新建文件夹/新建文件夹/新建文件.txt
+[2025-10-27 10:25:41] [DEBUG] 解析路径 - 父目录：/新建文件夹/新建文件夹, 文件名：新建文件.txt
+[2025-10-27 10:25:41] [INFO] FAT 分配块：blockId=3（跳过坏块23、49）
+[2025-10-27 10:25:41] [DEBUG] 为文件分配起始块：3
+[2025-10-27 10:25:41] [DEBUG] 创建文件元数据：[文件] /新建文件夹/新建文件夹/新建文件.txt | 大小：0 B | 创建时间：Mon Oct 27 10:25:41 CST 2025 | 起始块：3 | UUID：dc1dc5f7 | 状态：正常 | 只读：否
+[2025-10-27 10:25:41] [DEBUG] 文件元数据已缓存：/新建文件夹/新建文件夹/新建文件.txt
+[2025-10-27 10:25:41] [DEBUG] 父目录修改时间已更新：/新建文件夹/新建文件夹
+[2025-10-27 10:25:41] [DEBUG] 创建父目录对象：/新建文件夹/新建文件夹
+[2025-10-27 10:25:41] [DEBUG] 向FileSystem缓存中添加条目：/新建文件夹/新建文件夹/新建文件.txt
+[2025-10-27 10:25:41] [DEBUG] 已更新FileSystem全局缓存：/新建文件夹/新建文件夹/新建文件.txt
+[2025-10-27 10:25:41] [DEBUG] 目录添加项成功：新建文件.txt → /新建文件夹/新建文件夹
+[2025-10-27 10:25:41] [DEBUG] 文件已添加到父目录：新建文件.txt → /新建文件夹/新建文件夹
+[2025-10-27 10:25:41] [INFO] FAT 分配块：blockId=6（跳过坏块23、49）
+[2025-10-27 10:25:41] [INFO] FAT 分配块：blockId=9（跳过坏块23、49）
+[2025-10-27 10:25:41] [DEBUG] FAT更新块链：6 → 9
+[2025-10-27 10:25:41] [DEBUG] FAT更新块链：9 → END_OF_FILE
+[2025-10-27 10:25:41] [DEBUG] 目录项同步到磁盘完成：/新建文件夹/新建文件夹，块数：1
+[2025-10-27 10:25:41] [DEBUG] 父目录已同步到磁盘：/新建文件夹/新建文件夹
+[2025-10-27 10:25:41] [INFO] 创建文件成功：[文件] /新建文件夹/新建文件夹/新建文件.txt | 大小：0 B | 创建时间：Mon Oct 27 10:25:41 CST 2025 | 起始块：3 | UUID：dc1dc5f7 | 状态：正常 | 只读：否
+[2025-10-27 10:25:41] [INFO] 文件创建成功：/新建文件夹/新建文件夹/新建文件.txt
+[2025-10-27 10:25:41] [DEBUG] 创建文件后刷新目录：/新建文件夹/新建文件夹
+[2025-10-27 10:25:41] [DEBUG] 从磁盘加载目录项完成：/新建文件夹/新建文件夹，共1项
+[2025-10-27 10:25:41] [DEBUG] 从磁盘加载目录项完成：/新建文件夹/新建文件夹，共1项
+[2025-10-27 10:25:41] [INFO] 列出目录成功：/新建文件夹/新建文件夹，子条目数：1
+[2025-10-27 10:25:42] [DEBUG] 从磁盘加载目录项完成：/新建文件夹，共1项
+[2025-10-27 10:25:42] [DEBUG] 从磁盘加载目录项完成：/新建文件夹，共1项
+[2025-10-27 10:25:42] [INFO] 列出目录成功：/新建文件夹，子条目数：2
+[2025-10-27 10:25:43] [DEBUG] 从磁盘加载目录项完成：/，共1项
+[2025-10-27 10:25:43] [DEBUG] 从磁盘加载目录项完成：/，共1项
+[2025-10-27 10:25:43] [INFO] 列出目录成功：/，子条目数：1
+[2025-10-27 10:25:44] [DEBUG] 从磁盘加载目录项完成：/新建文件夹，共1项
+[2025-10-27 10:25:48] [DEBUG] 从磁盘加载目录项完成：/新建文件夹，共1项
+[2025-10-27 10:25:48] [DEBUG] 从磁盘加载目录项完成：/新建文件夹，共1项
+[2025-10-27 10:25:48] [INFO] 列出目录成功：/新建文件夹，子条目数：2
+[2025-10-27 10:25:48] [INFO] 列出目录成功：/新建文件夹，子条目数：2
+[2025-10-27 10:25:48] [DEBUG] 从磁盘加载目录项完成：/新建文件夹/新建文件夹，共1项
+[2025-10-27 10:25:48] [DEBUG] 从磁盘加载目录项完成：/新建文件夹/新建文件夹，共1项
+[2025-10-27 10:25:48] [INFO] 列出目录成功：/新建文件夹/新建文件夹，子条目数：1
+[2025-10-27 10:25:49] [INFO] 列出目录成功：/新建文件夹/新建文件夹，子条目数：1
+[2025-10-27 10:25:49] [INFO] 列出目录成功：/新建文件夹/新建文件夹，子条目数：1
+[2025-10-27 10:25:49] [DEBUG] 从磁盘加载目录项完成：/新建文件夹，共1项
+[2025-10-27 10:25:49] [DEBUG] 从磁盘加载目录项完成：/新建文件夹，共1项
+[2025-10-27 10:25:49] [INFO] 列出目录成功：/新建文件夹，子条目数：2
+[2025-10-27 10:25:52] [DEBUG] 从磁盘加载目录项完成：/新建文件夹，共1项
+[2025-10-27 10:25:52] [DEBUG] 从磁盘加载目录项完成：/新建文件夹，共1项
+[2025-10-27 10:25:52] [INFO] 列出目录成功：/新建文件夹，子条目数：2
+[2025-10-27 10:25:53] [DEBUG] 从磁盘加载目录项完成：/，共1项
+[2025-10-27 10:25:53] [DEBUG] 从磁盘加载目录项完成：/，共1项
+[2025-10-27 10:25:53] [INFO] 列出目录成功：/，子条目数：1
+[2025-10-27 10:25:54] [DEBUG] 从磁盘加载目录项完成：/新建文件夹，共1项
+[2025-10-27 10:26:00] [DEBUG] 从磁盘加载目录项完成：/新建文件夹，共1项
+[2025-10-27 10:26:00] [DEBUG] 从磁盘加载目录项完成：/新建文件夹，共1项
+[2025-10-27 10:26:00] [INFO] 列出目录成功：/新建文件夹，子条目数：2
+[2025-10-27 10:26:02] [DEBUG] 从磁盘加载目录项完成：/，共1项
+[2025-10-27 10:26:02] [DEBUG] 从磁盘加载目录项完成：/，共1项
+[2025-10-27 10:26:02] [INFO] 列出目录成功：/，子条目数：1
+[2025-10-27 10:26:04] [DEBUG] 从磁盘加载目录项完成：/新建文件夹，共1项
+[2025-10-27 10:26:04] [DEBUG] 从磁盘加载目录项完成：/新建文件夹，共1项
+[2025-10-27 10:26:04] [INFO] 列出目录成功：/新建文件夹，子条目数：2
+[2025-10-27 10:26:07] [DEBUG] 从磁盘加载目录项完成：/新建文件夹/新建文件夹，共1项
+[2025-10-27 10:26:10] [DEBUG] 从磁盘加载目录项完成：/新建文件夹/新建文件夹，共1项
+[2025-10-27 10:26:10] [DEBUG] 从磁盘加载目录项完成：/新建文件夹/新建文件夹，共1项
+[2025-10-27 10:26:10] [INFO] 列出目录成功：/新建文件夹/新建文件夹，子条目数：1
+[2025-10-27 10:26:11] [DEBUG] 从磁盘加载目录项完成：/新建文件夹/新建文件夹，共1项
+[2025-10-27 10:26:11] [DEBUG] 向FileSystem缓存中添加条目：/新建文件夹/新建文件夹/新建文件夹
+[2025-10-27 10:26:11] [DEBUG] 已更新FileSystem全局缓存：/新建文件夹/新建文件夹/新建文件夹
+[2025-10-27 10:26:11] [DEBUG] 目录添加项成功：新建文件夹 → /新建文件夹/新建文件夹
+[2025-10-27 10:26:11] [INFO] FAT 分配块：blockId=10（跳过坏块23、49）
+[2025-10-27 10:26:11] [INFO] FAT 分配块：blockId=11（跳过坏块23、49）
+[2025-10-27 10:26:11] [DEBUG] FAT更新块链：10 → 11
+[2025-10-27 10:26:11] [DEBUG] FAT更新块链：11 → END_OF_FILE
+[2025-10-27 10:26:11] [INFO] FAT 释放块：blockId=6
+[2025-10-27 10:26:11] [INFO] FAT 释放块：blockId=9
+[2025-10-27 10:26:11] [DEBUG] 目录项同步到磁盘完成：/新建文件夹/新建文件夹，块数：1
+[2025-10-27 10:26:11] [INFO] 创建目录成功：[目录] /新建文件夹/新建文件夹/新建文件夹 | 大小：- | 创建时间：Mon Oct 27 10:26:11 CST 2025 | 起始块：未分配 | UUID：780694be | 状态：正常 | 只读：否
+[2025-10-27 10:26:11] [DEBUG] 从磁盘加载目录项完成：/新建文件夹/新建文件夹，共1项
+[2025-10-27 10:26:11] [DEBUG] 从磁盘加载目录项完成：/新建文件夹/新建文件夹，共1项
+[2025-10-27 10:26:11] [INFO] 列出目录成功：/新建文件夹/新建文件夹，子条目数：2
+[2025-10-27 10:26:11] [INFO] 列出目录成功：/，子条目数：1
+[2025-10-27 10:26:12] [DEBUG] 从磁盘加载目录项完成：/新建文件夹，共1项
+[2025-10-27 10:26:12] [DEBUG] 从磁盘加载目录项完成：/新建文件夹，共1项
+[2025-10-27 10:26:12] [INFO] 列出目录成功：/新建文件夹，子条目数：2
+[2025-10-27 10:26:14] [DEBUG] 从磁盘加载目录项完成：/新建文件夹/新建文件夹，共1项
+[2025-10-27 10:26:17] [DEBUG] 从磁盘加载目录项完成：/新建文件夹/新建文件夹，共1项
+[2025-10-27 10:26:19] [INFO] OFT清理完成，关闭了 0 个文件
+[2025-10-27 10:26:19] [INFO] 开始保存FAT表到磁盘，总大小=128字节，使用块0和块1
+[2025-10-27 10:26:19] [DEBUG] FAT表块 0 已写入磁盘
+[2025-10-27 10:26:19] [DEBUG] FAT表块 1 已写入磁盘
+[2025-10-27 10:26:19] [INFO] FAT 表已持久化到磁盘，共使用2个块
+[2025-10-27 10:26:19] [INFO] 文件系统卸载成功
+[2025-10-27 10:26:19] [INFO] 应用关闭，文件系统已卸载
