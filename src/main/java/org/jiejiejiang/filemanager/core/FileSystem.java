@@ -135,6 +135,18 @@ public class FileSystem {
         }
     }
 
+    /**
+     * 向缓存中添加文件/目录条目
+     * @param fullPath 文件/目录的完整路径
+     * @param entry 要添加的条目
+     */
+    public void addEntryToCache(String fullPath, FileEntry entry) {
+        if (fullPath != null && entry != null) {
+            entryCache.put(fullPath, entry);
+            LogUtil.debug("向FileSystem缓存中添加条目：" + fullPath);
+        }
+    }
+
     // ======================== 已打开文件表（OFT）操作 ========================
     /**
      * 打开文件，加入OFT管理
