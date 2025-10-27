@@ -71,6 +71,7 @@ public class MainController {
     // 菜单组件
     @FXML private MenuItem newFileItem;
     @FXML private MenuItem newDirItem;
+    @FXML private MenuItem openItem;
     @FXML private MenuItem deleteItem;
     @FXML private MenuItem refreshItem;
     @FXML private MenuItem listViewItem;
@@ -282,7 +283,24 @@ public class MainController {
         // 3. 新建文件夹菜单
         newDirItem.setOnAction(e -> showNewDirDialog());
 
-        // 4. 删除菜单
+        // 4. 查看菜单（原打开菜单）
+        openItem.setOnAction(e -> {
+            FileEntry selectedEntry = fileTableView.getSelectionModel().getSelectedItem();
+            if (selectedEntry != null) {
+                if (selectedEntry.getType() == FileEntry.EntryType.FILE) {
+                    showViewFileContentDialog(selectedEntry);
+                } else if (selectedEntry.getType() == FileEntry.EntryType.DIRECTORY) {
+                    String parentPath = currentDirectory.getDirEntry().getFullPath();
+                    String path = parentPath.endsWith("/") ? parentPath + selectedEntry.getName() : parentPath + "/" + selectedEntry.getName();
+                    loadDirectory(path);
+                    selectTreeItemByPath(path);
+                }
+            } else {
+                showWarning("提示", "请先选择一个文件或文件夹");
+            }
+        });
+
+        // 5. 删除菜单
         deleteItem.setOnAction(e -> deleteSelectedEntry());
 
         // 5. 刷新菜单
@@ -321,6 +339,49 @@ public class MainController {
     }
     
     /**
+     * 显示只读文件查看对话框，仅用于查看文件内容
+     */
+    private void showViewFileContentDialog(FileEntry fileEntry) {
+        // 仅允许查看文件
+        if (fileEntry.getType() != FileEntry.EntryType.FILE) {
+            showWarning("提示", "只能查看文件内容");
+            return;
+        }
+
+        // 计算完整路径
+        String parentPath = currentDirectory.getDirEntry().getFullPath();
+        String fullPath = parentPath.endsWith("/") ? parentPath + fileEntry.getName() : parentPath + "/" + fileEntry.getName();
+
+        // 创建对话框
+        Dialog<ButtonType> dialog = new Dialog<>();
+        dialog.setTitle("查看文件内容");
+        dialog.setHeaderText("文件：" + fileEntry.getName() + (fileEntry.isReadOnly() ? " (只读)" : ""));
+
+        // 只有关闭按钮
+        dialog.getDialogPane().getButtonTypes().add(ButtonType.CLOSE);
+
+        // 只读文本编辑器
+        javafx.scene.control.TextArea viewer = new javafx.scene.control.TextArea();
+        viewer.setWrapText(true);
+        viewer.setPrefRowCount(20);
+        viewer.setPrefColumnCount(60);
+        viewer.setEditable(false); // 设置为只读
+
+        // 读取现有内容
+        try {
+            byte[] content = fileSystem.readFile(fullPath);
+            String text = new String(content, java.nio.charset.StandardCharsets.UTF_8);
+            viewer.setText(text);
+        } catch (FileSystemException e) {
+            showError("读取文件失败", e.getMessage());
+            viewer.setText("无法读取文件内容");
+        }
+
+        dialog.getDialogPane().setContent(viewer);
+        dialog.showAndWait();
+    }
+
+    /**
      * 显示文本编辑器对话框，允许修改文件内容（大小由内容长度决定）
      */
     private void showEditFileContentDialog(FileEntry fileEntry) {
@@ -330,9 +391,9 @@ public class MainController {
             return;
         }
     
-        // 只读文件禁止打开与保存
+        // 只读文件禁止编辑
         if (fileEntry.isReadOnly()) {
-            showWarning("提示", "该文件为只读，不能打开或保存内容");
+            showWarning("提示", "该文件为只读，不能编辑。请使用\"查看\"功能查看文件内容。");
             return;
         }
     
@@ -616,15 +677,36 @@ public class MainController {
         
         emptyAreaContextMenu.getItems().addAll(newFileMenuItem, newDirMenuItem);
         
-        // 创建选中项右键菜单（删除、属性）
+        // 创建选中项右键菜单（查看、编辑、删除、属性）
         ContextMenu selectedItemContextMenu = new ContextMenu();
+        MenuItem viewMenuItem = new MenuItem("查看");
+        MenuItem editMenuItem = new MenuItem("编辑");
         MenuItem deleteMenuItem = new MenuItem("删除");
         MenuItem propertiesMenuItem = new MenuItem("属性");
+        
+        viewMenuItem.setOnAction(e -> {
+            FileEntry selectedEntry = fileTableView.getSelectionModel().getSelectedItem();
+            if (selectedEntry != null && selectedEntry.getType() == FileEntry.EntryType.FILE) {
+                showViewFileContentDialog(selectedEntry);
+            } else if (selectedEntry != null && selectedEntry.getType() == FileEntry.EntryType.DIRECTORY) {
+                String parentPath = currentDirectory.getDirEntry().getFullPath();
+                String path = parentPath.endsWith("/") ? parentPath + selectedEntry.getName() : parentPath + "/" + selectedEntry.getName();
+                loadDirectory(path);
+                selectTreeItemByPath(path);
+            }
+        });
+        
+        editMenuItem.setOnAction(e -> {
+            FileEntry selectedEntry = fileTableView.getSelectionModel().getSelectedItem();
+            if (selectedEntry != null && selectedEntry.getType() == FileEntry.EntryType.FILE) {
+                showEditFileContentDialog(selectedEntry);
+            }
+        });
         
         deleteMenuItem.setOnAction(e -> deleteSelectedEntry());
         propertiesMenuItem.setOnAction(e -> showFilePropertiesDialog());
         
-        selectedItemContextMenu.getItems().addAll(deleteMenuItem, propertiesMenuItem);
+        selectedItemContextMenu.getItems().addAll(viewMenuItem, editMenuItem, deleteMenuItem, propertiesMenuItem);
         
         // 为文件表格设置右键菜单
         fileTableView.setOnContextMenuRequested(event -> {
@@ -681,13 +763,14 @@ public class MainController {
             
             if (event.getButton() == MouseButton.PRIMARY) {
                 if (isDoubleClick && !clickedOnEmpty && clickedEntry != null) {
-                    // 快速双击：执行打开逻辑
+                    // 快速双击：执行查看逻辑
                     if (clickedEntry.getType() == FileEntry.EntryType.FILE) {
-                        showEditFileContentDialog(clickedEntry);
+                        showViewFileContentDialog(clickedEntry);
                     } else if (clickedEntry.getType() == FileEntry.EntryType.DIRECTORY) {
                         String parentPath = currentDirectory.getDirEntry().getFullPath();
                         String path = parentPath.endsWith("/") ? parentPath + clickedEntry.getName() : parentPath + "/" + clickedEntry.getName();
                         loadDirectory(path);
+                        selectTreeItemByPath(path);
                     }
                 } else {
                     // 单击：空白区域取消选中；分开两次单击同一项才取消选中
@@ -1357,8 +1440,8 @@ public class MainController {
                     loadDirectory(fullPath);
                     selectTreeItemByPath(fullPath);
                 } else {
-                    // 打开文件
-                    showEditFileContentDialog(entry);
+                    // 查看文件
+                    showViewFileContentDialog(entry);
                 }
             } else if (event.getButton() == MouseButton.SECONDARY) {
                 // 右键点击 - 显示上下文菜单
@@ -1379,18 +1462,26 @@ public class MainController {
     private void showIconContextMenu(FileEntry entry, double screenX, double screenY) {
         ContextMenu contextMenu = new ContextMenu();
         
-        // 打开/进入
-        MenuItem openItem = new MenuItem(entry.getType() == FileEntry.EntryType.DIRECTORY ? "进入" : "打开");
-        openItem.setOnAction(e -> {
-            if (entry.getType() == FileEntry.EntryType.DIRECTORY) {
+        if (entry.getType() == FileEntry.EntryType.DIRECTORY) {
+            // 进入目录
+            MenuItem openItem = new MenuItem("进入");
+            openItem.setOnAction(e -> {
                 String parentPath = currentDirectory.getDirEntry().getFullPath();
                 String fullPath = parentPath.endsWith("/") ? parentPath + entry.getName() : parentPath + "/" + entry.getName();
                 loadDirectory(fullPath);
                 selectTreeItemByPath(fullPath);
-            } else {
-                showEditFileContentDialog(entry);
-            }
-        });
+            });
+            contextMenu.getItems().add(openItem);
+        } else {
+            // 文件的查看和编辑选项
+            MenuItem viewItem = new MenuItem("查看");
+            viewItem.setOnAction(e -> showViewFileContentDialog(entry));
+            
+            MenuItem editItem = new MenuItem("编辑");
+            editItem.setOnAction(e -> showEditFileContentDialog(entry));
+            
+            contextMenu.getItems().addAll(viewItem, editItem);
+        }
         
         // 属性
         MenuItem propertiesItem = new MenuItem("属性");
