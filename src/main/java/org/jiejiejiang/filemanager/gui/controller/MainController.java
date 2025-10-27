@@ -30,6 +30,7 @@ import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextInputDialog;
+import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.scene.control.cell.PropertyValueFactory;
@@ -158,6 +159,26 @@ public class MainController {
         // 清空示例节点
         computerRootItem.getChildren().clear();
 
+        // 设置自定义TreeCell以防止文本闪烁
+        dirTreeView.setCellFactory(tv -> {
+            TreeCell<String> cell = new TreeCell<String>() {
+                @Override
+                protected void updateItem(String item, boolean empty) {
+                    super.updateItem(item, empty);
+                    if (empty || item == null) {
+                        setText(null);
+                        setGraphic(null);
+                    } else {
+                        setText(item);
+                        setGraphic(null);
+                    }
+                }
+            };
+            // 添加CSS样式类
+            cell.getStyleClass().add("tree-cell");
+            return cell;
+        });
+
         // 实际应从fileSystem获取所有磁盘/根目录
         if (fileSystem != null) {
             String root = "/";
@@ -172,7 +193,11 @@ public class MainController {
             rootItem.addEventHandler(TreeItem.<String>branchExpandedEvent(), event -> {
                 TreeItem<String> expandedItem = event.getTreeItem();
                 String path = getFullPath(expandedItem);
-                loadSubDirectories(path, expandedItem);
+                // 避免重复加载
+                if (expandedItem.getChildren().size() == 1 && 
+                    expandedItem.getChildren().get(0).getValue().isEmpty()) {
+                    loadSubDirectories(path, expandedItem);
+                }
             });
         } else {
             // 模拟数据（开发阶段用）
@@ -194,7 +219,15 @@ public class MainController {
      * @param parentItem 父节点
      */
     private void loadSubDirectories(String path, TreeItem<String> parentItem) {
-        // 先清空已有子节点（避免重复加载）
+        // 检查是否已经加载过（避免重复加载）
+        boolean hasRealChildren = parentItem.getChildren().stream()
+            .anyMatch(child -> !child.getValue().isEmpty());
+        
+        if (hasRealChildren) {
+            return; // 已经加载过，直接返回
+        }
+        
+        // 清空临时子节点
         parentItem.getChildren().clear();
         
         try {
@@ -210,15 +243,12 @@ public class MainController {
                     // 为每个目录添加一个临时子节点，以显示展开图标
                     dirItem.getChildren().add(new TreeItem<>(""));
                     
-                    // 添加展开事件监听
-                     dirItem.addEventHandler(TreeItem.<String>branchExpandedEvent(), event -> {
-                         TreeItem<String> expandedItem = event.getTreeItem();
-                         // 移除临时子节点
-                         expandedItem.getChildren().clear();
-                          
-                         String dirPath = getFullPath(expandedItem);
-                         loadSubDirectories(dirPath, expandedItem);
-                     });
+                    // 添加展开事件监听（只添加一次）
+                    dirItem.addEventHandler(TreeItem.<String>branchExpandedEvent(), event -> {
+                        TreeItem<String> expandedItem = event.getTreeItem();
+                        String dirPath = getFullPath(expandedItem);
+                        loadSubDirectories(dirPath, expandedItem);
+                    });
                 }
             }
         } catch (FileSystemException e) {
@@ -1164,9 +1194,10 @@ public class MainController {
         
         // 创建图标
         javafx.scene.image.ImageView iconView = new javafx.scene.image.ImageView();
-        iconView.setFitWidth(48);
-        iconView.setFitHeight(48);
+        iconView.setFitWidth(64);  // 放大图标尺寸从48到64
+        iconView.setFitHeight(64);
         iconView.setPreserveRatio(true);
+        iconView.getStyleClass().add("file-icon");
         
         // 根据文件类型加载图标
         String iconPath;
@@ -1188,8 +1219,8 @@ public class MainController {
         // 创建文件名标签
         Label nameLabel = new Label(entry.getName());
         nameLabel.setWrapText(true);
-        nameLabel.setMaxWidth(75);
-        nameLabel.setStyle("-fx-font-size: 10px; -fx-text-alignment: center;");
+        nameLabel.setMaxWidth(90);  // 增加最大宽度以适应放大的图标
+        nameLabel.setStyle("-fx-font-size: 13px; -fx-text-alignment: center;");  // 放大字体从10px到13px
         
         // 添加组件到容器
         if (iconView != null) {
@@ -1197,7 +1228,7 @@ public class MainController {
         } else {
             // 如果图标加载失败，显示文件类型标识
             Label typeLabel = new Label(entry.getType() == FileEntry.EntryType.DIRECTORY ? "📁" : "📄");
-            typeLabel.setStyle("-fx-font-size: 32px;");
+            typeLabel.setStyle("-fx-font-size: 48px;");  // 放大备用图标字体从32px到48px
             iconItem.getChildren().addAll(typeLabel, nameLabel);
         }
         

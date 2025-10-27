@@ -29,15 +29,12 @@
     <!-- 1. 顶部：菜单栏（文件操作、编辑、视图等） -->
     <top>
         <MenuBar>
-            <!-- 文件菜单（新建、打开、保存、退出） -->
+            <!-- 文件菜单（新建、打开） -->
             <Menu text="文件">
                 <MenuItem text="新建文件" fx:id="newFileItem"/>
                 <MenuItem text="新建文件夹" fx:id="newDirItem"/>
                 <SeparatorMenuItem/>
                 <MenuItem text="打开" fx:id="openItem"/>
-                <MenuItem text="保存" fx:id="saveItem"/>
-                <SeparatorMenuItem/>
-                <MenuItem text="退出" fx:id="exitItem"/>
             </Menu>
 
             <!-- 编辑菜单（删除） -->
@@ -53,29 +50,26 @@
                 <MenuItem text="刷新" fx:id="refreshItem"/>
             </Menu>
 
-            <!-- 帮助菜单 -->
-            <Menu text="帮助">
-                <MenuItem text="关于" fx:id="aboutItem"/>
-            </Menu>
+
         </MenuBar>
     </top>
 
     <!-- 2. 左侧：侧边栏（目录树 + 快速访问） -->
     <left>
-        <VBox spacing="10" style="-fx-background-color: #f5f5f5;">
+        <VBox spacing="10" prefWidth="250" styleClass="sidebar">
             <!-- 快速访问区域 -->
-            <Label text="快速访问" style="-fx-font-weight: bold;"/>
+            <Label text="快速访问" styleClass="sidebar-title"/>
             <VBox spacing="5">
-                <Label text="📂 我的文档" fx:id="myDocsLabel" style="-fx-cursor: hand;"/>
-                <Label text="📄 最近文件" fx:id="recentFilesLabel" style="-fx-cursor: hand;"/>
-                <Label text="🗑️ 回收站" fx:id="recycleBinLabel" style="-fx-cursor: hand;"/>
+                <Label text="📂 我的文档" fx:id="myDocsLabel" styleClass="quick-access-item"/>
+                <Label text="📄 最近文件" fx:id="recentFilesLabel" styleClass="quick-access-item"/>
+                <Label text="🗑️ 回收站" fx:id="recycleBinLabel" styleClass="quick-access-item"/>
             </VBox>
 
             <Separator/>
 
             <!-- 目录树区域（显示磁盘目录结构） -->
-            <Label text="磁盘目录" style="-fx-font-weight: bold;"/>
-            <TreeView fx:id="dirTreeView" VBox.vgrow="ALWAYS">
+            <Label text="磁盘目录" styleClass="sidebar-title"/>
+            <TreeView fx:id="dirTreeView" VBox.vgrow="ALWAYS" styleClass="tree-view">
                 <!-- 根节点：默认显示所有磁盘（后续由Controller动态加载） -->
                 <TreeItem value="此电脑" fx:id="computerRootItem">
                     <!-- 子节点示例（实际由Controller动态生成） -->
@@ -88,18 +82,18 @@
     <!-- 3. 中间：主内容区（文件列表，默认表格模式） -->
     <center>
         <VBox>
-            <!-- 导航栏：返回按钮 + 路径栏 + 视图切换按钮 -->
-            <HBox spacing="10" style="-fx-padding: 5; -fx-background-color: #f0f0f0;">
-                <Button fx:id="backButton" text="← 返回" style="-fx-cursor: hand;"/>
-                <TextField fx:id="pathTextField" HBox.hgrow="ALWAYS" promptText="当前路径" editable="true"/>
+            <!-- 3.1 导航栏（返回按钮 + 路径输入框 + 视图切换按钮） -->
+            <HBox spacing="10" styleClass="navigation-bar">
+                <Button fx:id="backButton" text="← 返回" styleClass="navigation-button"/>
+                <TextField fx:id="pathTextField" HBox.hgrow="ALWAYS" promptText="当前路径" editable="true" styleClass="path-field"/>
                 <!-- 视图切换按钮 -->
-                <Button fx:id="toggleViewButton" text="切换视图" style="-fx-cursor: hand;"/>
+                <Button fx:id="toggleViewButton" text="切换视图" styleClass="navigation-button"/>
             </HBox>
             
             <!-- 视图容器：使用StackPane在同一区域内切换列表视图和图标视图 -->
             <StackPane VBox.vgrow="ALWAYS">
                 <!-- 列表视图：表格模式 -->
-                <TableView fx:id="fileTableView" style="-fx-background-color: white;">
+                <TableView fx:id="fileTableView" styleClass="table-view">
                     <!-- 表格列：名称、类型、大小、修改时间 -->
                     <columns>
                         <TableColumn text="名称" prefWidth="200" fx:id="nameColumn">
@@ -118,7 +112,7 @@
                 </TableView>
                 
                 <!-- 图标视图：网格模式 -->
-                <ScrollPane fx:id="iconViewScrollPane" style="-fx-background-color: white;" visible="false">
+                <ScrollPane fx:id="iconViewScrollPane" styleClass="icon-view-container" visible="false">
                     <FlowPane fx:id="iconViewPane" hgap="10" vgap="10" style="-fx-padding: 10;">
                         <!-- 图标项将由Controller动态添加 -->
                     </FlowPane>
@@ -127,32 +121,31 @@
         </VBox>
     </center>
 
-    <!-- 4. 底部：状态栏（显示当前路径、文件数量） -->
+    <!-- 4. 底部：状态栏 -->
     <bottom>
-        <HBox spacing="20" style="-fx-background-color: #e8e8e8;">
-            <Label text="当前路径：" fx:id="currentPathLabel"/>
-            <Label text="文件数量：0" fx:id="fileCountLabel"/>
+        <HBox spacing="20" styleClass="status-bar">
+            <Label text="当前路径：" fx:id="currentPathLabel" styleClass="status-label"/>
+            <Label text="文件数量：0" fx:id="fileCountLabel" styleClass="status-label"/>
         </HBox>
     </bottom>
 
     <!-- 5. 右侧：FAT表监视器 -->
     <right>
-        <VBox spacing="8" style="-fx-background-color: #f9f9f9;" prefWidth="320">
-            <Label text="FAT监视器" style="-fx-font-weight: bold;"/>
-            <HBox spacing="10">
-                <Label text="空闲：" fx:id="fatFreeCountLabel"/>
-                <Label text="已用：" fx:id="fatUsedCountLabel"/>
-                <Label text="坏块：" fx:id="fatBadCountLabel"/>
+        <VBox prefWidth="300" styleClass="fat-monitor">
+            <Label text="FAT表监视器" styleClass="fat-monitor"/>
+            <HBox spacing="10" styleClass="fat-stats">
+                <Label text="空闲：" fx:id="fatFreeCountLabel" styleClass="fat-stats"/>
+                <Label text="已用：" fx:id="fatUsedCountLabel" styleClass="fat-stats"/>
+                <Label text="坏块：" fx:id="fatBadCountLabel" styleClass="fat-stats"/>
             </HBox>
-            <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS">
-                <TableView fx:id="fatTableView">
-                    <columns>
-                        <TableColumn text="块号" prefWidth="70" fx:id="fatBlockIdColumn"/>
-                        <TableColumn text="FAT值" prefWidth="90" fx:id="fatValueColumn"/>
-                        <TableColumn text="状态" prefWidth="140" fx:id="fatStatusColumn"/>
-                    </columns>
-                </TableView>
-            </ScrollPane>
+            <!-- FAT表详细信息 -->
+            <TableView fx:id="fatTableView" styleClass="table-view">
+                <columns>
+                    <TableColumn text="块号" prefWidth="70" fx:id="fatBlockIdColumn"/>
+                    <TableColumn text="FAT值" prefWidth="90" fx:id="fatValueColumn"/>
+                    <TableColumn text="状态" prefWidth="140" fx:id="fatStatusColumn"/>
+                </columns>
+            </TableView>
         </VBox>
     </right>
 

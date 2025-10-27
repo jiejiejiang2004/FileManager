@@ -1,204 +1,507 @@
-/* ============================== 全局样式重置 ============================== */
-/* 消除默认边距和内边距，统一盒模型 */
+/* ============================== 现代化文件管理器样式 ============================== */
+/* 支持蓝白配色（日间模式）和白黑配色（夜晚模式） */
+
+/* ============================== CSS变量定义 ============================== */
+.root {
+    /* 日间模式（蓝白配色） */
+    --primary-color: #2563eb;           /* 主蓝色 */
+    --primary-hover: #1d4ed8;           /* 主蓝色悬停 */
+    --primary-light: #dbeafe;           /* 浅蓝色 */
+    --secondary-color: #64748b;         /* 次要灰蓝色 */
+    
+    --background-primary: #ffffff;      /* 主背景白色 */
+    --background-secondary: #f8fafc;    /* 次要背景浅灰 */
+    --background-tertiary: #f1f5f9;     /* 第三背景 */
+    
+    --text-primary: #1e293b;            /* 主文本深灰 */
+    --text-secondary: #64748b;          /* 次要文本灰色 */
+    --text-muted: #94a3b8;              /* 弱化文本 */
+    
+    --border-color: #e2e8f0;            /* 边框颜色 */
+    --border-hover: #cbd5e1;            /* 边框悬停 */
+    
+    --shadow-light: rgba(0, 0, 0, 0.05);
+    --shadow-medium: rgba(0, 0, 0, 0.1);
+    --shadow-heavy: rgba(0, 0, 0, 0.15);
+    
+    /* 全局字体设置 */
+    -fx-font-family: "Segoe UI", "Microsoft YaHei", "PingFang SC", "Helvetica Neue", Arial, sans-serif;
+    -fx-font-size: 13px;
+    -fx-text-fill: var(--text-primary);
+}
+
+/* 夜晚模式变量覆盖 */
+.root.dark-theme {
+    --primary-color: #3b82f6;           /* 夜晚模式蓝色 */
+    --primary-hover: #2563eb;           
+    --primary-light: #1e3a8a;           
+    --secondary-color: #94a3b8;         
+    
+    --background-primary: #0f172a;      /* 深色背景 */
+    --background-secondary: #1e293b;    /* 次要深色背景 */
+    --background-tertiary: #334155;     /* 第三深色背景 */
+    
+    --text-primary: #f8fafc;            /* 主文本浅色 */
+    --text-secondary: #cbd5e1;          /* 次要文本 */
+    --text-muted: #94a3b8;              /* 弱化文本 */
+    
+    --border-color: #334155;            
+    --border-hover: #475569;            
+    
+    --shadow-light: rgba(0, 0, 0, 0.3);
+    --shadow-medium: rgba(0, 0, 0, 0.4);
+    --shadow-heavy: rgba(0, 0, 0, 0.5);
+}
+
+/* ============================== 全局重置 ============================== */
 * {
     -fx-box-sizing: border-box;
-    -fx-margin: 0;
+}
+
+.root {
+    -fx-background-color: var(--background-primary);
+}
+
+/* ============================== 顶部菜单栏 ============================== */
+.menu-bar {
+    -fx-background-color: var(--background-primary);
+    -fx-border-width: 0 0 1px 0;
+    -fx-border-color: var(--border-color);
     -fx-padding: 0;
 }
 
-/* 全局字体：使用系统默认无衬线字体，确保跨平台一致性 */
-.root {
-    -fx-font-family: "Segoe UI", "Roboto", "Arial", sans-serif;
-    -fx-font-size: 13px;
-    -fx-text-fill: #333333; /* 主文本色：深灰，避免纯黑刺眼 */
-}
-
-
-/* ============================== 1. 顶部菜单栏样式 ============================== */
-/* 菜单栏背景与边框 */
-MenuBar {
-    -fx-background-color: #ffffff;
-    -fx-border-width: 0 0 1px 0;
-    -fx-border-color: #e0e0e0; /* 底部灰色边框，分隔菜单与内容区 */
-}
-
-/* 菜单 hover 效果 */
-Menu {
+.menu {
     -fx-padding: 8px 16px;
-    -fx-cursor: hand;
-}
-Menu:hover {
-    -fx-background-color: #f0f0f0; /* 浅灰背景，突出当前菜单 */
+    -fx-background-radius: 6px;
+    -fx-text-fill: var(--text-primary);
+    -fx-font-weight: 500;
 }
 
-/* 子菜单（下拉菜单）样式 */
-ContextMenu {
-    -fx-background-color: #ffffff;
-    -fx-border-color: #e0e0e0;
+.menu:hover {
+    -fx-background-color: var(--background-secondary);
+}
+
+.menu:showing {
+    -fx-background-color: var(--primary-light);
+    -fx-text-fill: var(--primary-color);
+}
+
+.context-menu {
+    -fx-background-color: var(--background-primary);
+    -fx-border-color: var(--border-color);
     -fx-border-width: 1px;
-    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 5, 0, 0, 1); /* 轻微阴影，增强层次感 */
+    -fx-background-radius: 8px;
+    -fx-border-radius: 8px;
+    -fx-effect: dropshadow(gaussian, var(--shadow-medium), 10, 0, 0, 2);
+    -fx-padding: 4px;
 }
 
-/* 菜单项样式（含分隔线） */
-MenuItem {
-    -fx-padding: 8px 24px;
-    -fx-cursor: hand;
-}
-MenuItem:hover {
-    -fx-background-color: #4a86e8; /* 主色调：淡蓝，突出选中项 */
-    -fx-text-fill: #ffffff; /* 选中时文本变白 */
-}
-Separator {
-    -fx-padding: 4px 0;
-    -fx-background-color: transparent;
-}
-Separator .line {
-    -fx-background-color: #e0e0e0;
-    -fx-height: 1px;
+.menu-item {
+    -fx-padding: 8px 16px;
+    -fx-background-radius: 4px;
+    -fx-text-fill: var(--text-primary);
 }
 
-
-/* ============================== 2. 左侧侧边栏样式 ============================== */
-/* 侧边栏容器：浅灰背景，与主内容区区分 */
-VBox#sidebarContainer { /* 需给侧边栏VBox加fx:id="sidebarContainer" */
-    -fx-background-color: #f8f8f8;
-    -fx-pref-width: 240px; /* 固定宽度，避免缩放时过窄 */
-    -fx-max-width: 300px;
+.menu-item:hover {
+    -fx-background-color: var(--primary-color);
+    -fx-text-fill: white;
 }
 
-/* 侧边栏标题（快速访问/磁盘目录） */
-Label#sidebarTitle { /* 给标题Label加fx:id="sidebarTitle"，或直接用.text样式 */
-    -fx-font-weight: 600;
-    -fx-text-fill: #555555;
-    -fx-padding: 0 0 4px 0;
-}
-
-/* 快速访问项：hover效果 + 点击反馈 */
-Label#quickAccessItem { /* 给快速访问Label加fx:id="quickAccessItem" */
-    -fx-padding: 6px 8px;
-    -fx-border-radius: 4px;
-    -fx-cursor: hand;
-}
-Label#quickAccessItem:hover {
-    -fx-background-color: #e8e8e8;
-}
-Label#quickAccessItem:pressed {
-    -fx-background-color: #d0d0d0; /* 按下时加深背景，模拟点击感 */
-}
-
-/* 目录树样式 */
-TreeView {
-    -fx-background-color: transparent; /* 透明背景，继承侧边栏底色 */
+.separator .line {
+    -fx-background-color: var(--border-color);
     -fx-border-width: 0;
 }
-/* 目录树节点：默认文本色 + hover效果 */
-TreeItem {
-    -fx-padding: 4px 0;
+
+/* ============================== 左侧边栏 ============================== */
+.sidebar {
+    -fx-background-color: var(--background-secondary);
+    -fx-border-width: 0 1px 0 0;
+    -fx-border-color: var(--border-color);
+    -fx-padding: 16px;
 }
-TreeCell {
-    -fx-padding: 4px 8px;
-    -fx-border-radius: 4px;
+
+.sidebar .label {
+    -fx-text-fill: var(--text-primary);
+    -fx-font-weight: 600;
+    -fx-font-size: 14px;
 }
-TreeCell:hover {
-    -fx-background-color: #e8e8e8;
+
+.sidebar-title {
+    -fx-text-fill: var(--text-primary);
+    -fx-font-weight: 600;
+    -fx-font-size: 14px;
+    -fx-padding: 8px 0;
 }
-/* 选中节点样式（与菜单项主色调一致） */
-TreeCell:focused, TreeCell:selected {
-    -fx-background-color: #4a86e8;
-    -fx-text-fill: #ffffff;
+
+.quick-access-item {
+    -fx-padding: 8px 12px;
+    -fx-background-radius: 6px;
+    -fx-text-fill: var(--text-secondary);
+    -fx-cursor: hand;
+    cursor: pointer;
+    -fx-font-size: 13px;
 }
-/* 目录树图标：可自定义（示例用默认图标，如需替换可加-fx-graphic） */
-TreeView .tree-disclosure-node .arrow {
-    -fx-shape: "M 0 0 L 8 4 L 0 8 Z"; /* 三角形展开/折叠图标 */
+
+.quick-access-item:hover {
+    -fx-background-color: var(--background-tertiary);
+    -fx-text-fill: var(--text-primary);
+}
+
+/* ============================== 目录树样式 ============================== */
+.tree-view {
+    -fx-background-color: transparent;
+    -fx-border-width: 0;
+    -fx-padding: 8px 0;
+}
+
+.tree-cell {
+    -fx-padding: 6px 8px;
+    -fx-background-radius: 6px;
+    -fx-text-fill: var(--text-secondary);
+    -fx-font-size: 13px;
+    -fx-border-width: 0;
+    -fx-background-color: transparent;
+}
+
+.tree-cell:hover {
+    -fx-background-color: var(--background-tertiary);
+    -fx-text-fill: var(--text-primary);
+}
+
+.tree-cell:selected {
+    -fx-background-color: var(--primary-color);
+    -fx-text-fill: white;
+}
+
+.tree-cell:selected:hover {
+    -fx-background-color: var(--primary-hover);
+}
+
+/* 目录树展开/折叠箭头 */
+.tree-disclosure-node .arrow {
+    -fx-background-color: var(--text-muted);
+    -fx-shape: "M 0 0 L 6 3 L 0 6 Z";
     -fx-scale-x: 0.8;
     -fx-scale-y: 0.8;
-    -fx-fill: #666666;
 }
 
-
-/* ============================== 3. 中间文件列表（表格模式）样式 ============================== */
-/* 表格容器：白色背景 + 轻微边框 */
-TableView {
-    -fx-background-color: #ffffff;
-    -fx-border-width: 1px 0 0 0;
-    -fx-border-color: #e0e0e0;
+.tree-cell:selected .tree-disclosure-node .arrow {
+    -fx-background-color: white;
 }
 
-/* 表格表头：深色背景 + 居中文字 */
-TableHeaderCell {
-    -fx-background-color: #f5f5f5;
+/* ============================== 导航栏 ============================== */
+.navigation-bar {
+    -fx-background-color: var(--background-secondary);
     -fx-border-width: 0 0 1px 0;
-    -fx-border-color: #e0e0e0;
+    -fx-border-color: var(--border-color);
+    -fx-padding: 12px 16px;
+    -fx-spacing: 12px;
+}
+
+.navigation-button {
+    -fx-background-color: var(--background-primary);
+    -fx-border-color: var(--border-color);
+    -fx-border-width: 1px;
+    -fx-border-radius: 6px;
+    -fx-background-radius: 6px;
+    -fx-padding: 8px 16px;
+    -fx-text-fill: var(--text-primary);
+    -fx-font-weight: 500;
+    cursor: pointer;
+    -fx-cursor: hand;
+}
+
+.navigation-button:hover {
+    -fx-background-color: var(--background-tertiary);
+    -fx-border-color: var(--border-hover);
+}
+
+.navigation-button:pressed {
+    -fx-background-color: var(--primary-light);
+    -fx-border-color: var(--primary-color);
+}
+
+.path-field {
+    -fx-background-color: var(--background-primary);
+    -fx-border-color: var(--border-color);
+    -fx-border-width: 1px;
+    -fx-border-radius: 6px;
+    -fx-background-radius: 6px;
+    -fx-padding: 8px 12px;
+    -fx-text-fill: var(--text-primary);
+    -fx-font-size: 13px;
+}
+
+.path-field:focused {
+    -fx-border-color: var(--primary-color);
+    -fx-effect: dropshadow(gaussian, var(--primary-color), 3, 0, 0, 0);
+}
+
+/* ============================== 表格视图 ============================== */
+.table-view {
+    -fx-background-color: var(--background-primary);
+    -fx-border-width: 0;
+    -fx-table-cell-border-color: transparent;
+}
+
+.table-view .column-header-background {
+    -fx-background-color: var(--background-secondary);
+    -fx-border-width: 0 0 1px 0;
+    -fx-border-color: var(--border-color);
+}
+
+.table-view .column-header {
+    -fx-background-color: transparent;
+    -fx-border-width: 0 1px 0 0;
+    -fx-border-color: var(--border-color);
+    -fx-padding: 12px 16px;
+    -fx-text-fill: var(--text-primary);
     -fx-font-weight: 600;
-    -fx-text-fill: #555555;
-    -fx-alignment: CENTER_LEFT; /* 表头文字左对齐，符合文件管理器习惯 */
-    -fx-padding: 10px 8px;
+    -fx-font-size: 13px;
 }
 
-/* 表格行：交替底色（增强可读性） + hover效果 */
-TableRow {
-    -fx-height: 36px; /* 行高适中，避免拥挤 */
-}
-/* 交替行底色（奇偶行区分） */
-TableRow:odd {
-    -fx-background-color: #fafafa;
-}
-TableRow:even {
-    -fx-background-color: #ffffff;
-}
-/* 行hover效果 */
-TableRow:hover {
-    -fx-background-color: #f0f0f0;
-}
-/* 选中行样式（与目录树选中色一致） */
-TableRow:selected {
-    -fx-background-color: #4a86e8;
-    -fx-text-fill: #ffffff;
+.table-view .column-header:hover {
+    -fx-background-color: var(--background-tertiary);
 }
 
-/* 表格单元格：内边距 + 文字对齐 */
-TableCell {
-    -fx-padding: 8px;
+.table-row-cell {
+    -fx-background-color: transparent;
     -fx-border-width: 0 0 1px 0;
-    -fx-border-color: #f0f0f0; /* 细边框分隔单元格，避免杂乱 */
-}
-/* 不同列的文字对齐：大小、时间列右对齐 */
-TableCell#sizeColumn, TableCell#timeColumn { /* 给列加fx:id */
-    -fx-alignment: CENTER_RIGHT;
+    -fx-border-color: var(--border-color);
+    -fx-padding: 0;
 }
 
+.table-row-cell:odd {
+    -fx-background-color: var(--background-primary);
+}
 
-/* ============================== 4. 底部状态栏样式 ============================== */
-/* 状态栏容器：浅灰背景 + 底部边框 */
-HBox#statusBar { /* 给状态栏HBox加fx:id="statusBar" */
-    -fx-background-color: #f0f0f0;
+.table-row-cell:even {
+    -fx-background-color: var(--background-secondary);
+}
+
+.table-row-cell:hover {
+    -fx-background-color: var(--background-tertiary);
+}
+
+.table-row-cell:selected {
+    -fx-background-color: var(--primary-color);
+}
+
+.table-cell {
+    -fx-padding: 12px 16px;
+    -fx-text-fill: var(--text-primary);
+    -fx-font-size: 13px;
+    -fx-border-width: 0;
+    -fx-background-color: transparent;
+}
+
+.table-row-cell:selected .table-cell {
+    -fx-text-fill: white;
+}
+
+/* ============================== 图标视图 ============================== */
+.icon-view-container {
+    -fx-background-color: var(--background-primary);
+}
+
+.icon-item {
+    -fx-padding: 16px;
+    -fx-spacing: 8px;
+    -fx-alignment: center;
+    -fx-background-radius: 8px;
+    cursor: pointer;
+    -fx-max-width: 120px;
+    -fx-min-width: 120px;
+}
+
+.icon-item:hover {
+    -fx-background-color: var(--background-secondary);
+}
+
+.icon-item:selected {
+    -fx-background-color: var(--primary-light);
+    -fx-border-color: var(--primary-color);
+    -fx-border-width: 2px;
+    -fx-border-radius: 8px;
+}
+
+.icon-item .label {
+    -fx-text-fill: var(--text-primary);
+    -fx-font-size: 13px;
+    -fx-text-alignment: center;
+    -fx-wrap-text: true;
+    -fx-max-width: 100px;
+}
+
+.icon-item:selected .label {
+    -fx-text-fill: var(--primary-color);
+    -fx-font-weight: 600;
+}
+
+/* 图标大小调整 */
+.file-icon {
+    -fx-fit-width: 64px;
+    -fx-fit-height: 64px;
+    -fx-preserve-ratio: true;
+}
+
+/* ============================== 底部状态栏 ============================== */
+.status-bar {
+    -fx-background-color: var(--background-secondary);
     -fx-border-width: 1px 0 0 0;
-    -fx-border-color: #e0e0e0;
-    -fx-padding: 6px 16px;
+    -fx-border-color: var(--border-color);
+    -fx-padding: 8px 16px;
+    -fx-spacing: 20px;
 }
 
-/* 状态栏文本：灰色，区分主内容 */
-Label#statusLabel { /* 给状态栏Label加fx:id="statusLabel" */
-    -fx-text-fill: #666666;
+.status-label {
+    -fx-text-fill: var(--text-secondary);
     -fx-font-size: 12px;
 }
 
+/* ============================== 右侧FAT监视器 ============================== */
+.fat-monitor {
+    -fx-background-color: var(--background-secondary);
+    -fx-border-width: 1px 0 0 1px;
+    -fx-border-color: var(--border-color);
+    -fx-padding: 16px;
+    -fx-spacing: 12px;
+}
 
-/* ============================== 5. 响应式适配（窗口缩放） ============================== */
-/* 窗口缩小时，侧边栏最小宽度限制 */
-@media (max-width: 800px) {
-    VBox#sidebarContainer {
-        -fx-pref-width: 200px;
-    }
-    TableColumn {
-        -fx-pref-width: 120px; /* 窄窗口时缩小表格列宽 */
+.fat-monitor .label {
+    -fx-text-fill: var(--text-primary);
+    -fx-font-size: 13px;
+}
+
+.fat-stats {
+    -fx-spacing: 8px;
+}
+
+.fat-stats .label {
+    -fx-text-fill: var(--text-secondary);
+    -fx-font-size: 12px;
+}
+
+/* ============================== 滚动条美化 ============================== */
+.scroll-bar {
+    -fx-background-color: transparent;
+}
+
+.scroll-bar .track {
+    -fx-background-color: var(--background-secondary);
+    -fx-border-radius: 4px;
+    -fx-background-radius: 4px;
+}
+
+.scroll-bar .thumb {
+    -fx-background-color: var(--text-muted);
+    -fx-border-radius: 4px;
+    -fx-background-radius: 4px;
+}
+
+.scroll-bar .thumb:hover {
+    -fx-background-color: var(--text-secondary);
+}
+
+.scroll-bar .thumb:pressed {
+    -fx-background-color: var(--primary-color);
+}
+
+/* ============================== 对话框样式 ============================== */
+.dialog-pane {
+    -fx-background-color: var(--background-primary);
+    -fx-border-color: var(--border-color);
+    -fx-border-width: 1px;
+    -fx-border-radius: 8px;
+    -fx-background-radius: 8px;
+    -fx-effect: dropshadow(gaussian, var(--shadow-heavy), 20, 0, 0, 4);
+}
+
+.dialog-pane .header-panel {
+    -fx-background-color: var(--background-secondary);
+    -fx-border-width: 0 0 1px 0;
+    -fx-border-color: var(--border-color);
+    -fx-padding: 16px;
+}
+
+.dialog-pane .content {
+    -fx-padding: 16px;
+}
+
+.dialog-pane .button-bar {
+    -fx-background-color: var(--background-secondary);
+    -fx-border-width: 1px 0 0 0;
+    -fx-border-color: var(--border-color);
+    -fx-padding: 12px 16px;
+}
+
+.dialog-pane .button {
+    -fx-background-color: var(--primary-color);
+    -fx-text-fill: white;
+    -fx-border-radius: 6px;
+    -fx-background-radius: 6px;
+    -fx-padding: 8px 16px;
+    -fx-font-weight: 500;
+    cursor: pointer;
+}
+
+.dialog-pane .button:hover {
+    -fx-background-color: var(--primary-hover);
+}
+
+.dialog-pane .button:default {
+    -fx-background-color: var(--primary-color);
+}
+
+.dialog-pane .button:cancel {
+    -fx-background-color: var(--background-tertiary);
+    -fx-text-fill: var(--text-primary);
+    -fx-border-color: var(--border-color);
+    -fx-border-width: 1px;
+}
+
+/* ============================== 响应式设计 ============================== */
+@media (max-width: 1200px) {
+    .fat-monitor {
+        -fx-pref-width: 280px;
     }
 }
 
-/* 窗口极窄时（如手机模拟器），隐藏侧边栏（需Controller配合逻辑） */
-@media (max-width: 500px) {
-    VBox#sidebarContainer {
-        -fx-visibility: hidden;
-        -fx-pref-width: 0;
+@media (max-width: 900px) {
+    .sidebar {
+        -fx-pref-width: 200px;
     }
+    
+    .fat-monitor {
+        -fx-pref-width: 250px;
+    }
+}
+
+/* ============================== 动画效果 ============================== */
+.animated-hover {
+    -fx-transition: all 0.2s ease-in-out;
+        transition: all 0.2s ease-in-out;
+}
+
+.fade-in {
+    -fx-opacity: 0;
+    -fx-transition: opacity 0.3s ease-in-out;
+    transition: opacity 0.3s ease-in-out;
+}
+
+.fade-in:visible {
+    -fx-opacity: 1;
+}
+
+/* ============================== 工具提示 ============================== */
+.tooltip {
+    -fx-background-color: var(--background-primary);
+    -fx-border-color: var(--border-color);
+    -fx-border-width: 1px;
+    -fx-border-radius: 4px;
+    -fx-background-radius: 4px;
+    -fx-text-fill: var(--text-primary);
+    -fx-font-size: 12px;
+    -fx-padding: 6px 8px;
+    -fx-effect: dropshadow(gaussian, var(--shadow-medium), 8, 0, 0, 2);
 }
