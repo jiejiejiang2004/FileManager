@@ -990,7 +990,7 @@ public class MainController {
     }
     
     /**
-     * 显示文件属性对话框
+     * 显示文件或文件夹属性对话框（根据类型自动选择）
      */
     private void showFilePropertiesDialog() {
         FileEntry selectedEntry = fileTableView.getSelectionModel().getSelectedItem();
@@ -998,12 +998,24 @@ public class MainController {
             showWarning("警告", "请先选择一个文件或文件夹");
             return;
         }
+        
+        // 根据类型调用不同的属性对话框
+        if (selectedEntry.getType() == FileEntry.EntryType.FILE) {
+            showFilePropertiesDialogInternal(selectedEntry);
+        } else {
+            showFolderPropertiesDialogInternal(selectedEntry);
+        }
+    }
     
+    /**
+     * 显示文件属性对话框（包含只读选项）
+     */
+    private void showFilePropertiesDialogInternal(FileEntry selectedEntry) {
         String currentPath = (currentDirectory != null) ? currentDirectory.getDirEntry().getFullPath() : "/";
         String fullPath = currentPath.endsWith("/") ? currentPath + selectedEntry.getName() : currentPath + "/" + selectedEntry.getName();
     
         Dialog<ButtonType> dialog = new Dialog<>();
-        dialog.setTitle("属性");
+        dialog.setTitle("文件属性");
         dialog.setHeaderText(selectedEntry.getName() + " 的属性");
     
         ButtonType SAVE_BUTTON = new ButtonType("保存", javafx.scene.control.ButtonBar.ButtonData.OK_DONE);
@@ -1016,20 +1028,16 @@ public class MainController {
     
         javafx.scene.control.Label nameLabel = new javafx.scene.control.Label("文件名:");
         javafx.scene.control.TextField nameValue = new javafx.scene.control.TextField(selectedEntry.getName());
-        // 保存原始文件名，用于后续比较
         final String originalName = selectedEntry.getName();
 
         javafx.scene.control.Label pathLabel = new javafx.scene.control.Label("路径:");
         javafx.scene.control.Label pathValue = new javafx.scene.control.Label(fullPath);
     
         javafx.scene.control.Label typeLabel = new javafx.scene.control.Label("类型:");
-        String typeText = selectedEntry.getType() == FileEntry.EntryType.FILE ? "文件" : "文件夹";
-        javafx.scene.control.Label typeValue = new javafx.scene.control.Label(typeText);
+        javafx.scene.control.Label typeValue = new javafx.scene.control.Label("文件");
     
         javafx.scene.control.Label sizeLabel = new javafx.scene.control.Label("大小:");
-        String sizeText = selectedEntry.getType() == FileEntry.EntryType.FILE
-                ? String.format("%d 字节 (%.2f KB)", selectedEntry.getSize(), selectedEntry.getSize() / 1024.0)
-                : "-";
+        String sizeText = String.format("%d 字节 (%.2f KB)", selectedEntry.getSize(), selectedEntry.getSize() / 1024.0);
         javafx.scene.control.Label sizeValue = new javafx.scene.control.Label(sizeText);
     
         javafx.scene.control.Label modifyLabel = new javafx.scene.control.Label("修改时间:");
@@ -1039,7 +1047,6 @@ public class MainController {
     
         javafx.scene.control.CheckBox readOnlyCheck = new javafx.scene.control.CheckBox("只读");
         readOnlyCheck.setSelected(selectedEntry.isReadOnly());
-        // 目录的只读不影响编辑器逻辑，这里允许显示但不影响行为
     
         grid.addRow(0, nameLabel, nameValue);
         grid.addRow(1, pathLabel, pathValue);
@@ -1053,24 +1060,19 @@ public class MainController {
         dialog.showAndWait().ifPresent(result -> {
             if (result == SAVE_BUTTON) {
                 try {
-                    // 获取新文件名
                     String newName = nameValue.getText().trim();
                     boolean nameChanged = !newName.equals(originalName);
                     
-                    // 检查文件名是否为空
                     if (newName.isEmpty()) {
                         showError("重命名失败", "文件名不能为空");
                         return;
                     }
                     
-                    // 获取只读属性的新值
                     boolean newReadOnly = readOnlyCheck.isSelected();
                     
-                    // 如果文件名已更改，检查是否存在同名文件
                     if (nameChanged) {
-                        // 检查当前目录中是否已存在同名文件
                         boolean fileExists = currentDirectory.getEntries().stream()
-                                .filter(entry -> !entry.isDeleted()) // 排除已删除的文件
+                                .filter(entry -> !entry.isDeleted())
                                 .anyMatch(entry -> entry.getName().equals(newName) && !entry.equals(selectedEntry));
                         
                         if (fileExists) {
@@ -1078,34 +1080,24 @@ public class MainController {
                             return;
                         }
                         
-                        // 由于FileEntry的name是final的，我们需要通过创建新的FileEntry并替换的方式实现重命名
-                        // 1. 创建新的FileEntry（保留原始属性，但使用新名称和原始UUID）
                         FileEntry newEntry = new FileEntry(
                                 newName,
                                 selectedEntry.getType(),
                                 selectedEntry.getParentPath(),
                                 selectedEntry.getStartBlockId(),
-                                selectedEntry.getUuid() // 保留原始UUID，确保对象引用一致性
+                                selectedEntry.getUuid()
                         );
-                        // 2. 复制其他属性
                         newEntry.setSize(selectedEntry.getSize());
-                        newEntry.setReadOnly(newReadOnly); // 设置新的只读属性
+                        newEntry.setReadOnly(newReadOnly);
                         
-                        // 3. 从当前目录移除旧条目
                         currentDirectory.removeEntry(originalName);
-                        
-                        // 4. 添加新条目到当前目录
                         currentDirectory.addEntry(newEntry);
                     } else {
-                        // 如果文件名没有改变，只更新只读属性
                         selectedEntry.setReadOnly(newReadOnly);
                     }
                     
-                    // 标记当前目录为脏并同步
                     currentDirectory.markDirty();
                     currentDirectory.syncToDisk();
-
-                    // 刷新列表与FAT视图
                     loadDirectory(currentDirectory.getDirEntry().getFullPath());
                     refreshFatView();
 
@@ -1116,6 +1108,120 @@ public class MainController {
                     success.showAndWait();
                 } catch (org.jiejiejiang.filemanager.exception.FileSystemException e) {
                     showError("保存属性失败", e.getMessage());
+                }
+            }
+        });
+    }
+    
+    /**
+     * 显示文件夹属性对话框（不包含只读选项，支持重命名）
+     */
+    private void showFolderPropertiesDialogInternal(FileEntry selectedEntry) {
+        String currentPath = (currentDirectory != null) ? currentDirectory.getDirEntry().getFullPath() : "/";
+        String fullPath = currentPath.endsWith("/") ? currentPath + selectedEntry.getName() : currentPath + "/" + selectedEntry.getName();
+    
+        Dialog<ButtonType> dialog = new Dialog<>();
+        dialog.setTitle("文件夹属性");
+        dialog.setHeaderText(selectedEntry.getName() + " 的属性");
+    
+        ButtonType SAVE_BUTTON = new ButtonType("保存", javafx.scene.control.ButtonBar.ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().addAll(SAVE_BUTTON, ButtonType.CANCEL);
+    
+        javafx.scene.layout.GridPane grid = new javafx.scene.layout.GridPane();
+        grid.setHgap(10);
+        grid.setVgap(8);
+        grid.setPadding(new javafx.geometry.Insets(10));
+    
+        javafx.scene.control.Label nameLabel = new javafx.scene.control.Label("文件夹名:");
+        javafx.scene.control.TextField nameValue = new javafx.scene.control.TextField(selectedEntry.getName());
+        final String originalName = selectedEntry.getName();
+
+        javafx.scene.control.Label pathLabel = new javafx.scene.control.Label("路径:");
+        javafx.scene.control.Label pathValue = new javafx.scene.control.Label(fullPath);
+    
+        javafx.scene.control.Label typeLabel = new javafx.scene.control.Label("类型:");
+        javafx.scene.control.Label typeValue = new javafx.scene.control.Label("文件夹");
+    
+        javafx.scene.control.Label modifyLabel = new javafx.scene.control.Label("修改时间:");
+        java.time.LocalDateTime localDateTime = java.time.LocalDateTime.ofInstant(selectedEntry.getModifyTime().toInstant(), java.time.ZoneId.systemDefault());
+        String modifyText = localDateTime.format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        javafx.scene.control.Label modifyValue = new javafx.scene.control.Label(modifyText);
+        
+        // 计算文件夹包含的项目数量
+        javafx.scene.control.Label itemsLabel = new javafx.scene.control.Label("包含项目:");
+        String itemsText;
+        try {
+            // 尝试加载文件夹内容来计算项目数量
+            Directory folderDir = fileSystem.getDirectory(fullPath);
+            if (folderDir != null) {
+                long fileCount = folderDir.getEntries().stream().filter(entry -> !entry.isDeleted() && entry.getType() == FileEntry.EntryType.FILE).count();
+                long folderCount = folderDir.getEntries().stream().filter(entry -> !entry.isDeleted() && entry.getType() == FileEntry.EntryType.DIRECTORY).count();
+                itemsText = String.format("%d 个文件，%d 个文件夹", fileCount, folderCount);
+            } else {
+                itemsText = "无法访问";
+            }
+        } catch (Exception e) {
+            itemsText = "无法访问";
+        }
+        javafx.scene.control.Label itemsValue = new javafx.scene.control.Label(itemsText);
+    
+        grid.addRow(0, nameLabel, nameValue);
+        grid.addRow(1, pathLabel, pathValue);
+        grid.addRow(2, typeLabel, typeValue);
+        grid.addRow(3, itemsLabel, itemsValue);
+        grid.addRow(4, modifyLabel, modifyValue);
+    
+        dialog.getDialogPane().setContent(grid);
+    
+        dialog.showAndWait().ifPresent(result -> {
+            if (result == SAVE_BUTTON) {
+                try {
+                    String newName = nameValue.getText().trim();
+                    boolean nameChanged = !newName.equals(originalName);
+                    
+                    if (newName.isEmpty()) {
+                        showError("重命名失败", "文件夹名不能为空");
+                        return;
+                    }
+                    
+                    if (nameChanged) {
+                        boolean folderExists = currentDirectory.getEntries().stream()
+                                .filter(entry -> !entry.isDeleted())
+                                .anyMatch(entry -> entry.getName().equals(newName) && !entry.equals(selectedEntry));
+                        
+                        if (folderExists) {
+                            showError("重命名失败", "当前目录下已存在同名文件夹：" + newName);
+                            return;
+                        }
+                        
+                        // 使用FileSystem的重命名方法，正确处理子文件和子文件夹的路径更新
+                        String oldFullPath = selectedEntry.getFullPath();
+                        fileSystem.renameDirectory(oldFullPath, newName);
+                        
+                        // 重新加载当前目录以反映更改
+                        loadDirectory(currentDirectory.getDirEntry().getFullPath());
+                        
+                        // 更新目录树以反映文件夹重命名
+                        initDirectoryTree();
+                        
+                        // 刷新FAT视图
+                        refreshFatView();
+
+                        Alert success = new Alert(Alert.AlertType.INFORMATION);
+                        success.setTitle("成功");
+                        success.setHeaderText(null);
+                        success.setContentText("文件夹已重命名");
+                        success.showAndWait();
+                    } else {
+                        // 文件夹名没有改变，无需操作
+                        Alert info = new Alert(Alert.AlertType.INFORMATION);
+                        info.setTitle("提示");
+                        info.setHeaderText(null);
+                        info.setContentText("文件夹名称未更改");
+                        info.showAndWait();
+                    }
+                } catch (org.jiejiejiang.filemanager.exception.FileSystemException e) {
+                    showError("重命名失败", e.getMessage());
                 }
             }
         });
