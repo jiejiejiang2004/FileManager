@@ -127,18 +127,24 @@ public class Directory {
         toRemove.markAsDeleted();
         LogUtil.debug("已标记目录项为已删除：" + entryName);
 
-        // 从缓存移除并标记为脏
-        entriesCache.remove(toRemove);
+        // 重要：先同步到磁盘，确保已删除的条目不会被写入
         isDirty = true;
+        try {
+            syncToDisk();
+            LogUtil.debug("已同步删除状态到磁盘：" + entryName);
+        } catch (FileSystemException e) {
+            LogUtil.error("同步删除状态到磁盘失败：" + entryName, e);
+            // 即使同步失败，也继续移除缓存，避免数据不一致
+        }
+
+        // 从缓存移除
+        entriesCache.remove(toRemove);
         LogUtil.debug("已从目录本地缓存移除条目：" + entryName);
 
         // 同时从FileSystem的全局缓存中移除对应的条目
         String fullPath = toRemove.getFullPath();
         fileSystem.removeEntryFromCache(fullPath);
         LogUtil.debug("已请求从FileSystem全局缓存移除条目：" + fullPath);
-        
-        // 移除自动同步，由上层调用者决定何时同步到磁盘
-        // syncToDisk();  // 注释掉自动同步
 
         LogUtil.info("目录删除项成功：" + entryName + " → " + dirEntry.getFullPath());
         return toRemove;
@@ -170,7 +176,13 @@ public class Directory {
      * @return 子项列表（返回副本，避免外部修改）
      */
     public List<FileEntry> listEntries() {
-        return new ArrayList<>(entriesCache);
+        List<FileEntry> activeEntries = new ArrayList<>();
+        for (FileEntry entry : entriesCache) {
+            if (!entry.isDeleted()) {
+                activeEntries.add(entry);
+            }
+        }
+        return activeEntries;
     }
 
     /**
@@ -178,7 +190,13 @@ public class Directory {
      * @return 空目录返回true，否则返回false
      */
     public boolean isEmpty() {
-        return entriesCache.isEmpty();
+        // 检查是否有未删除的条目
+        for (FileEntry entry : entriesCache) {
+            if (!entry.isDeleted()) {
+                return false;
+            }
+        }
+        return true;
     }
 
     // ======================== 持久化操作（磁盘读写） ========================
@@ -212,6 +230,7 @@ public class Directory {
                             // 解析条目
                             FileEntry entry = parseEntryString(entryStr);
                             if (entry != null) {
+                                LogUtil.debug("解析到目录项：" + entry.getName() + "，删除状态：" + entry.isDeleted());
                                 // 重要：只加载未被删除的条目，避免已删除文件重新出现
                                 if (!entry.isDeleted()) {
                                     // 检查是否有重复项（同名且未删除）
@@ -258,12 +277,26 @@ public class Directory {
 
         try {
             if (entriesCache.isEmpty()) {
-                // 空目录：释放原块并更新元数据
+                // 空目录处理：根目录特殊处理
                 int currentBlockId = dirEntry.getStartBlockId();
-                if (currentBlockId != -1 && !fat.isFreeBlock(currentBlockId)) {
-                    fat.markAsFreeBlock(currentBlockId); // 释放块为空闲
+                
+                // 检查是否为根目录（根目录即使为空也不能释放块）
+                boolean isRootDirectory = "/".equals(dirEntry.getFullPath());
+                
+                if (isRootDirectory) {
+                    // 根目录为空：保持块分配，但写入空内容并设置为END_OF_FILE
+                    if (currentBlockId != -1 && !fat.isFreeBlock(currentBlockId)) {
+                        writeDirectoryContent(currentBlockId); // 写入空目录内容
+                        fat.setNextBlock(currentBlockId, -1); // 确保设置为END_OF_FILE
+                        LogUtil.debug("根目录为空，保持块分配并设置为END_OF_FILE：块" + currentBlockId);
+                    }
+                } else {
+                    // 非根目录为空：释放原块并更新元数据
+                    if (currentBlockId != -1 && !fat.isFreeBlock(currentBlockId)) {
+                        fat.markAsFreeBlock(currentBlockId); // 释放块为空闲
+                    }
+                    updateDirEntryStartBlock(-1);
                 }
-                updateDirEntryStartBlock(-1);
             } else {
                 // 非空目录：智能块管理策略
                 int requiredBlocks = (entriesCache.size() + MAX_ENTRIES_PER_BLOCK - 1) / MAX_ENTRIES_PER_BLOCK;
@@ -273,6 +306,8 @@ public class Directory {
                 if (requiredBlocks == 1 && currentStartBlockId != -1 && !fat.isFreeBlock(currentStartBlockId)) {
                     // 就地更新：直接写入现有块，无需重新分配
                     writeDirectoryContent(currentStartBlockId);
+                    // 关键修复：确保就地更新时也正确设置FAT状态为END_OF_FILE
+                    fat.setNextBlock(currentStartBlockId, -1);
                     LogUtil.debug("目录项就地更新完成：" + dirEntry.getFullPath() + "，使用现有块：" + currentStartBlockId);
                 } else {
                     // 需要重新分配块链的情况：
@@ -294,7 +329,7 @@ public class Directory {
                             fat.setNextBlock(prevBlockId, nextBlockId);
                             prevBlockId = nextBlockId;
                         }
-                        fat.setNextBlock(prevBlockId, FAT.END_OF_FILE); // 标记链结束
+                        fat.setNextBlock(prevBlockId, -1); // 标记链结束
                     }
 
                     // 写入新块链数据
@@ -378,6 +413,7 @@ public class Directory {
      */
     private FileEntry parseEntryString(String entryStr) {
         try {
+            LogUtil.debug("解析目录项字符串：" + entryStr);
             String[] parts = entryStr.split(java.util.regex.Pattern.quote(ENTRY_SEPARATOR));
             boolean readOnly = false;
             String uuid;
