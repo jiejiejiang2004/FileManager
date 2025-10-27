@@ -1,17 +1,13 @@
 package org.jiejiejiang.filemanager.core;
 
-import org.jiejiejiang.filemanager.exception.*;
-import org.jiejiejiang.filemanager.util.LogUtil;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
-import java.util.regex.Pattern;
+
+import org.jiejiejiang.filemanager.exception.DiskFullException;
+import org.jiejiejiang.filemanager.exception.DiskWriteException;
+import org.jiejiejiang.filemanager.exception.FileSystemException;
+import org.jiejiejiang.filemanager.exception.InvalidBlockIdException;
+import org.jiejiejiang.filemanager.util.LogUtil;
 
 /**
  * 目录内容管理器
@@ -97,9 +93,14 @@ public class Directory {
             throw new FileSystemException("目录项已存在：" + entry.getName() + "（目录：" + dirEntry.getFullPath() + "）");
         }
 
-        // 添加到缓存并标记为脏
+        // 添加到本地缓存并标记为脏
         entriesCache.add(entry);
         isDirty = true;
+
+        // 关键修复：同时更新FileSystem的全局缓存
+        String fullPath = entry.getFullPath();
+        fileSystem.addEntryToCache(fullPath, entry);
+        LogUtil.debug("已更新FileSystem全局缓存：" + fullPath);
 
         // 移除自动同步，由上层调用者决定何时同步到磁盘
         // syncToDisk();  // 注释掉自动同步
@@ -414,6 +415,10 @@ public class Directory {
     }
 
     // ======================== 辅助方法 ========================
+
+    public void setEntriesCache(List<FileEntry> entriesCache) {
+        this.entriesCache = entriesCache;
+    }
 
     /**
      * 验证目录项合法性

@@ -893,8 +893,10 @@ public class MainController {
         grid.setPadding(new javafx.geometry.Insets(10));
     
         javafx.scene.control.Label nameLabel = new javafx.scene.control.Label("文件名:");
-        javafx.scene.control.Label nameValue = new javafx.scene.control.Label(selectedEntry.getName());
-    
+        javafx.scene.control.TextField nameValue = new javafx.scene.control.TextField(selectedEntry.getName());
+        // 保存原始文件名，用于后续比较
+        final String originalName = selectedEntry.getName();
+
         javafx.scene.control.Label pathLabel = new javafx.scene.control.Label("路径:");
         javafx.scene.control.Label pathValue = new javafx.scene.control.Label(fullPath);
     
@@ -929,20 +931,66 @@ public class MainController {
         dialog.showAndWait().ifPresent(result -> {
             if (result == SAVE_BUTTON) {
                 try {
+                    // 获取新文件名
+                    String newName = nameValue.getText().trim();
+                    boolean nameChanged = !newName.equals(originalName);
+                    
+                    // 检查文件名是否为空
+                    if (newName.isEmpty()) {
+                        showError("重命名失败", "文件名不能为空");
+                        return;
+                    }
+                    
+                    // 获取只读属性的新值
                     boolean newReadOnly = readOnlyCheck.isSelected();
-                    selectedEntry.setReadOnly(newReadOnly);
+                    
+                    // 如果文件名已更改，检查是否存在同名文件
+                    if (nameChanged) {
+                        // 检查当前目录中是否已存在同名文件
+                        boolean fileExists = currentDirectory.getEntries().stream()
+                                .filter(entry -> !entry.isDeleted()) // 排除已删除的文件
+                                .anyMatch(entry -> entry.getName().equals(newName) && !entry.equals(selectedEntry));
+                        
+                        if (fileExists) {
+                            showError("重命名失败", "当前目录下已存在同名文件：" + newName);
+                            return;
+                        }
+                        
+                        // 由于FileEntry的name是final的，我们需要通过创建新的FileEntry并替换的方式实现重命名
+                        // 1. 创建新的FileEntry（保留原始属性，但使用新名称和原始UUID）
+                        FileEntry newEntry = new FileEntry(
+                                newName,
+                                selectedEntry.getType(),
+                                selectedEntry.getParentPath(),
+                                selectedEntry.getStartBlockId(),
+                                selectedEntry.getUuid() // 保留原始UUID，确保对象引用一致性
+                        );
+                        // 2. 复制其他属性
+                        newEntry.setSize(selectedEntry.getSize());
+                        newEntry.setReadOnly(newReadOnly); // 设置新的只读属性
+                        
+                        // 3. 从当前目录移除旧条目
+                        currentDirectory.removeEntry(originalName);
+                        
+                        // 4. 添加新条目到当前目录
+                        currentDirectory.addEntry(newEntry);
+                    } else {
+                        // 如果文件名没有改变，只更新只读属性
+                        selectedEntry.setReadOnly(newReadOnly);
+                    }
+                    
                     // 标记当前目录为脏并同步
                     currentDirectory.markDirty();
                     currentDirectory.syncToDisk();
-    
+
                     // 刷新列表与FAT视图
                     loadDirectory(currentDirectory.getDirEntry().getFullPath());
                     refreshFatView();
-    
+
                     Alert success = new Alert(Alert.AlertType.INFORMATION);
                     success.setTitle("成功");
                     success.setHeaderText(null);
-                    success.setContentText("属性已保存");
+                    success.setContentText(nameChanged ? "文件已重命名并保存属性" : "属性已保存");
                     success.showAndWait();
                 } catch (org.jiejiejiang.filemanager.exception.FileSystemException e) {
                     showError("保存属性失败", e.getMessage());
