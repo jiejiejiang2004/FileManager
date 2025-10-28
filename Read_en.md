@@ -62,10 +62,17 @@ src/
 
 ## Features
 ### 1. File Operations
-- Create new files (supports basic text content).
-- Delete files (checks for read-only status).
-- Read/write file content (background threads for large files).
-- Modify file attributes (e.g., set read-only).
+- **Create New Files**: Support basic text content through dialog input for filename and content.
+- **File Viewing**: Double-click files or right-click "View" to safely view file content in read-only mode, preventing accidental modifications.
+- **File Editing**: Right-click "Edit" to modify file content in dedicated editing dialog with save functionality.
+- **Delete Files**: Automatically checks for read-only status; read-only files cannot be deleted.
+- **File Renaming**: Right-click "Rename" to modify file names.
+- **File Properties**: Right-click "Properties" to view detailed file information (size, creation time, disk location, etc.).
+
+#### New Feature Highlights
+- **Separated View and Edit**: Double-clicking files defaults to safe read-only viewing mode; editing requires explicit right-click menu selection.
+- **Enhanced User Experience**: Prevents accidental file modifications while maintaining full editing capabilities.
+- **Multiple Operation Methods**: Supports double-click, right-click menu, and menu bar operations.
 
 ### 2. Directory Operations
 - Create nested directories.
@@ -79,10 +86,21 @@ src/
 - Auto-flush buffer to disk (via background thread).
 
 ### 4. User Interface
-- Intuitive layout: Directory tree (left) + file list (right) + operation toolbar.
-- Interactive dialogs (new file, rename, error prompts).
-- Responsive design (supports window resizing).
-- File type icons (text, image, folder) for better visibility.
+- **Intuitive Layout**: Directory tree (left) + file list (right) + operation toolbar.
+- **Multi-View Modes**: Support both list view and icon view to accommodate different user preferences.
+- **Smart Interaction Design**:
+  - Double-click files: Default to read-only viewing mode
+  - Double-click directories: Enter directory
+  - Right-click menu: Complete operation options including view, edit, delete, properties
+  - Menu bar: File operations, view switching, tool options
+- **Dialog System**:
+  - File viewing dialog: Read-only mode for safe content viewing
+  - File editing dialog: Full editing functionality with save and cancel options
+  - New file dialog: Create new files
+  - Rename dialog: File/directory renaming
+  - Properties dialog: View detailed information
+- **Responsive Design**: Supports window resizing with automatic component layout adaptation.
+- **File Type Icons**: Different icons for text files, image files, folders, etc., for better visibility.
 
 
 ## How to Run
@@ -125,6 +143,20 @@ Adjust project behavior via config files in `src/main/resources/org/jiejiejiang/
 - **Thread Safety**: Use JavaFX `Task` or `Platform.runLater()` when updating UI from background threads (JavaFX UI is single-threaded).
 - **Testing**: Test core logic (e.g., `FileSystem`, `FAT`) independently first, then test UI interactions.
 
+
+## Documentation Resources
+
+### Detailed Documentation
+- **[Architecture Documentation](./doc/architecture.md)**: System design and architecture details
+- **[API Reference](./doc/api-reference.md)**: Detailed description of core classes and methods
+- **[User Manual](./doc/user-manual.md)**: Complete user guide
+- **[Development Guide](./doc/development-guide.md)**: Development environment setup and extension guide
+
+### Quick Links
+- 🚀 [Quick Start](./doc/user-manual.md#quick-start-快速开始)
+- 📖 [User Interface Guide](./doc/user-manual.md#interface-overview-界面介绍)
+- 🔧 [Development Setup](./doc/development-guide.md#development-environment-开发环境搭建)
+- 📚 [API Reference](./doc/api-reference.md#core-api-interfaces-核心api接口)
 
 ## License
 This project is for educational purposes (e.g., course design). Feel free to modify and extend it.
